@@ -1,4 +1,3 @@
-import 'package:biit_directors_dashbooard/FACULTY/loginFaculty.dart';
 import 'package:biit_directors_dashbooard/splash.dart';
 import 'package:flutter/material.dart';
 

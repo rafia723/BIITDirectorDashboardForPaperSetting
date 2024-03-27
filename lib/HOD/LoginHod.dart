@@ -82,7 +82,7 @@ class _LoginHodState extends State<LoginHod> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>  HOD(),
+                        builder: (context) =>  const HOD(),
                       ),
                     );
                   },

@@ -82,7 +82,7 @@ class _LoginDatacellState extends State<LoginDatacell> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>  Datacell(),
+                        builder: (context) =>  const Datacell(),
                       ),
                     );
                   },
