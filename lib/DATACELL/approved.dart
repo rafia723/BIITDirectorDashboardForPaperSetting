@@ -65,29 +65,31 @@ class _ApprovedState extends State<Approved> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-          title: const Text(
-            'Approved Papers',
-            style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold),
+        backgroundColor: Colors.black,
+        elevation: 10,
+        title: const Text(
+          'Approved Papers',
+          style: TextStyle(color: Colors.white),
+        ),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
           ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const Datacell(),
-                ),
-              );
-            },
-          )),
-      body: SizedBox(
+          onPressed: () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => const Datacell()));
+          },
+        ),
+      ),
+      body: 
+      SizedBox(
         height: double.infinity,
         child: Stack(
           children: [
-            // Background Image
             Positioned.fill(
               child: Image.asset(
-                'assets/images/bg.png', // Replace with the path to your background image
+                'assets/images/datacell.png',
                 fit: BoxFit.cover,
               ),
             ),
@@ -99,22 +101,26 @@ class _ApprovedState extends State<Approved> {
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: TextField(
+                      style: const TextStyle(color: Colors.white),
                       controller: search,
                       onChanged: (value) {
-                        // searchCourses(value);
-                        // loadPrintedPapers(value);
                         SearchApprovedPapers(value);
                       },
                       decoration: const InputDecoration(
-                          suffixIcon: Icon(Icons.search),
-                          labelText: 'Search Course',
-                          border: OutlineInputBorder(),
-                          filled: false),
+                        suffixIcon: Icon(
+                          Icons.search,
+                          color: Colors.white54,
+                        ),
+                        labelText: 'Search Course',
+                        labelStyle: TextStyle(color: Colors.white54),
+                        border: OutlineInputBorder(),
+                      ),
                     ),
                   ),
                 ),
-                Expanded(
+                  Expanded(
                   child: ListView.builder(
+                    shrinkWrap: true,
                     itemCount: plist.length,
                     itemBuilder: (context, index) {
                       return Card(
@@ -123,12 +129,11 @@ class _ApprovedState extends State<Approved> {
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         color: Colors.white.withOpacity(0.8),
-                        child: ListTile(
+                      child: ListTile(
                           title: Text(
                             plist[index]['c_title'],
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          // subtitle: Text(plist[index]['status']),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [

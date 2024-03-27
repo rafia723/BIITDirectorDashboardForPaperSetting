@@ -61,47 +61,59 @@ class _PrintedState extends State<Printed> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text('Printed Papers'),
+        backgroundColor: Colors.black,
+        elevation: 10,
+        title: const Text(
+          'Printed Papers',
+          style: TextStyle(color: Colors.white),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const Datacell()));
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => const Datacell()));
           },
         ),
       ),
       body:
-        SizedBox(
-           height: double.infinity, 
-          child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Image.asset(
-                    'assets/images/bg.png',
-                    fit: BoxFit.cover,
-                  ),
-                ), Column(
+         SizedBox(
+        height: double.infinity,
+        child: Stack(
           children: [
-            SizedBox(
-              width: 300,
-              height: 80,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextField(
-                  controller: search,
-                  onChanged: (value) {
-                    // searchCourses(value);
-                    // loadPrintedPapers(value);
-                    SearchPrintedPapers(value);
-                  },
-                  decoration: const InputDecoration(
-                      suffixIcon: Icon(Icons.search),
-                      labelText: 'Search Course',
-                      border: OutlineInputBorder(),
-                      filled: false),
-                ),
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/datacell.png',
+                fit: BoxFit.cover,
               ),
             ),
+            Column(
+              children: [
+                SizedBox(
+                  width: 300,
+                  height: 80,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TextField(
+                      style: const TextStyle(color: Colors.white),
+                      controller: search,
+                      onChanged: (value) {
+                        SearchPrintedPapers(value);
+                      },
+                      decoration: const InputDecoration(
+                        suffixIcon: Icon(
+                          Icons.search,
+                          color: Colors.white54,
+                        ),
+                        labelText: 'Search Course',
+                        labelStyle: TextStyle(color: Colors.white54),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                ),
           
                 Expanded(
                   child: ListView.builder(

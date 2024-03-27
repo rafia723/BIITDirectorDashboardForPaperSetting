@@ -1,24 +1,25 @@
-import 'package:biit_directors_dashbooard/FACULTY/facultymain.dart';
+import 'package:biit_directors_dashbooard/DATACELL/datacell.dart';
 import 'package:flutter/material.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class LoginDatacell extends StatefulWidget {
+  const LoginDatacell({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<LoginDatacell> createState() => _LoginDatacellState();
 }
 TextEditingController username =TextEditingController();
 TextEditingController password =TextEditingController();
-class _LoginState extends State<Login> {
+class _LoginDatacellState extends State<LoginDatacell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
     body: Stack(
       children: [
         // Background Image
         Positioned.fill(
           child: Image.asset(
-            'assets/images/bg.png', // Replace with the path to your background image
+            'assets/images/datacell.png', // Replace with the path to your background image
             fit: BoxFit.cover,
           ),
         ),
@@ -44,9 +45,10 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Login', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                const Text('Login', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: Colors.white)),
                 const SizedBox(height: 20),
                 TextFormField(
+
                   controller: username,
                   decoration: InputDecoration(
                     filled: true,
@@ -80,7 +82,7 @@ class _LoginState extends State<Login> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>  FacultyMain(facultyUsername: username.text),
+                        builder: (context) =>  Datacell(),
                       ),
                     );
                   },

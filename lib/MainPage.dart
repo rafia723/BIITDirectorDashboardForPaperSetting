@@ -1,6 +1,10 @@
 import 'package:biit_directors_dashbooard/DATACELL/datacell.dart';
+import 'package:biit_directors_dashbooard/DATACELL/loginDatacell.dart';
+import 'package:biit_directors_dashbooard/Director/LoginDirector.dart';
 import 'package:biit_directors_dashbooard/Director/director.dart';
 import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
+import 'package:biit_directors_dashbooard/FACULTY/loginFaculty.dart';
+import 'package:biit_directors_dashbooard/HOD/LoginHod.dart';
 import 'package:biit_directors_dashbooard/HOD/hod.dart';
 import 'package:flutter/material.dart';
 
@@ -46,7 +50,7 @@ class _MainPageState extends State<MainPage> {
                       style: ButtonStyle(
                         fixedSize: MaterialStateProperty.all(const Size(150.0, 50.0)),),
                         onPressed: () { Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const Datacell()));},
+                        MaterialPageRoute(builder: (context) => const LoginDatacell()));},
                         child: const Text('Datacell',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),),
                       const SizedBox(height: 20,),
                       ElevatedButton(
@@ -54,7 +58,7 @@ class _MainPageState extends State<MainPage> {
                         fixedSize: MaterialStateProperty.all(const Size(150.0, 50.0)),),
                         onPressed: () {
                            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const HOD()));
+                MaterialPageRoute(builder: (context) => const LoginHod()));
                         },
                         child: const Text('HOD',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),),
                         const SizedBox(height: 20,),
@@ -63,7 +67,7 @@ class _MainPageState extends State<MainPage> {
                         fixedSize: MaterialStateProperty.all(const Size(150.0, 50.0)),),
                         onPressed: () {
                             Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => const Faculty()));
+                        MaterialPageRoute(builder: (context) => const LoginFaculty()));
                         },
                         child: const Text('Faculty',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),),
                         const SizedBox(height: 20,),
@@ -72,7 +76,7 @@ class _MainPageState extends State<MainPage> {
                         fixedSize: MaterialStateProperty.all(const Size(150.0, 50.0)),),
                         onPressed: () {
                           Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const Director()));
+                MaterialPageRoute(builder: (context) => const LoginDirector()));
                         },
                         child: const Text('Director',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),),
                         const SizedBox(height: 120,),
