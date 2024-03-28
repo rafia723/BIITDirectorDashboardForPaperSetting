@@ -4,7 +4,6 @@ import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/courseview.dart';
 import 'package:biit_directors_dashbooard/FACULTY/notification.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
 class Faculty extends StatefulWidget {
@@ -137,7 +136,7 @@ List<dynamic> aclist = [];
                 ),
                 Container(height: 130),
                 Expanded(
-                  child: Container(
+                  child: SizedBox(
                     height: MediaQuery.of(context).size.height * 0.6, // Adjust the height as needed
                     child: ListView.builder(
                       itemCount: (aclist.length / 2).ceil(),
@@ -176,7 +175,7 @@ List<dynamic> aclist = [];
                                 ),
                                 child: Text(
                                   aclist[startIndex]['c_title'],
-                                  style: TextStyle(color: Colors.black),
+                                  style: const TextStyle(color: Colors.black),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
@@ -205,7 +204,7 @@ List<dynamic> aclist = [];
                                 ),
                                 child: Text(
                                   aclist[endIndex]['c_title'],
-                                  style: TextStyle(color: Colors.black),
+                                  style: const TextStyle(color: Colors.black),
                                   textAlign: TextAlign.center,
                                 ),
                               ),

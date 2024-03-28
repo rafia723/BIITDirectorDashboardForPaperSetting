@@ -168,6 +168,7 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                             5), // Optional: Add border radius
                       ),
                       child: DropdownButton<String>(
+                        hint: Text(' Select Teacher '),
                         isExpanded: true,
                         elevation: 9,
                         value: selectedFaculty,

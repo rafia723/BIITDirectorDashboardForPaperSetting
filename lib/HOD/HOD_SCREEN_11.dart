@@ -200,6 +200,7 @@ class _AssignRoleState extends State<AssignRole> {
                             5), // Optional: Add border radius
                       ),
                       child: DropdownButton<String>(
+                        hint: Text(' Select Course '),
                        isExpanded: true,
                         elevation: 9,
                         value: selectedCourse,
