@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'faculty.dart';
 
 class CourseView extends StatefulWidget {
   final String courseName;
@@ -29,12 +28,12 @@ class _CourseViewState extends State<CourseView> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const Faculty(),
-              ),
-            );
+            // Navigator.pushReplacement(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => const Faculty(),
+            //   ),
+            // );
           },
         ),
       ),

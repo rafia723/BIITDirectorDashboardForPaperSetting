@@ -1,10 +1,17 @@
+import 'dart:convert';
+
+import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/courseview.dart';
 import 'package:biit_directors_dashbooard/FACULTY/notification.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:http/http.dart' as http;
 
 class Faculty extends StatefulWidget {
-  const Faculty({super.key});
+   final String facultyname;
+  final int fid;
 
+   const Faculty({Key? key, required this.facultyname, required this.fid}) : super(key: key);
   @override
   State<Faculty> createState() => _FacultyState();
 }
@@ -12,13 +19,62 @@ class Faculty extends StatefulWidget {
 class _FacultyState extends State<Faculty> {
   Color customColor = const Color.fromARGB(255, 78, 223, 180);
 
+List<dynamic> aclist = [];
+  Future<void> loadAssignedCourses(int id) async {
+    try {
+      Uri uri = Uri.parse(
+          "${APIHandler().apiUrl}AssignedCourses/getAssignedCourses/$id");
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+        aclist = jsonDecode(response.body);
+        setState(() {});
+      } else if(response.statusCode == 404){
+         showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            title: Text('Data not found for the given id'),
+          );
+        },
+      );
+      }else{
+         showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            title: Text('Failed to load assigned courses. Please try again later.'),
+          );
+        },
+      );
+      }
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            title: Text('An error occurred. Please try again later.'),
+          );
+        },
+      );
+    }
+  }
+
+ @override
+  void initState() {
+    loadAssignedCourses(widget.fid);
+    super.initState();
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+      return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Faculty Dashboard',
-            style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold,color: Colors.white)),
+        title: const Text(
+          'Faculty Dashboard',
+          style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         backgroundColor: Colors.transparent,
         elevation: 10,
         leading: IconButton(
@@ -31,7 +87,9 @@ class _FacultyState extends State<Faculty> {
           // Add your notification icon or message box widget here
           IconButton(
             icon: const Icon(
-                Icons.message,color: Colors.white,), // Replace with your icon or message box widget
+              Icons.message,
+              color: Colors.white,
+            ), // Replace with your icon or message box widget
             onPressed: () {
               // Handle the notification icon or message box click event
               Navigator.pushReplacement(
@@ -44,7 +102,9 @@ class _FacultyState extends State<Faculty> {
           ),
           IconButton(
             icon: const Icon(
-                Icons.timer,color: Colors.white,), // Replace with your icon or message box widget
+              Icons.timer,
+              color: Colors.white,
+            ), // Replace with your icon or message box widget
             onPressed: () {
               // Handle the notification icon or message box click event
               // Navigator.pushReplacement(
@@ -71,166 +131,89 @@ class _FacultyState extends State<Faculty> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(height: 100),
-                const Text(
-                  'Welcome Mr. Shahid!',
-                  style: TextStyle(fontSize: 15.0, fontWeight: FontWeight.bold,color: Colors.white),
+                Text(
+                  'Welcome, ${widget.facultyname}!',
+                  style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,color: Colors.white),
                 ),
                 Container(height: 130),
-                Column(
-                  children: [
-                    Center(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                Expanded(
+                  child: Container(
+                    height: MediaQuery.of(context).size.height * 0.6, // Adjust the height as needed
+                    child: ListView.builder(
+                      itemCount: (aclist.length / 2).ceil(),
+                      itemBuilder: (context, index) {
+                        // Calculate the indices for the current row
+                        int startIndex = index * 2;
+                        int endIndex = startIndex + 1;
+                        if (endIndex >= aclist.length) {
+                          endIndex = aclist.length - 1;
+                        }
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Column(
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => const CourseView(
-                                                courseName:
-                                                    'Programming Fundamentals',
-                                                ccode: 'CS-354'),
-                                          ),
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: customColor,
-                                        minimumSize: const Size(150, 80),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                          side: const BorderSide(
-                                              color: Colors.black),
-                                        ),
+                            // Widgets for the first record
+                            if (startIndex < aclist.length)
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CourseView(
+                                        courseName: aclist[startIndex]['c_title'],
+                                        ccode: aclist[startIndex]['c_code'],
                                       ),
-                                      child: const Text(
-                                          'Programming \nFundamentals',
-                                          style:
-                                              TextStyle(color: Colors.black)),
                                     ),
-                                    const Text('CS-354',style: TextStyle(color: Colors.white),)
-                                  ],
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: customColor,
+                                  minimumSize: const Size(150, 80),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    side: const BorderSide(color: Colors.black),
+                                  ),
                                 ),
-                                const SizedBox(width: 20),
-                                 Column(
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => const CourseView(
-                                                courseName:
-                                                    'Ecommerce',
-                                                ccode: 'CS-454'),
-                                          ),
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: customColor,
-                                        minimumSize: const Size(150, 80),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                          side: const BorderSide(
-                                              color: Colors.black),
-                                        ),
+                                child: Text(
+                                  aclist[startIndex]['c_title'],
+                                  style: TextStyle(color: Colors.black),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+
+                            // Widgets for the second record
+                            if (endIndex < aclist.length)
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => CourseView(
+                                        courseName: aclist[endIndex]['c_title'],
+                                        ccode: aclist[endIndex]['c_code'],
                                       ),
-                                      child: const Text(
-                                          'Ecommerce',
-                                          style:
-                                              TextStyle(color: Colors.black)),
                                     ),
-                                    const Text('CS-454',style: TextStyle(color: Colors.white))
-                                  ],
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: customColor,
+                                  minimumSize: const Size(150, 80),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    side: const BorderSide(color: Colors.black),
+                                  ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(
-                                height: 20), // Adjust the spacing between rows
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Column(
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => const CourseView(
-                                                courseName:
-                                                    'Linear Algebra',
-                                                ccode: 'CS-374'),
-                                          ),
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: customColor,
-                                        minimumSize: const Size(150, 80),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                          side: const BorderSide(
-                                              color: Colors.black),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                          'Linear Algebra',
-                                          style:
-                                              TextStyle(color: Colors.black)),
-                                    ),
-                                    const Text('CS-374',style: TextStyle(color: Colors.white))
-                                  ],
+                                child: Text(
+                                  aclist[endIndex]['c_title'],
+                                  style: TextStyle(color: Colors.black),
+                                  textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(width: 20),
-                                    Column(
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        Navigator.pushReplacement(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => const CourseView(
-                                                courseName:
-                                                    'Database',
-                                                ccode: 'CS-324'),
-                                          ),
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: customColor,
-                                        minimumSize: const Size(150, 80),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                          side: const BorderSide(
-                                              color: Colors.black),
-                                        ),
-                                      ),
-                                      child: const Text(
-                                          'Database',
-                                          style:
-                                              TextStyle(color: Colors.black)),
-                                    ),
-                                    const Text('CS-324',style: TextStyle(color: Colors.white))
-                                  ],
-                                ),
-                              ],
-                            ),
+                              ),
                           ],
-                        ),
-                      ),
+                        );
+                      },
                     ),
-                  ],
+                  ),
                 ),
               ],
             ),

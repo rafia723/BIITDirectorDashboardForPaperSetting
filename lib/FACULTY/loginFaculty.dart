@@ -1,5 +1,9 @@
-import 'package:biit_directors_dashbooard/FACULTY/facultymain.dart';
+import 'dart:convert';
+
+import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class LoginFaculty extends StatefulWidget {
   const LoginFaculty({super.key});
@@ -9,7 +13,46 @@ class LoginFaculty extends StatefulWidget {
 }
 TextEditingController username =TextEditingController();
 TextEditingController password =TextEditingController();
+
+
+
+
 class _LoginFacultyState extends State<LoginFaculty> {
+ 
+Future<void> loginFaculty(BuildContext context) async {
+  final response = await http.post(
+    Uri.parse("${APIHandler().apiUrl}Faculty/loginFaculty"),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, String>{
+      'username': username.text.trim(),
+      'password': password.text.trim(),
+    }),
+  );
+
+  if (response.statusCode == 200) {
+     Map<String, dynamic> responseData = jsonDecode(response.body);
+      int fid = responseData['fid']; // Extract fid from response
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Faculty(facultyname: username.text, fid: fid),
+      ),
+    );
+  } else {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const AlertDialog(
+          title: Text('Login Failed'),
+        );
+      },
+    );
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,12 +122,7 @@ class _LoginFacultyState extends State<LoginFaculty> {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>  FacultyMain(facultyUsername: username.text),
-                      ),
-                    );
+                   loginFaculty(context);
                   },
                   child: const Text('Login'),
                 ),

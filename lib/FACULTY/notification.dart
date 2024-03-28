@@ -1,4 +1,3 @@
-import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
 import 'package:flutter/material.dart';
 
 class Notifications extends StatefulWidget {
@@ -22,12 +21,12 @@ class _NotificationsState extends State<Notifications> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const Faculty(),
-                      ),
-                    );
+            // Navigator.pushReplacement(
+            //           context,
+            //           MaterialPageRoute(
+            //             builder: (context) => const Faculty(),
+            //           ),
+            //         );
           },
         ),
       ),
