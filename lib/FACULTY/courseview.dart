@@ -1,10 +1,13 @@
+import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
 import 'package:flutter/material.dart';
 
 
 class CourseView extends StatefulWidget {
   final String courseName;
   final String ccode;
-  const CourseView({Key? key, required this.courseName, required this.ccode})
+   final String fname;
+  final int fid;
+  const CourseView({Key? key, required this.courseName, required this.ccode,required this.fname,required this.fid})
       : super(key: key);
 
   @override
@@ -14,6 +17,27 @@ class CourseView extends StatefulWidget {
 class _CourseViewState extends State<CourseView> {
   Color customColor = const Color.fromARGB(255, 78, 223, 180);
 
+Widget customButton({
+  required String text,
+  required VoidCallback onPressed,
+}) {
+  return ElevatedButton(
+    onPressed: onPressed,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: customColor,
+      minimumSize: const Size(250, 60),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+        side: const BorderSide(color: Colors.black),
+      ),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(color: Colors.black),
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,19 +45,19 @@ class _CourseViewState extends State<CourseView> {
       appBar: AppBar(
         title: const Text(
           'Settings',
-          style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold,color: Colors.white),
         ),
         backgroundColor: Colors.transparent,
         elevation: 10,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            // Navigator.pushReplacement(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) => const Faculty(),
-            //   ),
-            // );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>  Faculty(facultyname: widget.fname,fid: widget.fid),
+              ),
+            );
           },
         ),
       ),
@@ -43,7 +67,7 @@ class _CourseViewState extends State<CourseView> {
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/bg.png'),
+                  image: AssetImage('assets/images/Faculty.png'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -58,87 +82,36 @@ class _CourseViewState extends State<CourseView> {
                 const SizedBox(height: 100),
                 Text(
                   widget.courseName,
-                  style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,color: Colors.white),
                 ),
                 Text(
                   'Course Code: ${widget.ccode}',
-                  style: const TextStyle(fontSize: 16.0),
+                  style: const TextStyle(fontSize: 16.0,color: Colors.white),
                 ),
               ],
             ),
           ),
-           Expanded(
-                  child: Center(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.vertical,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                             
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: customColor,
-                              minimumSize: const Size(250, 60),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                                side: const BorderSide(color: Colors.black),
-                              ),
-                            ),
-                            child: const Text('View Topics',
-                                style: TextStyle(color: Colors.black)),
-                          ),
-                          const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: () { 
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: customColor,
-                              minimumSize: const Size(250, 60),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                                side: const BorderSide(color: Colors.black),
-                              ),
-                            ),
-                            child: const Text('View CLOS',
-                                style: TextStyle(color: Colors.black)),
-                          ),
-                            const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: () { 
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: customColor,
-                              minimumSize: const Size(250, 60),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                                side: const BorderSide(color: Colors.black),
-                              ),
-                            ),
-                            child: const Text('Paper Setting',
-                                style: TextStyle(color: Colors.black)),
-                          ),
-                           const SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: () { 
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: customColor,
-                              minimumSize: const Size(250, 60),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                                side: const BorderSide(color: Colors.black),
-                              ),
-                            ),
-                            child: const Text('Paper Status',
-                                style: TextStyle(color: Colors.black)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+           Center(
+             child: SingleChildScrollView(
+               child: Column(
+                 mainAxisAlignment: MainAxisAlignment.center,
+                 children: [
+                   const SizedBox(height: 50),
+                  customButton(text: 'Paper Settings', onPressed: (){}),
+                   const SizedBox(height: 10),
+                  customButton(text: 'View Topics', onPressed: (){}),
+                     const SizedBox(height: 10),
+                  customButton(text: 'View Clos', onPressed: (){}),
+                    const SizedBox(height: 10),
+                  customButton(text: 'Manage Paper', onPressed: (){}),
+                    const SizedBox(height: 10),
+                  customButton(text: 'Manage Topics', onPressed: (){}),
+                    const SizedBox(height: 10),
+                   customButton(text: 'Manage Clos', onPressed: (){})
+                 ],
+               ),
+             ),
+           ),
         ],
       ),
     );

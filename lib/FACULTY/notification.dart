@@ -1,7 +1,13 @@
+import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class Notifications extends StatefulWidget {
-  const Notifications({super.key});
+   final String facultyname;
+  final int fid;
+
+  const Notifications({Key? key, required this.facultyname, required this.fid})
+      : super(key: key);
 
   @override
   State<Notifications> createState() => _NotificationsState();
@@ -15,18 +21,18 @@ class _NotificationsState extends State<Notifications> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Notifications',
-            style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold)),
+            style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold,color: Colors.white)),
         backgroundColor: Colors.transparent,
         elevation: 10,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            // Navigator.pushReplacement(
-            //           context,
-            //           MaterialPageRoute(
-            //             builder: (context) => const Faculty(),
-            //           ),
-            //         );
+            Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>  Faculty(facultyname: widget.facultyname,fid: widget.fid,),
+                      ),
+                    );
           },
         ),
       ),
@@ -34,7 +40,7 @@ class _NotificationsState extends State<Notifications> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/bg.png',
+              'assets/images/Faculty.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -50,7 +56,7 @@ class _NotificationsState extends State<Notifications> {
                     decoration: BoxDecoration(
                      
                      border: const Border(
-                      top: BorderSide(color: Colors.black,width: 1.0),
+                      top: BorderSide(color: Colors.white,width: 1.0),
                      // bottom: BorderSide(color: Colors.black,width: 1.0)
                       ),
                       borderRadius: BorderRadius.circular(
@@ -66,16 +72,16 @@ class _NotificationsState extends State<Notifications> {
                               children: [
                                 Column(
                                  
-                                  children: [Text('CS-353|',style: TextStyle(fontSize: 15),)],
+                                  children: [Text('CS-353|',style: TextStyle(fontSize: 15,color: Colors.white),)],
                                 ),
                                 Column(
-                                  children: [Text('Programming Fundamentals',style: TextStyle(fontSize: 15),)],
+                                  children: [Text('Programming Fundamentals',style: TextStyle(fontSize: 15,color: Colors.white),)],
                                 )
                               ],
                             ),
                             Row(
                               children: [
-                                Text('QNo1: Review Difficulty level of question.',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),),
+                                Text('QNo1: Review Difficulty level of question.',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500,color: Colors.white),),
                               ],
                             ),
                           ],
@@ -87,7 +93,7 @@ class _NotificationsState extends State<Notifications> {
                     decoration: BoxDecoration(
                      
                       border: const Border(
-                      top: BorderSide(color: Colors.black,width: 1.0),
+                      top: BorderSide(color: Colors.white,width: 1.0),
                   //    bottom: BorderSide(color: Colors.black,width: 1.0)
                       ),
                       borderRadius: BorderRadius.circular(
@@ -103,16 +109,16 @@ class _NotificationsState extends State<Notifications> {
                             Row(
                               children: [
                                 Column(
-                                  children: [Text('CS-345|',style: TextStyle(fontSize: 15),)],
+                                  children: [Text('CS-345|',style: TextStyle(fontSize: 15,color: Colors.white),)],
                                 ),
                                 Column(
-                                  children: [Text('Ecommerce',style: TextStyle(fontSize: 15),)],
+                                  children: [Text('Ecommerce',style: TextStyle(fontSize: 15,color: Colors.white),)],
                                 )
                               ],
                             ),
                             Row(
                               children: [
-                                Text('QNo2: Review Difficulty level of question.',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),),
+                                Text('QNo2: Review Difficulty level of question.',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500,color: Colors.white),),
                               ],
                             ),
                           ],
@@ -123,8 +129,8 @@ class _NotificationsState extends State<Notifications> {
                     decoration: BoxDecoration(
                      
                       border: const Border(
-                      top: BorderSide(color: Colors.black,width: 1.0),
-                      bottom: BorderSide(color: Colors.black,width: 1.0)
+                      top: BorderSide(color: Colors.white,width: 1.0),
+                      bottom: BorderSide(color: Colors.white,width: 1.0)
                       ),
                       borderRadius: BorderRadius.circular(
                           0.0), // Adjust the radius as needed
@@ -138,16 +144,16 @@ class _NotificationsState extends State<Notifications> {
                               children: [
                                 Column(
                                   
-                                  children: [Text('CS-384|',style: TextStyle(fontSize: 15),)],
+                                  children: [Text('CS-384|',style: TextStyle(fontSize: 15,color: Colors.white),)],
                                 ),
                                 Column(
-                                  children: [Text('Database',style: TextStyle(fontSize: 15),)],
+                                  children: [Text('Database',style: TextStyle(fontSize: 15,color: Colors.white),)],
                                 )
                               ],
                             ),
                             Row(
                               children: [
-                                Text('All questions are not appropriate. \nRecheck them.',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),),
+                                Text('All questions are not appropriate. \nRecheck them.',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500,color: Colors.white),),
                               ],
                             ),
                           ],
