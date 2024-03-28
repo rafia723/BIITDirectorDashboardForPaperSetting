@@ -18,6 +18,8 @@ class Faculty extends StatefulWidget {
 class _FacultyState extends State<Faculty> {
   Color customColor = const Color.fromARGB(255, 78, 223, 180);
 
+
+
 List<dynamic> aclist = [];
   Future<void> loadAssignedCourses(int id) async {
     try {
@@ -139,28 +141,19 @@ List<dynamic> aclist = [];
                   child: SizedBox(
                     height: MediaQuery.of(context).size.height * 0.6, // Adjust the height as needed
                     child: ListView.builder(
-                      itemCount: (aclist.length / 2).ceil(),
+                      itemCount: aclist.length,
                       itemBuilder: (context, index) {
-                        // Calculate the indices for the current row
-                        int startIndex = index * 2;
-                        int endIndex = startIndex + 1;
-                        if (endIndex >= aclist.length) {
-                          endIndex = aclist.length - 1;
-                        }
-
-                        return Row(
+                        return Column(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            // Widgets for the first record
-                            if (startIndex < aclist.length)
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => CourseView(
-                                        courseName: aclist[startIndex]['c_title'],
-                                        ccode: aclist[startIndex]['c_code'],
+                                        courseName: aclist[index]['CourseTitle'],
+                                        ccode: aclist[index]['CourseCode'],
                                       ),
                                     ),
                                   );
@@ -174,40 +167,16 @@ List<dynamic> aclist = [];
                                   ),
                                 ),
                                 child: Text(
-                                  aclist[startIndex]['c_title'],
+                                   aclist[index]['CourseTitle'] ?? 'No Title Available',
                                   style: const TextStyle(color: Colors.black),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
-
-                            // Widgets for the second record
-                            if (endIndex < aclist.length)
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => CourseView(
-                                        courseName: aclist[endIndex]['c_title'],
-                                        ccode: aclist[endIndex]['c_code'],
-                                      ),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: customColor,
-                                  minimumSize: const Size(150, 80),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    side: const BorderSide(color: Colors.black),
-                                  ),
-                                ),
-                                child: Text(
-                                  aclist[endIndex]['c_title'],
-                                  style: const TextStyle(color: Colors.black),
+                              Text(
+                                   aclist[index]['CourseCode'] ?? 'No Title Available',
+                                  style: const TextStyle(color: Colors.white),
                                   textAlign: TextAlign.center,
                                 ),
-                              ),
                           ],
                         );
                       },
