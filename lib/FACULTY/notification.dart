@@ -1,6 +1,5 @@
 import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class Notifications extends StatefulWidget {
    final String facultyname;

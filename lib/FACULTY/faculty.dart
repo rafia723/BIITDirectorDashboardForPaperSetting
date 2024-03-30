@@ -79,7 +79,7 @@ class _FacultyState extends State<Faculty> {
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: customColor,
-            fixedSize: Size(170, 100),
+            fixedSize: const Size(170, 100),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
               side: const BorderSide(color: Colors.black),
@@ -96,7 +96,7 @@ class _FacultyState extends State<Faculty> {
           style: const TextStyle(color: Colors.white),
           textAlign: TextAlign.center,
         ),
-         SizedBox(height: 20,),
+         const SizedBox(height: 20,),
       ],
     );
   }

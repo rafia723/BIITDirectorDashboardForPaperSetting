@@ -1,5 +1,4 @@
-import 'package:biit_directors_dashbooard/FACULTY/loginFaculty.dart';
-import 'package:biit_directors_dashbooard/HOD/hod.dart';
+import 'package:biit_directors_dashbooard/splash.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -18,7 +17,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home:  const LoginFaculty(),
+      home:  const SplashScreen(),
     );
   }
 }
