@@ -29,10 +29,8 @@ class _ApprovedState extends State<Approved> {
   }
 
   Future<void> SearchApprovedPapers(String courseTitle) async {
-    try {
-      if (courseTitle.isEmpty) {
-        loadApprovedPapers();
-      }
+     try {
+    if (courseTitle.isNotEmpty) { // Only proceed if the search query is not empty
       Uri uri = Uri.parse(
           '${APIHandler().apiUrl}Paper/SearchApprovedPapers?courseTitle=$courseTitle');
       var response = await http.get(uri);
@@ -42,18 +40,18 @@ class _ApprovedState extends State<Approved> {
       } else {
         throw Exception('Failed to load Approved Papers');
       }
-    } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading Approved Papers'),
-          );
-        },
-      );
     }
+  } catch (e) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return const AlertDialog(
+          title: Text('Error loading Approved Papers'),
+        );
+      },
+    );
   }
-
+}
   @override
   void initState() {
     super.initState();

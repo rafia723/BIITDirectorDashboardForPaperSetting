@@ -28,9 +28,7 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
 
   Future<void> SearchApprovedPapers(String courseTitle) async {
     try {
-      if (courseTitle.isEmpty) {
-        loadApprovedPapers();
-      }
+       if (courseTitle.isNotEmpty) {
       Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/SearchApprovedPapers?courseTitle=$courseTitle');
       var response = await http.get(uri);
       if (response.statusCode == 200) {
@@ -39,7 +37,8 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
       } else {
         throw Exception('Failed to load Approved Papers');
       }
-    } catch (e) {
+    } 
+    }catch (e) {
       showDialog(
         context: context,
         builder: (context) {

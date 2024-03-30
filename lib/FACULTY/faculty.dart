@@ -119,7 +119,17 @@ class _FacultyState extends State<Faculty> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 10,
-      
+       leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            // Navigator.pushReplacement(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) =>  Faculty(),
+            //   ),
+            // );
+          },
+        ),
         actions: [
           // Add your notification icon or message box widget here
           IconButton(
