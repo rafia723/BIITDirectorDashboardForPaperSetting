@@ -103,7 +103,7 @@ class _AssignedCoursesState extends State<AssignedCourses> {
 
    void add() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const AssignCoursetoFaculty()),
+      MaterialPageRoute(builder: (context) =>  AssignCoursetoFaculty(facultyname: widget.facultyname,)),
     );
   }
   @override
@@ -140,7 +140,7 @@ class _AssignedCoursesState extends State<AssignedCourses> {
                 const SizedBox(height: 80),
                  const Text('Teacher Name',style: TextStyle(color: Colors.white,fontSize: 24,fontWeight: FontWeight.bold),),
                  const SizedBox(height: 10,),
-                 Text(widget.facultyname,style: const TextStyle(color: Colors.white,fontSize: 22,fontWeight: FontWeight.w300),),
+                 Text(widget.facultyname,style: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.w500),),
                   const SizedBox(height: 50,),
                  const Text('Assigned Courses',style: TextStyle(color: Colors.white,fontSize: 22,fontWeight: FontWeight.w600),),
                  const SizedBox(height: 10,),
@@ -155,8 +155,8 @@ class _AssignedCoursesState extends State<AssignedCourses> {
                           ),
                           color: Colors.white.withOpacity(0.8),
                           child:ListTile(
-                            title: Text(aclist[index]['CourseTitle']),
-                            subtitle: Text(aclist[index]['CourseCode']),
+                            title: Text(aclist[index]['c_title']),
+                            subtitle: Text(aclist[index]['c_code']),
                             trailing: IconButton(onPressed: (){
                               deleteAssignedCourses(aclist[index]['ac_id']);
                             }, icon: const Icon(Icons.delete)),

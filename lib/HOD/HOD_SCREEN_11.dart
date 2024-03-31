@@ -206,7 +206,7 @@ class _AssignRoleState extends State<AssignRole> {
                         value: selectedCourse,
                         items: clist.map((e) {
                           return DropdownMenuItem<String>(
-                            value: e['c_title'],
+                            value: e['c_code'],
                             onTap: () {
                               setState(() {
                                 selectedCourse = e['c_title'];
@@ -259,7 +259,7 @@ class _AssignRoleState extends State<AssignRole> {
                                 color: Colors.white.withOpacity(0.8),
                                 child: ListTile(
                                     title: Text(
-                                      assignedToList[index]['TeacherName'],
+                                      assignedToList[index]['f_name'],
                                     ),
                                     trailing: Row(
                                       mainAxisSize: MainAxisSize.min,

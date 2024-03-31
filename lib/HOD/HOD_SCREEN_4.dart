@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class AssignCoursetoFaculty extends StatefulWidget {
-  const AssignCoursetoFaculty({super.key});
+  final String? facultyname;
+  const AssignCoursetoFaculty({Key? key, this.facultyname})
+      : super(key: key);
 
   @override
   State<AssignCoursetoFaculty> createState() => _AssignCoursetoFacultyState();
@@ -15,7 +17,8 @@ class AssignCoursetoFaculty extends StatefulWidget {
 class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
   List<dynamic> clist = [];
   late List<dynamic> flist = [];
-  String? selectedFaculty; // Nullable initially
+  String? selectedFacultyId;
+  String? selectedFacultyText; // Nullable initially
   TextEditingController search = TextEditingController();
   //bool isChecked = false;
   Map<String, bool> checkedCourses = {};
@@ -29,15 +32,8 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
           "${APIHandler().apiUrl}Faculty/getFacultyWithEnabledStatus");
       var response = await http.get(uri);
       if (response.statusCode == 200) {
-        var jsonData = jsonDecode(response.body);
- 
-      
-        List<dynamic> facultyList = jsonData as List;
-        setState(() {
-          flist = facultyList
-              .map((faculty) => faculty['f_name'] as String)
-              .toList();
-        });
+        flist = jsonDecode(response.body);
+        setState(() {});
       } else {
         throw Exception('Failed to load Faculty');
       }
@@ -52,7 +48,6 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
       );
     }
   }
-
   Future<void> loadCourse() async {
     try {
       Uri uri =
@@ -168,15 +163,20 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                             5), // Optional: Add border radius
                       ),
                       child: DropdownButton<String>(
-                        hint: const Text(' Select Teacher '),
+                        hint:  Text(widget.facultyname?? ' Select Teacher '),
                         isExpanded: true,
                         elevation: 9,
-                        value: selectedFaculty,
+                        value: selectedFacultyId,
                         items: flist.map((e) {
                           return DropdownMenuItem<String>(
-                            value: e,
+                            value: e['f_id'].toString(),
+                             onTap: () {
+                              setState(() {
+                                selectedFacultyText = e['f_name'];
+                              });
+                            },
                             child: Text(
-                              e,
+                              e['f_name'],
                               style: const TextStyle(
                                   fontSize: 16, color: Colors.black),
                             ),
@@ -184,7 +184,7 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                         }).toList(),
                         onChanged: (String? newValue) {
                           setState(() {
-                            selectedFaculty = newValue!;
+                            selectedFacultyId = newValue!;
                           });
                         },
                       ),
@@ -194,8 +194,8 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                 const SizedBox(height: 30),
                 Center(
                   child: Text(
-                    selectedFaculty ?? "--------------", // Show selected faculty
-                    style: const TextStyle(color: Colors.white),
+                   widget.facultyname?? selectedFacultyText ?? "--------------", // Show selected faculty
+                    style: const TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 16),
                   ),
                 ),
                 const Text(

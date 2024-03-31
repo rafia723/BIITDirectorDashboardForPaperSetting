@@ -106,7 +106,7 @@ Future<void> loadCourse() async {
                         value: selectedCourse,
                         items: clist.map((e) {
                           return DropdownMenuItem<String>(
-                            value: e['c_title'],
+                            value: e['c_code'],
                             onTap: () {
                               setState(() {
                                 selectedCourse = e['c_title'];

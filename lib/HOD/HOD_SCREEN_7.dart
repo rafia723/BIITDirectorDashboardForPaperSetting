@@ -180,7 +180,7 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
                           ),
                           color: Colors.white.withOpacity(0.8),
                           child: ListTile(
-                            title: Text(atlist[index]['TeacherName']),
+                            title: Text(atlist[index]['f_name']),
                             trailing: IconButton(
                                 onPressed: () {
                                   deleteAssignedToCourses(
