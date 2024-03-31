@@ -12,6 +12,7 @@ Widget customTextField({
     child: SizedBox(
       height: 60,
       child: TextFormField(
+        style: TextStyle(color: Colors.white60),
         controller: controller,
         obscureText: obscureText,
         decoration: InputDecoration(
@@ -19,11 +20,11 @@ Widget customTextField({
             borderRadius: BorderRadius.all(Radius.circular(4.0)),
           ),
           hintText: hintText,
-          hintStyle: const TextStyle(fontSize: 14),
+          hintStyle: const TextStyle(fontSize: 14,color: Colors.white38),
           labelText: labelText,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 20),
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold,fontSize: 20,color: Colors.white),
           floatingLabelBehavior: FloatingLabelBehavior.always,
-          prefixIcon: Icon(prefixIcon),
+          prefixIcon: Icon(prefixIcon,color: Colors.white,),
         ),
       ),
     ),
@@ -45,3 +46,4 @@ Widget customElevatedButton({
     child: Text(buttonText),
   );
 }
+

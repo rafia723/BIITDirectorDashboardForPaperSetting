@@ -141,11 +141,15 @@ class _FacultyDetailsState extends State<FacultyDetails> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-          // backgroundColor: Colors.white54,
-       // elevation: 10,
-        title: const Text('Faculty Details'),
+        backgroundColor: Colors.black,
+        elevation: 10,
+        title: const Text(
+          'Faculty Details',
+          style: TextStyle(color: Colors.white),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
+          color: Colors.white,
           onPressed: () {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => const Datacell()));
@@ -158,7 +162,7 @@ class _FacultyDetailsState extends State<FacultyDetails> {
               children: [
                 Positioned.fill(
                   child: Image.asset(
-                    'assets/images/bg.png',
+                    'assets/images/datacell.png',
                     fit: BoxFit.cover,
                   ),
                 ),

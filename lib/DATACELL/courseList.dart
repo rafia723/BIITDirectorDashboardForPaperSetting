@@ -139,17 +139,22 @@ class _CourseDetailState extends State<CourseDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        
-        title: const Text('Course Details'),
+        appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 10,
+        title: const Text(
+          'Course Details',
+          style: TextStyle(color: Colors.white),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
+          color: Colors.white,
           onPressed: () {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => const Datacell()));
           },
         ),
-      ),
+         ),
       body: 
       SizedBox(
            height: double.infinity, 
@@ -157,7 +162,7 @@ class _CourseDetailState extends State<CourseDetail> {
               children: [
                 Positioned.fill(
                   child: Image.asset(
-                    'assets/images/bg.png',
+                    'assets/images/datacell.png',
                     fit: BoxFit.cover,
                   ),
                 ),Column(

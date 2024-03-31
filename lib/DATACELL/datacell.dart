@@ -17,9 +17,17 @@ class _DatacellState extends State<Datacell> {
   Widget build(BuildContext context) {
     Color customColor = const Color.fromARGB(255, 78, 223, 180);
     return Scaffold(
-        appBar: AppBar(title: const Text('Dashboard'),
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 10,
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(color: Colors.white),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
+          color: Colors.white,
           onPressed: () {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => const MainPage()));
@@ -29,7 +37,7 @@ class _DatacellState extends State<Datacell> {
           // Background Image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/bg.png', // Replace with the path to your background image
+              'assets/images/datacell.png', // Replace with the path to your background image
               fit: BoxFit.cover,
             ),
           ),
@@ -43,7 +51,7 @@ class _DatacellState extends State<Datacell> {
                   const Text(
                     'Welcome, Data Cell!', // Replace with the actual user's name
                     style:
-                        TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                        TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,color: Colors.white),
                   ),
                   const SizedBox(height: 120),
                   SingleChildScrollView(

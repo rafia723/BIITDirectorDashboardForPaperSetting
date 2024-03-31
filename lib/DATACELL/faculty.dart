@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/DATACELL/datacell.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -41,14 +42,29 @@ class _FacultyFormState extends State<FacultyForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Faculty Form')),
-      resizeToAvoidBottomInset: false,
+       resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 10,
+        title: const Text(
+          'Faculty Form',
+          style: TextStyle(color: Colors.white),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          color: Colors.white,
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const FacultyDetails()));
+          },
+        ),
+      ),
       body: Stack(
         children: [
           // Background Image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/bg.png', // Replace with the path to your background image
+              'assets/images/datacell.png', // Replace with the path to your background image
               fit: BoxFit.cover,
             ),
           ),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/DATACELL/datacell.dart';
 import 'package:biit_directors_dashbooard/DATACELL/facultyList.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:http/http.dart' as http;
@@ -48,13 +49,28 @@ Future<int> updateFaculty(int id, Map<String, dynamic> facultyData) async {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(title: const Text('Edit Faculty'),),
+        appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 10,
+        title: const Text(
+          'Edit Faculty',
+          style: TextStyle(color: Colors.white),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          color: Colors.white,
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const FacultyDetails()));
+          },
+        ),
+         ),
       body: Stack(
         children: [
           // Background Image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/bg.png', // Replace with the path to your background image
+              'assets/images/datacell.png', // Replace with the path to your background image
               fit: BoxFit.cover,
             ),
           ),
