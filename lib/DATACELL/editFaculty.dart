@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:biit_directors_dashbooard/API/api.dart';
-import 'package:biit_directors_dashbooard/DATACELL/datacell.dart';
 import 'package:biit_directors_dashbooard/DATACELL/facultyList.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:http/http.dart' as http;

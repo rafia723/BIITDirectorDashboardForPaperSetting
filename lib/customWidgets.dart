@@ -12,7 +12,7 @@ Widget customTextField({
     child: SizedBox(
       height: 60,
       child: TextFormField(
-        style: TextStyle(color: Colors.white60),
+        style: const TextStyle(color: Colors.white60),
         controller: controller,
         obscureText: obscureText,
         decoration: InputDecoration(
