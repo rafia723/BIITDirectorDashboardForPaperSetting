@@ -7,7 +7,8 @@ import 'package:http/http.dart' as http;
 
 class AssignCoursetoFaculty extends StatefulWidget {
   final String? facultyname;
-  const AssignCoursetoFaculty({Key? key, this.facultyname})
+   final int? fid;
+  const AssignCoursetoFaculty({Key? key, this.facultyname,this.fid})
       : super(key: key);
 
   @override
@@ -16,15 +17,12 @@ class AssignCoursetoFaculty extends StatefulWidget {
 
 class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
   List<dynamic> clist = [];
+  List<dynamic> unAssignedCoursesList = [];
   late List<dynamic> flist = [];
   String? selectedFacultyId;
   String? selectedFacultyText; // Nullable initially
   TextEditingController search = TextEditingController();
-  //bool isChecked = false;
   Map<String, bool> checkedCourses = {};
-
-
-
 
   Future<void> loadFaculty() async {
     try {
@@ -72,6 +70,34 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
     }
   }
 
+
+ Future<void> loadUnAssignedCourses(int? id) async {
+    try {
+      Uri uri =
+          Uri.parse('${APIHandler().apiUrl}AssignedCourses/getUnAssignedCourses/$id');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+      
+            unAssignedCoursesList = jsonDecode(response.body);
+       setState(() {
+         
+       });
+      } else {
+        throw Exception('Failed to load unassignedcourse');
+      }
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            title: Text('Error loading unassignedcourse'),
+          );
+        },
+      );
+    }
+  }
+
   Future<void> searchCourses(String query) async {
     try {
       if (query.isEmpty) {
@@ -105,12 +131,17 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
   void initState() {
     super.initState();
     loadFaculty();
-    loadCourse();
+    if(widget.fid==null&&selectedFacultyId==null){
+      loadCourse();
+    }else{
+    loadUnAssignedCourses(widget.fid ?? int.tryParse(selectedFacultyId??''));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 10,
@@ -185,6 +216,8 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                         onChanged: (String? newValue) {
                           setState(() {
                             selectedFacultyId = newValue!;
+                            loadUnAssignedCourses(int.tryParse(selectedFacultyId??''));
+                            
                           });
                         },
                       ),
@@ -225,7 +258,37 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                   ),
                 ),
                 Expanded(
-                  child: ListView.builder(
+                  child: widget.fid!=null ?  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: unAssignedCoursesList.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        color: Colors.white.withOpacity(0.8),
+                        child: ListTile(
+                          title:
+                           Text(
+                            unAssignedCoursesList[index]['c_title'],
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          leading: Checkbox(
+                            value: checkedCourses[unAssignedCoursesList[index]['c_title']] ?? false,
+                            checkColor: Colors.black,
+                           onChanged: (value)
+                           {
+                              setState(() {
+                                value=checkedCourses[unAssignedCoursesList[index]['c_title']] = value!;
+                              });
+                           }),
+                        
+                        ),
+                      );
+                    },
+                ):ListView.builder(
                     shrinkWrap: true,
                     itemCount: clist.length,
                     itemBuilder: (context, index) {
@@ -249,6 +312,7 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                            {
                               setState(() {
                                 value=checkedCourses[clist[index]['c_title']] = value!;
+
                               });
                            }),
                         
@@ -257,9 +321,6 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                     },
                   ),
                 ),
-                Center(child: customElevatedButton(onPressed: (){
-                 
-                }, buttonText: 'Save Changes'))
               ],
             ),
           )

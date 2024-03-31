@@ -103,7 +103,7 @@ class _AssignedCoursesState extends State<AssignedCourses> {
 
    void add() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) =>  AssignCoursetoFaculty(facultyname: widget.facultyname,)),
+      MaterialPageRoute(builder: (context) =>  AssignCoursetoFaculty(facultyname: widget.facultyname,fid:widget.fid)),
     );
   }
   @override
