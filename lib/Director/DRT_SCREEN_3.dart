@@ -4,38 +4,37 @@ import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/Director/director.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
-class DRTApprovedPapers extends StatefulWidget {
-  const DRTApprovedPapers({super.key});
+class DRTUploadedPapers extends StatefulWidget {
+  const DRTUploadedPapers({super.key});
 
   @override
-  State<DRTApprovedPapers> createState() => _DRTApprovedPapersState();
+  State<DRTUploadedPapers> createState() => _DRTUploadedPapersState();
 }
-List<dynamic> approved_plist = [];
+List<dynamic> uploaded_plist = [];
 TextEditingController search = TextEditingController();
-class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
+class _DRTUploadedPapersState extends State<DRTUploadedPapers> {
 
-  Future<void> loadApprovedPapers() async {
-    Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/getApprovedPapers');
+ Future<void> loadUploadedPapers() async {
+    Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/getUploadedPapers');
     var response = await http.get(uri);
     if (response.statusCode == 200) {
-      approved_plist = jsonDecode(response.body);
+      uploaded_plist = jsonDecode(response.body);
       setState(() {});
     } else {
-      throw Exception('Failed to load Approved Papers');
+      throw Exception('Failed to load Uploaded Papers');
     }
   }
 
-  Future<void> SearchApprovedPapers(String courseTitle) async {
+  Future<void> SearchUploadedPapers(String courseTitle) async {
     try {
        if (courseTitle.isNotEmpty) {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/SearchApprovedPapers?courseTitle=$courseTitle');
+      Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/SearchUploadedPapers?courseTitle=$courseTitle');
       var response = await http.get(uri);
       if (response.statusCode == 200) {
-        approved_plist = jsonDecode(response.body);
+        uploaded_plist = jsonDecode(response.body);
         setState(() {});
       } else {
-        throw Exception('Failed to load Approved Papers');
+        throw Exception('Failed to load Uploaded Papers');
       }
     } 
     }catch (e) {
@@ -43,7 +42,7 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
         context: context,
         builder: (context) {
           return const AlertDialog(
-            title: Text('Error loading Approved Papers'),
+            title: Text('Error loading Uploaded Papers'),
           );
         },
       );
@@ -53,9 +52,8 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
   @override
   void initState() {
     super.initState();
-    loadApprovedPapers();
+    loadUploadedPapers();
   }
-
 
 
   @override
@@ -66,7 +64,7 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
         backgroundColor: Colors.black,
         elevation: 10,
         title: const Text(
-          'Approved Papers',
+          'Uploaded Papers',
           style: TextStyle(color: Colors.white),
         ),
         leading: IconButton(
@@ -101,7 +99,7 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
                       style: const TextStyle(color: Colors.white),
                       controller: search,
                       onChanged: (value) {
-                        SearchApprovedPapers(value);
+                        SearchUploadedPapers(value);
                       },
                       decoration: const InputDecoration(
                         suffixIcon: Icon(
@@ -118,7 +116,7 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
                 Expanded(
                   child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: approved_plist.length,
+                    itemCount: uploaded_plist.length,
                     itemBuilder: (context, index) {
                       return Card(
                         elevation: 5,
@@ -128,7 +126,7 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
                         color: Colors.white.withOpacity(0.8),
                         child: ListTile(
                            title: Text(
-                              approved_plist[index]['c_title'],
+                              uploaded_plist[index]['c_title'],
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
@@ -136,14 +134,14 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  approved_plist[index]['c_code'],
+                                  uploaded_plist[index]['c_code'],
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),
                                 IconButton(
                                   onPressed: () {
                                   },
-                                  icon: const Icon(Icons.check),
+                                  icon: const Icon(Icons.remove_red_eye),
                                 ),
                               ],
                             ),

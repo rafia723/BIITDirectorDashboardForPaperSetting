@@ -1,4 +1,5 @@
 import 'package:biit_directors_dashbooard/Director/DRT_SCREEN_2.dart';
+import 'package:biit_directors_dashbooard/Director/DRT_SCREEN_3.dart';
 import 'package:biit_directors_dashbooard/MainPage.dart';
 import 'package:flutter/material.dart';
 
@@ -76,12 +77,12 @@ class _DirectorState extends State<Director> {
                         const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
-                            // Navigator.pushReplacement(
-                            //   context,
-                            //   MaterialPageRoute(
-                            //     builder: (context) => const CourseDetail(),
-                            //   ),
-                            // );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const DRTUploadedPapers(),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: customColor,

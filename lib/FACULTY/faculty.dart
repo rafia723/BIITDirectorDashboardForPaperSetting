@@ -69,8 +69,8 @@ class _FacultyState extends State<Faculty> {
               context,
               MaterialPageRoute(
                 builder: (context) => CourseView(
-                  courseName: course['CourseTitle'] ?? 'No Title Available',
-                  ccode: course['CourseCode'] ?? 'No Title Available',
+                  courseName: course['c_title'] ?? 'No Title Available',
+                  ccode: course['c_code'] ?? 'No Title Available',
                   fname: widget.facultyname,
                   fid: widget.fid,
                 ),
@@ -86,13 +86,13 @@ class _FacultyState extends State<Faculty> {
             ),
           ),
           child: Text(
-            course['CourseTitle'] ?? 'No Title Available',
+            course['c_title'] ?? 'No Title Available',
             style: const TextStyle(color: Colors.black),
             textAlign: TextAlign.center,
           ),
         ),
         Text(
-          course['CourseCode'] ?? 'No Title Available',
+          course['c_code'] ?? 'No Title Available',
           style: const TextStyle(color: Colors.white),
           textAlign: TextAlign.center,
         ),
