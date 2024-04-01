@@ -1,13 +1,19 @@
 import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
 import 'package:flutter/material.dart';
 
-
 class CourseView extends StatefulWidget {
   final String courseName;
   final String ccode;
-   final String fname;
+  final String fname;
   final int fid;
-  const CourseView({Key? key, required this.courseName, required this.ccode,required this.fname,required this.fid})
+  final String role;
+  const CourseView(
+      {Key? key,
+      required this.courseName,
+      required this.ccode,
+      required this.fname,
+      required this.fid,
+      required this.role})
       : super(key: key);
 
   @override
@@ -17,26 +23,26 @@ class CourseView extends StatefulWidget {
 class _CourseViewState extends State<CourseView> {
   Color customColor = const Color.fromARGB(255, 78, 223, 180);
 
-Widget customButton({
-  required String text,
-  required VoidCallback onPressed,
-}) {
-  return ElevatedButton(
-    onPressed: onPressed,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: customColor,
-      minimumSize: const Size(250, 60),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0),
-        side: const BorderSide(color: Colors.black),
+  Widget customButton({
+    required String text,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: customColor,
+        minimumSize: const Size(250, 60),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+          side: const BorderSide(color: Colors.black),
+        ),
       ),
-    ),
-    child: Text(
-      text,
-      style: const TextStyle(color: Colors.black),
-    ),
-  );
-}
+      child: Text(
+        text,
+        style: const TextStyle(color: Colors.black),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +51,8 @@ Widget customButton({
       appBar: AppBar(
         title: const Text(
           'Settings',
-          style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold,color: Colors.white),
+          style: TextStyle(
+              fontSize: 21.0, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.transparent,
         elevation: 10,
@@ -55,7 +62,8 @@ Widget customButton({
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) =>  Faculty(facultyname: widget.fname,fid: widget.fid),
+                builder: (context) =>
+                    Faculty(facultyname: widget.fname, fid: widget.fid),
               ),
             );
           },
@@ -82,36 +90,45 @@ Widget customButton({
                 const SizedBox(height: 100),
                 Text(
                   widget.courseName,
-                  style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,color: Colors.white),
+                  style: const TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
                 Text(
                   'Course Code: ${widget.ccode}',
-                  style: const TextStyle(fontSize: 16.0,color: Colors.white),
+                  style: const TextStyle(fontSize: 16.0, color: Colors.white),
                 ),
               ],
             ),
           ),
-           Center(
-             child: SingleChildScrollView(
-               child: Column(
-                 mainAxisAlignment: MainAxisAlignment.center,
-                 children: [
-                   const SizedBox(height: 50),
-                  customButton(text: 'Paper Settings', onPressed: (){}),
-                   const SizedBox(height: 10),
-                  customButton(text: 'View Topics', onPressed: (){}),
-                     const SizedBox(height: 10),
-                  customButton(text: 'View Clos', onPressed: (){}),
-                    const SizedBox(height: 10),
-                  customButton(text: 'Manage Paper', onPressed: (){}),
-                    const SizedBox(height: 10),
-                  customButton(text: 'Manage Topics', onPressed: (){}),
-                    const SizedBox(height: 10),
-                   customButton(text: 'Manage Clos', onPressed: (){})
-                 ],
-               ),
-             ),
-           ),
+          Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 50),
+                  customButton(text: 'Paper Settings', onPressed: () {}),
+                  const SizedBox(height: 10),
+                  customButton(text: 'View Topics', onPressed: () {}),
+                  const SizedBox(height: 10),
+                  customButton(text: 'View Clos', onPressed: () {}),
+                  Column(
+                    children: <Widget>[
+                      if (widget.role == 'Senior') ...[
+                        const SizedBox(height: 10),
+                        customButton(text: 'Manage Paper', onPressed: () {}),
+                        const SizedBox(height: 10),
+                        customButton(text: 'Manage Topics', onPressed: () {}),
+                        const SizedBox(height: 10),
+                        customButton(text: 'Manage Clos', onPressed: () {})
+                      ]
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

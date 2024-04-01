@@ -73,6 +73,7 @@ class _FacultyState extends State<Faculty> {
                   ccode: course['c_code'] ?? 'No Title Available',
                   fname: widget.facultyname,
                   fid: widget.fid,
+                  role: course['role'],
                 ),
               ),
             );
