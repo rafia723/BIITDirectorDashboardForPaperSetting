@@ -1,5 +1,5 @@
-import 'package:biit_directors_dashbooard/Director/DRT_SCREEN_2.dart';
-import 'package:biit_directors_dashbooard/Director/DRT_SCREEN_3.dart';
+import 'package:biit_directors_dashbooard/Director/ApprovedPapersList.dart';
+import 'package:biit_directors_dashbooard/Director/UploadedPapersList.dart';
 import 'package:biit_directors_dashbooard/MainPage.dart';
 import 'package:flutter/material.dart';
 

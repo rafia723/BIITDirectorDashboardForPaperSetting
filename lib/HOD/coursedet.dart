@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:biit_directors_dashbooard/HOD/HOD_SCREEN_7.dart';
+import 'package:biit_directors_dashbooard/HOD/CourseAssignedToFacultyMembers.dart';
 import 'package:biit_directors_dashbooard/HOD/hod.dart';
 import 'package:http/http.dart' as http;
 import 'package:biit_directors_dashbooard/API/api.dart';

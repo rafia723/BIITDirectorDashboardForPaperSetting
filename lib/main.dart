@@ -13,10 +13,16 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+        theme: ThemeData(
+        // Define your custom focus color here
+        primaryColor: Colors.black, // Example: Blue color
+        inputDecorationTheme: const InputDecorationTheme(
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.black), // Set your custom color here
+          ),
+          floatingLabelStyle: TextStyle(color: Colors.white)
+        ),
+        ),
       home:  const SplashScreen(),
     );
   }

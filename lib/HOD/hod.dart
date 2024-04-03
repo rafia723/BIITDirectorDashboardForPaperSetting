@@ -1,6 +1,6 @@
-import 'package:biit_directors_dashbooard/HOD/HOD_SCREEN_11.dart';
-import 'package:biit_directors_dashbooard/HOD/HOD_SCREEN_4.dart';
-import 'package:biit_directors_dashbooard/HOD/HOD_SCREEN_9.dart';
+import 'package:biit_directors_dashbooard/HOD/AssignRole.dart';
+import 'package:biit_directors_dashbooard/HOD/AssignCourseToFaculty.dart';
+import 'package:biit_directors_dashbooard/HOD/ClosGridView.dart';
 import 'package:biit_directors_dashbooard/HOD/coursedet.dart';
 import 'package:biit_directors_dashbooard/HOD/facultydet.dart';
 import 'package:biit_directors_dashbooard/MainPage.dart';

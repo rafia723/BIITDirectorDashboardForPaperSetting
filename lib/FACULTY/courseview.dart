@@ -1,4 +1,5 @@
 import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
+import 'package:biit_directors_dashbooard/FACULTY/manageclos.dart';
 import 'package:flutter/material.dart';
 
 class CourseView extends StatefulWidget {
@@ -112,7 +113,10 @@ class _CourseViewState extends State<CourseView> {
                   const SizedBox(height: 10),
                   customButton(text: 'View Topics', onPressed: () {}),
                   const SizedBox(height: 10),
-                  customButton(text: 'View Clos', onPressed: () {}),
+                  customButton(
+                      text: 'View Clos',
+                      onPressed: () {
+ }),
                   Column(
                     children: <Widget>[
                       if (widget.role == 'Senior') ...[
@@ -121,7 +125,14 @@ class _CourseViewState extends State<CourseView> {
                         const SizedBox(height: 10),
                         customButton(text: 'Manage Topics', onPressed: () {}),
                         const SizedBox(height: 10),
-                        customButton(text: 'Manage Clos', onPressed: () {})
+                        customButton(text: 'Manage Clos', onPressed: () {
+                           Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ManageClos(),
+                          ),
+                        );
+                        })
                       ]
                     ],
                   )

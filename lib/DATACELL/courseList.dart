@@ -95,6 +95,7 @@ class _CourseDetailState extends State<CourseDetail> {
       );
     }
   }
+ 
 
   void editCourseRecords(int cid, dynamic data) async {
     await Navigator.push(
@@ -104,8 +105,10 @@ class _CourseDetailState extends State<CourseDetail> {
       ),
     );
     loadCourse();
+  
   }
 
+   
   Future<void> loadCourse() async {
     try {
       Uri uri = Uri.parse('${APIHandler().apiUrl}Course/getCourse');
