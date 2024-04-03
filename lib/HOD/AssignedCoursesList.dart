@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:biit_directors_dashbooard/HOD/AssignCourseToFaculty.dart';
 import 'package:biit_directors_dashbooard/HOD/facultydet.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:flutter/material.dart';
@@ -74,7 +75,7 @@ class _AssignedCoursesState extends State<AssignedCourses> {
             );
           },
         );
-        Future.delayed(const Duration(seconds: 1), () {
+        Future.delayed(const Duration(milliseconds: 500), () {
 
           Navigator.of(context).pop();
         });
@@ -158,7 +159,11 @@ class _AssignedCoursesState extends State<AssignedCourses> {
                             title: Text(aclist[index]['c_title']),
                             subtitle: Text(aclist[index]['c_code']),
                             trailing: IconButton(onPressed: (){
+                            
+                            showConfirmationDialog(context, title: 'Confirmation', content: 'Are you sure you want to delete the selected courses from ${widget.facultyname}',
+                             onConfirm: (){
                               deleteAssignedCourses(aclist[index]['ac_id']);
+                             });
                             }, icon: const Icon(Icons.delete)),
                           )
                         );

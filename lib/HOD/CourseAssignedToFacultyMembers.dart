@@ -81,7 +81,7 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
             );
           },
         );
-        Future.delayed(const Duration(seconds: 1), () {
+        Future.delayed(const Duration(milliseconds: 500), () {
           Navigator.of(context).pop();
         });
       } else {
@@ -184,8 +184,12 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
                             title: Text(atlist[index]['f_name']),
                             trailing: IconButton(
                                 onPressed: () {
-                                  deleteAssignedToCourses(
-                                      atlist[index]['ac_id']);
+                                  
+                                  showConfirmationDialog(context, title: 'Confirmation', content: 'Are you sure you want to unassign from ${atlist[index]['f_name']}', 
+                                  onConfirm:
+                                   (){
+                              deleteAssignedToCourses(atlist[index]['ac_id']);
+                                   });
                                 },
                                 icon: const Icon(Icons.delete)),
                           ));
