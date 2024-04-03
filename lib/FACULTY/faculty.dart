@@ -74,6 +74,7 @@ class _FacultyState extends State<Faculty> {
                   fname: widget.facultyname,
                   fid: widget.fid,
                   role: course['role'],
+                  cid: course['c_id'],
                 ),
               ),
             );

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:biit_directors_dashbooard/HOD/CloCheck.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:biit_directors_dashbooard/API/api.dart';
@@ -192,7 +193,15 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
               ),
               Center(
                   child: customElevatedButton(
-                      onPressed: () {}, buttonText: 'CLOs'))
+                      onPressed: () {
+                         Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>  
+                                  CloCheckingScreen(courseTitle: widget.courseTitle,ccode: widget.ccode,cid:widget.cid),
+                                ),
+                              );
+                      }, buttonText: 'CLOs'))
             ],
           ),
         ),

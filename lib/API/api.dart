@@ -34,6 +34,20 @@ class APIHandler{
   }
 }
 
+ Future<int> updateCloStatus(int id, String newStatus) async {
+   String status = newStatus == 'approved' ? 'disapproved' : 'approved';
+    Uri url = Uri.parse('${APIHandler().apiUrl}Clo/updateCloStatus/$id');
+    try {
+      var response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"status": status}),
+      );
+     return response.statusCode;
+      } catch (error) {
+    throw Exception('Error: $error');
+  }
+ }
   
 
 

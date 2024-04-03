@@ -1,10 +1,12 @@
 import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
-import 'package:biit_directors_dashbooard/FACULTY/manageclos.dart';
+import 'package:biit_directors_dashbooard/FACULTY/manageClos.dart';
+import 'package:biit_directors_dashbooard/FACULTY/viewClos.dart';
 import 'package:flutter/material.dart';
 
 class CourseView extends StatefulWidget {
   final String courseName;
   final String ccode;
+  final int cid;
   final String fname;
   final int fid;
   final String role;
@@ -12,6 +14,7 @@ class CourseView extends StatefulWidget {
       {Key? key,
       required this.courseName,
       required this.ccode,
+      required this.cid,
       required this.fname,
       required this.fid,
       required this.role})
@@ -113,10 +116,14 @@ class _CourseViewState extends State<CourseView> {
                   const SizedBox(height: 10),
                   customButton(text: 'View Topics', onPressed: () {}),
                   const SizedBox(height: 10),
-                  customButton(
-                      text: 'View Clos',
-                      onPressed: () {
- }),
+                  customButton(text: 'View Clos', onPressed: () {
+                     Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>  ViewClos(courseName: widget.courseName, ccode: widget.ccode, cid: widget.cid),
+                                ),
+                              );
+                  }),
                   Column(
                     children: <Widget>[
                       if (widget.role == 'Senior') ...[
@@ -125,14 +132,16 @@ class _CourseViewState extends State<CourseView> {
                         const SizedBox(height: 10),
                         customButton(text: 'Manage Topics', onPressed: () {}),
                         const SizedBox(height: 10),
-                        customButton(text: 'Manage Clos', onPressed: () {
-                           Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ManageClos(),
-                          ),
-                        );
-                        })
+                        customButton(
+                            text: 'Manage Clos',
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>  ManageClos(coursename: widget.courseName,ccode: widget.ccode,cid:widget.cid),
+                                ),
+                              );
+                            })
                       ]
                     ],
                   )

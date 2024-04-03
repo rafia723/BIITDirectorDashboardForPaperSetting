@@ -221,7 +221,8 @@ class _FacultyDetailsState extends State<FacultyDetails> {
                                       updateStatus(
                                           flist[index]['f_id'], newValue);
                                     });
-                                  })
+                                  }),
+                                
                             ],
                           ),
                         ),

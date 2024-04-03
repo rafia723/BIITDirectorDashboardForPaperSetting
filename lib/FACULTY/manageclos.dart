@@ -6,7 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ManageClos extends StatefulWidget {
-  const ManageClos({super.key});
+   final String coursename;
+final String ccode;
+final int? cid;
+ const ManageClos(
+      {Key? key,
+      required this.coursename,
+      required this.ccode,
+      required this.cid,})
+      : super(key: key);
 
   @override
   State<ManageClos> createState() => _ManageClosState();
@@ -19,28 +27,29 @@ class _ManageClosState extends State<ManageClos> {
   int count = 1;
   String? selectedCourse; // Nullable initially
   int? selectedCourseId;
+  String? selectedCourseCode;
   TextEditingController desc = TextEditingController();
   bool isUpdateMode = false;
   int? selectedCloID;
 
-  Future<void> loadCourse() async {
+  Future<void> loadCoursesWithSeniorRole() async {
     try {
       Uri uri =
-          Uri.parse('${APIHandler().apiUrl}Course/getCourseWithEnabledStatus');
+          Uri.parse('${APIHandler().apiUrl}Course/getCoursesofSeniorTeacher');
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {
         clist = jsonDecode(response.body);
         setState(() {});
       } else {
-        throw Exception('Failed to load course');
+        throw Exception('Failed to load courses with senior role');
       }
     } catch (e) {
       showDialog(
         context: context,
         builder: (context) {
           return const AlertDialog(
-            title: Text('Error loading course'),
+            title: Text('Error loading courses with senior role'),
           );
         },
       );
@@ -73,7 +82,10 @@ class _ManageClosState extends State<ManageClos> {
   @override
   void initState() {
     super.initState();
-    loadCourse();
+    loadCoursesWithSeniorRole();
+    selectedCourseId=widget.cid;
+    loadClo(widget.cid!);
+    
   }
 
   @override
@@ -131,10 +143,10 @@ class _ManageClosState extends State<ManageClos> {
                               5), // Optional: Add border radius
                         ),
                         child: DropdownButton<String>(
-                          hint: const Text(' Select Course '),
+                          hint:  Text(widget.coursename ?? ' Select Course'),
                           isExpanded: true,
                           elevation: 9,
-                          value: selectedCourse,
+                          value: selectedCourseCode,
                           items: clist.map((e) {
                             return DropdownMenuItem<String>(
                               value: e['c_code'],
@@ -153,7 +165,7 @@ class _ManageClosState extends State<ManageClos> {
                           }).toList(),
                           onChanged: (String? newValue) {
                             setState(() {
-                              selectedCourse = newValue!;
+                              selectedCourseCode = newValue!;
                               loadClo(selectedCourseId!);
                             });
                           },
@@ -275,14 +287,15 @@ class _ManageClosState extends State<ManageClos> {
                         itemCount: clolist.length,
                         itemBuilder: (context, index) {
                           return Card(
-                              elevation: 5,
+                             // elevation: 5,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15.0),
                               ),
-                              color: Colors.white.withOpacity(0.8),
+                            //  color: Colors.white.withOpacity(0.8),
+                             color: Colors.transparent,
                               child: ListTile(
-                                  title: Text('Clo ${count + index}'),
-                                  subtitle: Text(clolist[index]['clo_text']),
+                                  title: Text('Clo ${count + index}', style: const TextStyle(color: Colors.white),),
+                                  subtitle: Text(clolist[index]['clo_text'], style: const TextStyle(color: Colors.white),),
                                   trailing: IconButton(
                                       onPressed: () {
                                         // Find the index of the item with matching c_id
@@ -309,7 +322,7 @@ class _ManageClosState extends State<ManageClos> {
                                         // Set CLO text to desc TextFormField
                                         desc.text = clolist[index]['clo_text'];
                                       },
-                                      icon: const Icon(Icons.edit))));
+                                      icon: const Icon(Icons.edit,color: Colors.white))));
                         }),
                   ),
                 ],
