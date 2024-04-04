@@ -1,5 +1,6 @@
 import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
 import 'package:biit_directors_dashbooard/FACULTY/manageClos.dart';
+import 'package:biit_directors_dashbooard/FACULTY/manageTopics.dart';
 import 'package:biit_directors_dashbooard/FACULTY/viewClos.dart';
 import 'package:flutter/material.dart';
 
@@ -130,7 +131,14 @@ class _CourseViewState extends State<CourseView> {
                         const SizedBox(height: 10),
                         customButton(text: 'Manage Paper', onPressed: () {}),
                         const SizedBox(height: 10),
-                        customButton(text: 'Manage Topics', onPressed: () {}),
+                        customButton(text: 'Manage Topics', onPressed: () {
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>  ManageTopics(coursename: widget.courseName,ccode: widget.ccode,cid:widget.cid),
+                                ),
+                              );
+                        }),
                         const SizedBox(height: 10),
                         customButton(
                             text: 'Manage Clos',

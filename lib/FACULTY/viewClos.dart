@@ -22,7 +22,6 @@ class ViewClos extends StatefulWidget {
 
 class _ViewClosState extends State<ViewClos> {
   List<dynamic> clolist = [];
-  int count=1;
   Future<void> loadClo(int cid) async {
     try {
       Uri uri = Uri.parse('${APIHandler().apiUrl}Clo/getCloWithApprovedStatus/$cid');
@@ -124,7 +123,7 @@ class _ViewClosState extends State<ViewClos> {
                         color: Colors.transparent,
                         child: ListTile(
                           title: Text(
-                            'Clo ${count+index}',
+                            'Clo ${index+1}',
                             style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
                           ),
                           subtitle: Text(clolist[index]['clo_text'],style: const TextStyle(color: Colors.white),),

@@ -24,7 +24,6 @@ class _ManageClosState extends State<ManageClos> {
   Color customColor = const Color.fromARGB(255, 78, 223, 180);
   List<dynamic> clist = [];
   List<dynamic> clolist = [];
-  int count = 1;
   String? selectedCourse; // Nullable initially
   int? selectedCourseId;
   String? selectedCourseCode;
@@ -188,8 +187,9 @@ class _ManageClosState extends State<ManageClos> {
                         focusColor: Colors.black,
                         fillColor: Colors.white70,
                         filled: true,
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                          borderRadius: BorderRadius.all(Radius.circular(20.0)),
                         ),
                       ),
                       controller: desc,
@@ -205,7 +205,7 @@ class _ManageClosState extends State<ManageClos> {
                             onPressed: () async {
                               if (isUpdateMode == false) {
                                 int code = await APIHandler().addClo(
-                                    desc.text, selectedCourseId!, 'enabled');
+                                    desc.text, selectedCourseId!, 'disapproved');
                                 if (code == 200) {
                                   showDialog(
                                     context: context,
@@ -294,7 +294,7 @@ class _ManageClosState extends State<ManageClos> {
                             //  color: Colors.white.withOpacity(0.8),
                              color: Colors.transparent,
                               child: ListTile(
-                                  title: Text('Clo ${count + index}', style: const TextStyle(color: Colors.white),),
+                                  title: Text('Clo ${index+1}', style: const TextStyle(color: Colors.white),),
                                   subtitle: Text(clolist[index]['clo_text'], style: const TextStyle(color: Colors.white),),
                                   trailing: IconButton(
                                       onPressed: () {

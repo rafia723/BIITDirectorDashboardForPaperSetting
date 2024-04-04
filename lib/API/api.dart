@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 class APIHandler{
   String apiUrl='http://192.168.10.12:3000/';
-
+ ///////////////////////////////CLO///////////////////////////////////////
   Future<int> addClo(
       String cloText, int cId,String status) async {
     String url = "${apiUrl}Clo/addClo";
@@ -48,6 +48,22 @@ class APIHandler{
     throw Exception('Error: $error');
   }
  }
+/////////////////////////////////////Topic///////////////////////////////////////////////
+
+ Future<int> addTopic(
+      String t_name, int cId) async {
+    String url = "${apiUrl}Topic/addTopic";
+    var topicobj = {
+      't_name': t_name,
+      'c_id': cId
+    };
+    var json = jsonEncode(topicobj);
+    Uri uri = Uri.parse(url);
+    var response = await http.post(uri,
+        body: json,
+        headers: {"Content-Type": "application/json; charset=UTF-8"});
+    return response.statusCode;
+  }
   
 
 
