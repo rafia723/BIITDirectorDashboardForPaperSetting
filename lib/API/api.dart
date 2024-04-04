@@ -51,10 +51,10 @@ class APIHandler{
 /////////////////////////////////////Topic///////////////////////////////////////////////
 
  Future<int> addTopic(
-      String t_name, int cId) async {
+      String tName, int cId) async {
     String url = "${apiUrl}Topic/addTopic";
     var topicobj = {
-      't_name': t_name,
+      't_name': tName,
       'c_id': cId
     };
     var json = jsonEncode(topicobj);

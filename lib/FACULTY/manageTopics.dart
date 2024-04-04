@@ -1,9 +1,7 @@
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
-import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
 class ManageTopics extends StatefulWidget {
@@ -238,7 +236,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                                   },
                                   child: Text(
                                     'CLO ${clolist.indexOf(clo) + 1}',
-                                    style: TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                 ),
                                 Checkbox(
