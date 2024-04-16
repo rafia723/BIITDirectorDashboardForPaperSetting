@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.12:3000/';
+  String apiUrl='http://192.168.10.7:3000/';
  ///////////////////////////////CLO///////////////////////////////////////
   Future<int> addClo(
       String cloText, int cId,String status) async {
@@ -96,7 +96,7 @@ return response.statusCode;
   }
 
  Future<int> updateTopic(int tid, Map<String, dynamic> tData) async {
-  Uri url = Uri.parse('${APIHandler().apiUrl}Topic/editTopic/$tid');
+  Uri url = Uri.parse('${apiUrl}Topic/editTopic/$tid');
   try {
     var topicJson = jsonEncode(tData);
     var response = await http.put(
@@ -110,5 +110,38 @@ return response.statusCode;
   }
 }
 
+
+Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${apiUrl}Clo_Topic_Mapping/getClosMappedWithTopic/$tid');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+       
+      } else {
+        throw Exception('Error....');
+      }
+    } catch (e) {
+      throw Exception('Failed to load clos mapped with topic');
+    }
+    return list;
+  }
+
+   Future<int> deleteCloTopicMapping(int topicId, int cloId) async {
+    try {
+      Uri url = Uri.parse('${apiUrl}Clo_Topic_Mapping/deleteMapping/$topicId/$cloId');
+      var response = await http.delete(
+        url,
+        headers: {"Content-Type": "application/json"},
+      );
+
+      return response.statusCode;
+    } catch (error) {
+      throw Exception('Error: $error');
+    }
+  }
+  
 }
 
