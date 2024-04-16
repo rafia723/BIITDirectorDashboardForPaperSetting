@@ -50,22 +50,52 @@ class APIHandler{
  }
 /////////////////////////////////////Topic///////////////////////////////////////////////
 
- Future<int> addTopic(
-      String tName, int cId) async {
-    String url = "${apiUrl}Topic/addTopic";
-    var topicobj = {
-      't_name': tName,
-      'c_id': cId
-    };
-    var json = jsonEncode(topicobj);
-    Uri uri = Uri.parse(url);
-    var response = await http.post(uri,
-        body: json,
-        headers: {"Content-Type": "application/json; charset=UTF-8"});
-    return response.statusCode;
-  }
+Future<int> addTopic(String tName, int cId) async {
+  String url = "${apiUrl}Topic/addTopic";
+  var topicobj = {
+    't_name': tName,
+    'c_id': cId
+  };
+  var json = jsonEncode(topicobj);
+  Uri uri = Uri.parse(url);
+  var response = await http.post(uri,
+      body: json,
+      headers: {"Content-Type": "application/json; charset=UTF-8"});
   
+  if (response.statusCode == 200) {
+    Map<String, dynamic> responseData = jsonDecode(response.body);
+    int topicId = responseData['topicId'] as int;
+    return topicId;
+  } else {
+    return -1; 
+  }
+}
+Future<int> addMappingsofCloAndTopic(int topicId, List<dynamic> selectedCloIds) async {
+    final response = await http.post(
+      Uri.parse("${apiUrl}Clo_Topic_Mapping/addMappingsofCloAndTopic"),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'tid': topicId,
+        'cloIds': selectedCloIds,
+      }),
+    );
+return response.statusCode;
+}
+
+  Future<int> deleteTopic(int id) async {
+    try{
+      Uri url = Uri.parse(
+          '${APIHandler().apiUrl}Topic/deleteTopic/$id');
+      var response = await http.delete(url);
+     return response.statusCode;
+  } catch (error) {
+    throw Exception('Error: $error');
+  }
 
 
+
+  }
 }
 

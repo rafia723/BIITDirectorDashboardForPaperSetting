@@ -304,18 +304,14 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                                       fontWeight: FontWeight.bold),
                                 ),
                                 leading: Checkbox(
-                                    value: unAssignedCoursesList[index]
-                                            ['c_title'] ==
-                                        true,
+                                    value: unAssignedCoursesList[index]['c_title'] == true,
                                     checkColor: Colors.black,
                                     onChanged: (newValue) async {
                                     setState(() {
-                                      checkedCourseId = unAssignedCoursesList[index]['c_id']
-                                          .toString(); // Assuming c_id is a string
-                                    });
+                                      checkedCourseId = unAssignedCoursesList[index]['c_id'].toString(); // Assuming c_id is a string
+                                      });
                                     if (checkedCourseId != null &&
-                                        newValue != null &&
-                                        newValue) {
+                                        newValue != null && newValue) {
                                       try {
                                         await assignCourse(
                                             int.parse(checkedCourseId ?? ''),

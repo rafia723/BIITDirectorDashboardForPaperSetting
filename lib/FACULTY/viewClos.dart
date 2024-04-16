@@ -23,20 +23,24 @@ class ViewClos extends StatefulWidget {
 class _ViewClosState extends State<ViewClos> {
   List<dynamic> clolist = [];
   Future<void> loadClo(int cid) async {
+    BuildContext? contextt = context; // Store the context in a local variable
     try {
       Uri uri = Uri.parse('${APIHandler().apiUrl}Clo/getCloWithApprovedStatus/$cid');
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {
         clolist = jsonDecode(response.body);
+         if (contextt.mounted) {
         setState(() {});
+         }
       } else {
         throw Exception('Failed to load clos');
       }
     } catch (e) {
       showDialog(
-        context: context,
-        builder: (context) {
+        // ignore: use_build_context_synchronously
+        context: contextt,
+        builder: (contextt) {
           return const AlertDialog(
             title: Text('Error loading clos'),
           );

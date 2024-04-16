@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -23,11 +24,13 @@ class _ManageTopicsState extends State<ManageTopics> {
   Color customColor = const Color.fromARGB(255, 78, 223, 180);
   List<dynamic> clist = [];
   List<dynamic> clolist = [];
+  List<dynamic> topiclist = [];
   String? selectedCourse; // Nullable initially
   int? selectedCourseId;
   String? selectedCourseCode;
   TextEditingController topicController = TextEditingController();
   bool isUpdateMode = false;
+  List<bool> cloCheckBoxes = [];
 
   Future<void> loadCoursesWithSeniorRole() async {
     try {
@@ -60,6 +63,8 @@ class _ManageTopicsState extends State<ManageTopics> {
 
       if (response.statusCode == 200) {
         clolist = jsonDecode(response.body);
+        // Initialize cloCheckBoxes with false values
+        cloCheckBoxes = List<bool>.filled(clolist.length, false);
         setState(() {});
       } else {
         throw Exception('Failed to load clos');
@@ -76,12 +81,123 @@ class _ManageTopicsState extends State<ManageTopics> {
     }
   }
 
+    Future<void> loadTopic(int cid) async {
+    try {
+      Uri uri = Uri.parse('${APIHandler().apiUrl}Topic/getTopic/$cid');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        topiclist = jsonDecode(response.body);
+        setState(() {});
+      } else {
+        throw Exception('Failed to load topics');
+      }
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            title: Text('Error loading topics'),
+          );
+        },
+      );
+    }
+  }
+
+
   @override
   void initState() {
     super.initState();
     loadCoursesWithSeniorRole();
     selectedCourseId = widget.cid;
     loadClo(widget.cid!);
+    loadTopic(widget.cid!);
+  }
+
+  Future<void> addTopicAndMapping() async {
+    try {
+      // Collect selected CLOs
+      List<dynamic> selectedCloIds = [];
+      for (int i = 0; i < clolist.length; i++) {
+        if (cloCheckBoxes[i]) {
+          selectedCloIds.add(clolist[i]['clo_id']);
+        }
+      }
+      // Validate if at least one CLO is selected
+      if (selectedCloIds.isEmpty) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return const AlertDialog(
+              title: Text('Error'),
+              content: Text('Please select at least one CLO.'),
+            );
+          },
+        );
+        return;
+      }
+      // Get the topic text from the text field
+      String topicText = topicController.text.trim();
+
+      // Validate if topic text is not empty
+      if (topicText.isEmpty) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return const AlertDialog(
+              title: Text('Error'),
+              content: Text('Please enter a topic.'),
+            );
+          },
+        );
+        return;
+      }
+      int topicId = await APIHandler().addTopic(topicText, selectedCourseId!);
+      int code = await APIHandler()
+          .addMappingsofCloAndTopic(topicId, selectedCloIds);
+      if (code == 200) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return const AlertDialog(
+              title: Text('Success'),
+              content: Text('Topic and clo mapping added successfully.'),
+            );
+          },
+        );
+           // Clear the text field
+    topicController.clear();
+
+    // Clear the checkbox selections
+    setState(() {
+      cloCheckBoxes = List<bool>.filled(clolist.length, false);
+      loadTopic(selectedCourseId!);
+    });
+      }else{
+        // Mapping failed, revert addition of topic
+        await APIHandler().deleteTopic(topicId);
+         showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            title: Text('Error'),
+            content: Text('Failed to add topic mappings. Please try again later.'),
+          );
+        }
+         );
+      }
+        } catch (e) {
+      // Handle errors
+      showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            title: Text('Error'),
+            content: Text('Failed to add topic. Please try again later.'),
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -151,6 +267,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                                   //  selectedCourse = e['c_title'];
                                   selectedCourseId = e['c_id'];
                                 });
+                                loadClo(selectedCourseId!);
                               },
                               child: Text(
                                 e['c_title'],
@@ -163,6 +280,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                             setState(() {
                               selectedCourseCode = newValue!;
                               loadClo(selectedCourseId!);
+                               loadTopic(selectedCourseId!);
                             });
                           },
                         ),
@@ -208,15 +326,16 @@ class _ManageTopicsState extends State<ManageTopics> {
                       shrinkWrap: true,
                       itemCount: (clolist.length / 2)
                           .ceil(), // Calculate the number of rows needed
-                      itemBuilder: (context, index) {
-                        final start = index * 2;
-                        final end = (index * 2) + 2;
+                      itemBuilder: (context, rowIndex) {
+                        final start = rowIndex * 2;
+                        final end = (rowIndex * 2) + 2;
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: clolist
                               .sublist(start,
                                   end < clolist.length ? end : clolist.length)
                               .map((clo) {
+                            final cloIndex = clolist.indexOf(clo);
                             return Row(
                               children: [
                                 TextButton(
@@ -226,25 +345,31 @@ class _ManageTopicsState extends State<ManageTopics> {
                                       context: context,
                                       builder: (context) {
                                         return AlertDialog(
-                                          title: Text(
-                                              'CLO ${clolist.indexOf(clo) + 1}'),
+                                          title: Text('CLO ${cloIndex + 1}'),
                                           content: Text(clo['clo_text']),
-                                  
+                                          actions: [
+                                            IconButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                icon: const Icon(Icons.check))
+                                          ],
                                         );
                                       },
                                     );
                                   },
                                   child: Text(
-                                    'CLO ${clolist.indexOf(clo) + 1}',
+                                    'CLO ${cloIndex + 1}',
                                     style: const TextStyle(color: Colors.white),
                                   ),
                                 ),
                                 Checkbox(
                                   checkColor: Colors.white,
-                                  value:
-                                      false, // Set the initial value as per your requirement
+                                  value: cloCheckBoxes[cloIndex],
                                   onChanged: (bool? value) {
-                                    // Handle checkbox value change if needed
+                                    setState(() {
+                                      cloCheckBoxes[cloIndex] = value ?? false;
+                                    });
                                   },
                                 ),
                               ],
@@ -253,6 +378,40 @@ class _ManageTopicsState extends State<ManageTopics> {
                         );
                       },
                     ),
+                  ),
+                  Center(
+                      child: customElevatedButton(
+                          onPressed: addTopicAndMapping,
+                          buttonText: 'Add Topic')),
+                             Expanded(
+                    child: ListView.builder(
+                        itemCount: topiclist.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                             // elevation: 5,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15.0),
+                              ),
+                              color: Colors.white.withOpacity(0.8),
+                            // color: Colors.transparent,
+                              child: ListTile(
+                                  title: Text(topiclist[index]['t_name'],),
+                                  trailing: Row(
+                                     mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                          onPressed: () {
+                                            // Find the index of the item with matching c_id
+                                          },
+                                          icon: const Icon(Icons.edit,)),
+                                            IconButton(
+                                          onPressed: () {
+                                            // Find the index of the item with matching c_id
+                                          },
+                                          icon: const Icon(Icons.plus_one)),
+                                    ],
+                                  )));
+                        }),
                   ),
                 ],
               )),
