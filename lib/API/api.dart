@@ -93,9 +93,22 @@ return response.statusCode;
   } catch (error) {
     throw Exception('Error: $error');
   }
-
-
-
   }
+
+ Future<int> updateTopic(int tid, Map<String, dynamic> tData) async {
+  Uri url = Uri.parse('${APIHandler().apiUrl}Topic/editTopic/$tid');
+  try {
+    var topicJson = jsonEncode(tData);
+    var response = await http.put(
+      url,
+      body: topicJson,
+      headers: {"Content-Type": "application/json"},
+    );
+      return response.statusCode;
+  } catch (error) {
+    throw Exception('Error: $error');
+  }
+}
+
 }
 

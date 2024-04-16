@@ -31,6 +31,7 @@ class _ManageTopicsState extends State<ManageTopics> {
   TextEditingController topicController = TextEditingController();
   bool isUpdateMode = false;
   List<bool> cloCheckBoxes = [];
+   int? selectedTopicID;
 
   Future<void> loadCoursesWithSeniorRole() async {
     try {
@@ -381,8 +382,53 @@ class _ManageTopicsState extends State<ManageTopics> {
                   ),
                   Center(
                       child: customElevatedButton(
-                          onPressed: addTopicAndMapping,
-                          buttonText: 'Add Topic')),
+                          onPressed: ()async {
+                                if (isUpdateMode == false) {
+                            addTopicAndMapping;
+                                }
+                                else{
+                                   int tid =selectedTopicID!; 
+                                Map<String, dynamic> tData = {
+                                  "t_name": topicController.text,
+                                  "c_id": selectedCourseId,
+                                };
+                                     int code = await APIHandler()
+                                    .updateTopic(tid, tData);
+                                if (code == 200) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      Future.delayed(const Duration(seconds: 2),
+                                          () {
+                                        Navigator.of(context)
+                                            .pop(); // Close the dialog after 1 second
+                                      });
+                                      return const AlertDialog(
+                                        title: Text('updated'),
+                                      );
+                                    },
+                                  );
+                                  topicController.clear();
+
+                                  setState(() {
+                                    selectedCourse = null;
+                                    loadTopic(selectedCourseId!);
+                                    cloCheckBoxes = List<bool>.filled(clolist.length, false);
+                                     isUpdateMode = false;
+                                  });
+                                } else {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return const AlertDialog(
+                                        title: Text('Error....'),
+                                      );
+                                    },
+                                  );
+                                }
+                                }
+                            },
+                          buttonText: isUpdateMode ? 'Update' : 'Add')),
                              Expanded(
                     child: ListView.builder(
                         itemCount: topiclist.length,
@@ -401,14 +447,36 @@ class _ManageTopicsState extends State<ManageTopics> {
                                     children: [
                                       IconButton(
                                           onPressed: () {
-                                            // Find the index of the item with matching c_id
+                                               // Find the index of the item with matching c_id
+                                        int indexx = clist.indexWhere((e) =>
+                                            e['c_id'] ==
+                                            topiclist[index]['c_id']);
+                                        setState(() {
+                                          selectedTopicID =
+                                              topiclist[index]['t_id'];
+                                        });
+                                        if (indexx != -1) {
+                                          // If item with matching c_id is found
+                                          setState(() {
+                                            // Set selectedCourseId
+                                            selectedCourseId =
+                                                clist[indexx]['c_id'];
+                                            // Set selectedCourse based on index
+                                            selectedCourse =
+                                                clist[indexx]['c_code'];
+                                            // Toggle the update mode
+                                            isUpdateMode = true;
+                                          });
+                                        }
+                                        // Set CLO text to desc TextFormField
+                                       topicController.text = topiclist[index]['t_name'];
                                           },
                                           icon: const Icon(Icons.edit,)),
                                             IconButton(
                                           onPressed: () {
                                             // Find the index of the item with matching c_id
                                           },
-                                          icon: const Icon(Icons.plus_one)),
+                                          icon: const Icon(Icons.add)),
                                     ],
                                   )));
                         }),
