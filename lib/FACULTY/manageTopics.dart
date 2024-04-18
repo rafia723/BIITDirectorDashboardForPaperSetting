@@ -31,7 +31,6 @@ class _ManageTopicsState extends State<ManageTopics> {
   TextEditingController topicController = TextEditingController();
   bool isUpdateMode = false;
   List<bool> cloCheckBoxes = [];
-  int? selectedTopicID; //in update mode
 
   Future<void> loadCoursesWithSeniorRole() async {
     try {
@@ -71,7 +70,6 @@ class _ManageTopicsState extends State<ManageTopics> {
         throw Exception('Failed to load clos');
       }
     } catch (e) {
-        
       showDialog(
         context: context,
         builder: (context) {
@@ -83,7 +81,7 @@ class _ManageTopicsState extends State<ManageTopics> {
     }
   }
 
-  Future<void> loadTopic(int cid) async {
+    Future<void> loadTopic(int cid) async {
     try {
       Uri uri = Uri.parse('${APIHandler().apiUrl}Topic/getTopic/$cid');
       var response = await http.get(uri);
@@ -95,7 +93,6 @@ class _ManageTopicsState extends State<ManageTopics> {
         throw Exception('Failed to load topics');
       }
     } catch (e) {
-      
       showDialog(
         context: context,
         builder: (context) {
@@ -106,6 +103,7 @@ class _ManageTopicsState extends State<ManageTopics> {
       );
     }
   }
+
 
   @override
   void initState() {
@@ -155,8 +153,8 @@ class _ManageTopicsState extends State<ManageTopics> {
         return;
       }
       int topicId = await APIHandler().addTopic(topicText, selectedCourseId!);
-      int code =
-          await APIHandler().addMappingsofCloAndTopic(topicId, selectedCloIds);
+      int code = await APIHandler()
+          .addMappingsofCloAndTopic(topicId, selectedCloIds);
       if (code == 200) {
         showDialog(
           context: context,
@@ -167,28 +165,28 @@ class _ManageTopicsState extends State<ManageTopics> {
             );
           },
         );
-        // Clear the text field
-        topicController.clear();
+           // Clear the text field
+    topicController.clear();
 
-        // Clear the checkbox selections
-        setState(() {
-          cloCheckBoxes = List<bool>.filled(clolist.length, false);
-          loadTopic(selectedCourseId!);
-        });
-      } else {
+    // Clear the checkbox selections
+    setState(() {
+      cloCheckBoxes = List<bool>.filled(clolist.length, false);
+      loadTopic(selectedCourseId!);
+    });
+      }else{
         // Mapping failed, revert addition of topic
         await APIHandler().deleteTopic(topicId);
-        showDialog(
-            context: context,
-            builder: (context) {
-              return const AlertDialog(
-                title: Text('Error'),
-                content: Text(
-                    'Failed to add topic mappings. Please try again later.'),
-              );
-            });
+         showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            title: Text('Error'),
+            content: Text('Failed to add topic mappings. Please try again later.'),
+          );
+        }
+         );
       }
-    } catch (e) {
+        } catch (e) {
       // Handle errors
       showDialog(
         context: context,
@@ -282,7 +280,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                             setState(() {
                               selectedCourseCode = newValue!;
                               loadClo(selectedCourseId!);
-                              loadTopic(selectedCourseId!);
+                               loadTopic(selectedCourseId!);
                             });
                           },
                         ),
@@ -383,185 +381,34 @@ class _ManageTopicsState extends State<ManageTopics> {
                   ),
                   Center(
                       child: customElevatedButton(
-                          onPressed: () async {
-                            if (isUpdateMode == false) {
-                              addTopicAndMapping;
-                            } else {
-                              List<dynamic> newSelectedCloIds = [];
-                              List<dynamic> removedCloIds = [];
-
-                           
-
-                              List<bool> originalCloCheckBoxes = [];
-                              originalCloCheckBoxes =
-                                  List<bool>.from(cloCheckBoxes);
-
-                              int tid = selectedTopicID!;
-                              Map<String, dynamic> tData = {
-                                "t_name": topicController.text,
-                                "c_id": selectedCourseId,
-                              };
-                              int code =
-                                  await APIHandler().updateTopic(tid, tData);
-                              if (code == 200) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    Future.delayed(const Duration(seconds: 2),
-                                        () {
-                                      Navigator.of(context)
-                                          .pop(); // Close the dialog after 1 second
-                                    });
-                                    return const AlertDialog(
-                                      title: Text('updated'),
-                                    );
-                                  },
-                                );
-                                topicController.clear();
-
-                                setState(() {
-                                  selectedCourse = null;
-                                  loadTopic(selectedCourseId!);
-                                  cloCheckBoxes =
-                                      List<bool>.filled(clolist.length, false);
-                                  isUpdateMode = false;
-                                });
-
-                                for (int i = 0; i < cloCheckBoxes.length; i++) {
-                                  if (cloCheckBoxes[i] &&
-                                      !originalCloCheckBoxes[i]) {
-                                    // New CLO selected
-                                    newSelectedCloIds.add(clolist[i]['clo_id']);
-                                  } else if (!cloCheckBoxes[i] &&
-                                      originalCloCheckBoxes[i]) {
-                                    // CLO removed
-                                    removedCloIds.add(clolist[i]['clo_id']);
-                                  }
-                                }
-                                   if (newSelectedCloIds.isEmpty &&
-                                  removedCloIds.isEmpty) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: Text('Error'),
-                                      content: Text(
-                                          'Please select at least one CLO.'),
-                                    );
-                                  },
-                                );
-                                return; // Stop further execution
-                              }
-                                int addCode = await APIHandler()
-                                    .addMappingsofCloAndTopic(
-                                        selectedTopicID!, newSelectedCloIds);
-                                for (int cloId in removedCloIds) {
-                                  int deleteCode = await APIHandler()
-                                      .deleteCloTopicMapping(
-                                          selectedTopicID!, cloId);
-                                  if (deleteCode == 200 &&
-                                      addCode == 200 &&
-                                      code == 200) {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return const AlertDialog(
-                                          title: Text('Clo mapping updated'),
-                                        );
-                                      },
-                                    );
-                                  } else {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return const AlertDialog(
-                                          title: Text(
-                                              'Error updating clo mapping'),
-                                        );
-                                      },
-                                    );
-                                  }
-                                }
-                              } else {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return const AlertDialog(
-                                      title: Text('Error....'),
-                                    );
-                                  },
-                                );
-                              }
-                            }
-                          },
-                          buttonText: isUpdateMode ? 'Update' : 'Add')),
-                  Expanded(
+                          onPressed: addTopicAndMapping,
+                          buttonText: 'Add Topic')),
+                             Expanded(
                     child: ListView.builder(
                         itemCount: topiclist.length,
                         itemBuilder: (context, index) {
                           return Card(
-                              // elevation: 5,
+                             // elevation: 5,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15.0),
                               ),
                               color: Colors.white.withOpacity(0.8),
-                              // color: Colors.transparent,
+                            // color: Colors.transparent,
                               child: ListTile(
-                                  title: Text(
-                                    topiclist[index]['t_name'],
-                                  ),
+                                  title: Text(topiclist[index]['t_name'],),
                                   trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
+                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      IconButton(
-                                          onPressed: () async {
-                                            // Find the index of the item with matching c_id
-                                            int indexx = clist.indexWhere((e) =>
-                                                e['c_id'] ==
-                                                topiclist[index]['c_id']);
-                                            setState(() {
-                                              selectedTopicID =
-                                                  topiclist[index]['t_id'];
-                                            });
-                                            if (indexx != -1) {
-                                              // If item with matching c_id is found
-                                              setState(() {
-                                                // Set selectedCourseId
-                                                selectedCourseId =
-                                                    clist[indexx]['c_id'];
-                                                // Set selectedCourse based on index
-                                                selectedCourse =
-                                                    clist[indexx]['c_code'];
-                                                // Toggle the update mode
-                                                isUpdateMode = true;
-                                              });
-                                            }
-                                            // Set CLO text to desc TextFormField
-                                            topicController.text =
-                                                topiclist[index]['t_name'];
-                                            List<dynamic> CLOsMappedWithTopic =
-                                                await APIHandler()
-                                                    .loadClosMappedWithTopic(
-                                                        selectedTopicID!);
-                                            setState(() {
-                                              cloCheckBoxes =
-                                                  clolist.map((clo) {
-                                                // Check if the current CLO is associated with the topic
-                                                return CLOsMappedWithTopic.any(
-                                                    (topicClo) =>
-                                                        topicClo['clo_id'] ==
-                                                        clo['clo_id']);
-                                              }).toList();
-                                            });
-                                          },
-                                          icon: const Icon(
-                                            Icons.edit,
-                                          )),
                                       IconButton(
                                           onPressed: () {
                                             // Find the index of the item with matching c_id
                                           },
-                                          icon: const Icon(Icons.add)),
+                                          icon: const Icon(Icons.edit,)),
+                                            IconButton(
+                                          onPressed: () {
+                                            // Find the index of the item with matching c_id
+                                          },
+                                          icon: const Icon(Icons.plus_one)),
                                     ],
                                   )));
                         }),
