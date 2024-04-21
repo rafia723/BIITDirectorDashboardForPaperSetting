@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.7:3000/';
+  String apiUrl='http://192.168.10.5:3000/';
  ///////////////////////////////CLO///////////////////////////////////////
   Future<int> addClo(
       String cloText, int cId,String status) async {
@@ -129,19 +129,68 @@ Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
     return list;
   }
 
-   Future<int> deleteCloTopicMapping(int topicId, int cloId) async {
-    try {
-      Uri url = Uri.parse('${apiUrl}Clo_Topic_Mapping/deleteMapping/$topicId/$cloId');
-      var response = await http.delete(
-        url,
-        headers: {"Content-Type": "application/json"},
-      );
+  //  Future<int> deleteCloTopicMapping(int topicId, int cloId) async {
+  //   try {
+  //     Uri url = Uri.parse('${apiUrl}Clo_Topic_Mapping/deleteMapping/$topicId/$cloId');
+  //     var response = await http.delete(
+  //       url,
+  //       headers: {"Content-Type": "application/json"},
+  //     );
 
-      return response.statusCode;
-    } catch (error) {
-      throw Exception('Error: $error');
-    }
+  //     return response.statusCode;
+  //   } catch (error) {
+  //     throw Exception('Error: $error');
+  //   }
+  // }
+
+  // Future<int> addSingleMapping(int cloId, int tid) async {
+  // String url = "${apiUrl}Clo_Topic_Mapping/addSingleMapping";
+  // var obj = {
+  //   'clo_id': cloId,
+  //   't_id': tid
+  // };
+  // var json = jsonEncode(obj);
+  // Uri uri = Uri.parse(url);
+  // var response = await http.post(uri,
+  //     body: json,
+  //     headers: {"Content-Type": "application/json; charset=UTF-8"});
+  //  return response.statusCode;
+  // }
+
+
+  ///////////////////////////////////////////SubTopics////////////////////////////////////////////
+  Future<int> addSubTopic(String stName, int tId) async {
+  String url = "${apiUrl}SubTopic/addSubTopic";
+  var subtopicobj = {
+    'st_name': stName,
+    't_id': tId
+  };
+  var json = jsonEncode(subtopicobj);
+  Uri uri = Uri.parse(url);
+  var response = await http.post(uri,
+      body: json,
+      headers: {"Content-Type": "application/json; charset=UTF-8"});
+  return response.statusCode;
   }
-  
+
+ Future<int> updateSubTopic(int stid, Map<String, dynamic> stData) async {
+  Uri url = Uri.parse('${apiUrl}SubTopic/editSubTopic/$stid');
+  try {
+    var subtopicJson = jsonEncode(stData);
+    var response = await http.put(
+      url,
+      body: subtopicJson,
+      headers: {"Content-Type": "application/json"},
+    );
+      return response.statusCode;
+  } catch (error) {
+    throw Exception('Error: $error');
+  }
+}
+
+
+
+
+
 }
 

@@ -1,15 +1,16 @@
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/FACULTY/managerSubTopics.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class ManageTopics extends StatefulWidget {
-  final String coursename;
+  String coursename;
   final String ccode;
   final int? cid;
-  const ManageTopics({
+   ManageTopics({
     Key? key,
     required this.coursename,
     required this.ccode,
@@ -28,9 +29,12 @@ class _ManageTopicsState extends State<ManageTopics> {
   String? selectedCourse; // Nullable initially
   int? selectedCourseId;
   String? selectedCourseCode;
+  String? selectedCourseName;
   TextEditingController topicController = TextEditingController();
   bool isUpdateMode = false;
   List<bool> cloCheckBoxes = [];
+  int? selectedTopicID; //in update mode
+  String? selectedTopicName; //in update mode
 
   Future<void> loadCoursesWithSeniorRole() async {
     try {
@@ -81,7 +85,7 @@ class _ManageTopicsState extends State<ManageTopics> {
     }
   }
 
-    Future<void> loadTopic(int cid) async {
+  Future<void> loadTopic(int cid) async {
     try {
       Uri uri = Uri.parse('${APIHandler().apiUrl}Topic/getTopic/$cid');
       var response = await http.get(uri);
@@ -104,12 +108,12 @@ class _ManageTopicsState extends State<ManageTopics> {
     }
   }
 
-
   @override
   void initState() {
     super.initState();
     loadCoursesWithSeniorRole();
     selectedCourseId = widget.cid;
+    selectedCourseName=widget.coursename;
     loadClo(widget.cid!);
     loadTopic(widget.cid!);
   }
@@ -153,8 +157,8 @@ class _ManageTopicsState extends State<ManageTopics> {
         return;
       }
       int topicId = await APIHandler().addTopic(topicText, selectedCourseId!);
-      int code = await APIHandler()
-          .addMappingsofCloAndTopic(topicId, selectedCloIds);
+      int code =
+          await APIHandler().addMappingsofCloAndTopic(topicId, selectedCloIds);
       if (code == 200) {
         showDialog(
           context: context,
@@ -165,28 +169,28 @@ class _ManageTopicsState extends State<ManageTopics> {
             );
           },
         );
-           // Clear the text field
-    topicController.clear();
+        // Clear the text field
+        topicController.clear();
 
-    // Clear the checkbox selections
-    setState(() {
-      cloCheckBoxes = List<bool>.filled(clolist.length, false);
-      loadTopic(selectedCourseId!);
-    });
-      }else{
+        // Clear the checkbox selections
+        setState(() {
+          cloCheckBoxes = List<bool>.filled(clolist.length, false);
+          loadTopic(selectedCourseId!);
+        });
+      } else {
         // Mapping failed, revert addition of topic
         await APIHandler().deleteTopic(topicId);
-         showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to add topic mappings. Please try again later.'),
-          );
-        }
-         );
+        showDialog(
+            context: context,
+            builder: (context) {
+              return const AlertDialog(
+                title: Text('Error'),
+                content: Text(
+                    'Failed to add topic mappings. Please try again later.'),
+              );
+            });
       }
-        } catch (e) {
+    } catch (e) {
       // Handle errors
       showDialog(
         context: context,
@@ -255,7 +259,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                               5), // Optional: Add border radius
                         ),
                         child: DropdownButton<String>(
-                          hint: Text(widget.coursename ?? ' Select Course'),
+                          hint: Text(widget.coursename),
                           isExpanded: true,
                           elevation: 9,
                           value: selectedCourseCode,
@@ -266,6 +270,11 @@ class _ManageTopicsState extends State<ManageTopics> {
                                 setState(() {
                                   //  selectedCourse = e['c_title'];
                                   selectedCourseId = e['c_id'];
+                                  selectedCourseName=e['c_title'];
+                                  topicController.clear();
+                                  isUpdateMode = false;
+                                  cloCheckBoxes =
+                                      List<bool>.filled(clolist.length, false);
                                 });
                                 loadClo(selectedCourseId!);
                               },
@@ -280,7 +289,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                             setState(() {
                               selectedCourseCode = newValue!;
                               loadClo(selectedCourseId!);
-                               loadTopic(selectedCourseId!);
+                              loadTopic(selectedCourseId!);
                             });
                           },
                         ),
@@ -381,34 +390,175 @@ class _ManageTopicsState extends State<ManageTopics> {
                   ),
                   Center(
                       child: customElevatedButton(
-                          onPressed: addTopicAndMapping,
-                          buttonText: 'Add Topic')),
-                             Expanded(
+                          onPressed: () async {
+                            if (isUpdateMode == false) {
+                              addTopicAndMapping();
+                            } else {
+                              // List<bool> originalCloCheckBoxes = [];
+                              // originalCloCheckBoxes =List<bool>.from(cloCheckBoxes);
+
+                              int tid = selectedTopicID!;
+                              Map<String, dynamic> tData = {
+                                "t_name": topicController.text,
+                                "c_id": selectedCourseId,
+                              };
+
+                              //     for (int i = 0; i < cloCheckBoxes.length; i++) {
+                              //       if (!cloCheckBoxes[i] && originalCloCheckBoxes[i]) {
+                              //         // New CLO selected
+                              // int addCode= await APIHandler().addSingleMapping(clolist[i]['clo_id'] , tid);
+                              // await APIHandler().addMappingsofCloAndTopic(tid, originalCloCheckBoxes);
+                              //   if (addCode != 200) {
+                              //         showDialog(
+                              //           context: context,
+                              //           builder: (context) {
+                              //             return const AlertDialog(
+                              //               title: Text('error updating clo'),
+                              //             );
+                              //           },
+                              //         );
+                              //       }
+                              //       } else if (cloCheckBoxes[i] && !originalCloCheckBoxes[i]) {
+                              //         // CLO removed
+                              //   int deleteCode= await APIHandler().deleteCloTopicMapping(tid, clolist[i]['clo_id']);
+                              //     if (deleteCode != 200) {
+                              //         showDialog(
+                              //           context: context,
+                              //           builder: (context) {
+                              //             return const AlertDialog(
+                              //               title: Text('error deleting clo'),
+                              //             );
+                              //           },
+                              //         );
+
+                              //       }
+                              //     }
+                              int code =
+                                  await APIHandler().updateTopic(tid, tData);
+                              if (code == 200) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return const AlertDialog(
+                                      title:
+                                          Text('Clo mapping and topic updated'),
+                                    );
+                                  },
+                                );
+                                topicController.clear();
+                                setState(() {
+                                  selectedCourse = null;
+                                  loadTopic(selectedCourseId!);
+                                  cloCheckBoxes =
+                                      List<bool>.filled(clolist.length, false);
+                                  isUpdateMode = false;
+                                });
+                              } else {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return const AlertDialog(
+                                      title: Text(
+                                          'Error updating clo mapping and topic'),
+                                    );
+                                  },
+                                );
+                              }
+                            }
+                          },
+                          buttonText: isUpdateMode ? 'Update' : 'Add')),
+                  Expanded(
                     child: ListView.builder(
                         itemCount: topiclist.length,
                         itemBuilder: (context, index) {
                           return Card(
-                             // elevation: 5,
+                              // elevation: 5,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15.0),
                               ),
                               color: Colors.white.withOpacity(0.8),
-                            // color: Colors.transparent,
+                              // color: Colors.transparent,
                               child: ListTile(
-                                  title: Text(topiclist[index]['t_name'],),
+                                  title: Text(
+                                    topiclist[index]['t_name'],
+                                  ),
                                   trailing: Row(
-                                     mainAxisSize: MainAxisSize.min,
+                                    mainAxisSize: MainAxisSize.min,
                                     children: [
                                       IconButton(
-                                          onPressed: () {
+                                          onPressed: () async {
                                             // Find the index of the item with matching c_id
+                                            int indexx = clist.indexWhere((e) =>e['c_id'] ==topiclist[index]['c_id']);
+                                            setState(() {
+                                              selectedTopicID =topiclist[index]['t_id'];
+                                              selectedTopicName=topiclist[index]['t_name'];
+                                            });
+                                            if (indexx != -1) {
+                                              // If item with matching c_id is found
+                                              setState(() {
+                                                // Set selectedCourseId
+                                                selectedCourseId =
+                                                    clist[indexx]['c_id'];
+                                                // Set selectedCourse based on index
+                                                selectedCourse =
+                                                    clist[indexx]['c_code'];
+                                                // Toggle the update mode
+                                                isUpdateMode = true;
+                                              });
+                                            }
+                                            // Set CLO text to desc TextFormField
+                                            topicController.text =
+                                                topiclist[index]['t_name'];
+                                            List<dynamic> CLOsMappedWithTopic =
+                                                await APIHandler()
+                                                    .loadClosMappedWithTopic(
+                                                        selectedTopicID!);
+                                            setState(() {
+                                              cloCheckBoxes =
+                                                  clolist.map((clo) {
+                                                // Check if the current CLO is associated with the topic
+                                                return CLOsMappedWithTopic.any(
+                                                    (topicClo) =>
+                                                        topicClo['clo_id'] ==
+                                                        clo['clo_id']);
+                                              }).toList();
+                                            });
                                           },
-                                          icon: const Icon(Icons.edit,)),
-                                            IconButton(
-                                          onPressed: () {
+                                          icon: const Icon(
+                                            Icons.edit,
+                                          )),
+                                      IconButton(
+                                          onPressed: ()async {
                                             // Find the index of the item with matching c_id
+                                            int indexxx = clist.indexWhere((e) =>e['c_id'] ==topiclist[index]['c_id']);
+                                            setState(() {
+                                              selectedTopicID =topiclist[index]['t_id'];
+                                              selectedTopicName=topiclist[index]['t_name'];
+                                            });
+                                            if (indexxx != -1) {
+                                              // If item with matching c_id is found
+                                              setState(() {
+                                                // Set selectedCourseId
+                                                selectedCourseId =
+                                                    clist[indexxx]['c_id'];
+                                                // Set selectedCourse based on index
+                                                selectedCourse =
+                                                    clist[indexxx]['c_code'];
+                                              });
+                                            }
+                                            Navigator.pushReplacement(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                   ManageSubTopics(
+                                                    coursename: selectedCourseName!, 
+                                                   cid: selectedCourseId!,
+                                                  tid: selectedTopicID!, 
+                                                   topicName: selectedTopicName!)
+                                              ),
+                                            );
                                           },
-                                          icon: const Icon(Icons.plus_one)),
+                                          icon: const Icon(Icons.add)),
                                     ],
                                   )));
                         }),
