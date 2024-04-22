@@ -23,8 +23,7 @@ class _DirectorState extends State<Director> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,color: Colors.white,),
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const MainPage()));
+            Navigator.pop(context);
           },
         ),
       //  backgroundColor: Colors.black.withOpacity(0.9),),
@@ -56,7 +55,7 @@ class _DirectorState extends State<Director> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                           Navigator.pushReplacement(
+                           Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const DRTApprovedPapers(),
@@ -77,7 +76,7 @@ class _DirectorState extends State<Director> {
                         const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const DRTUploadedPapers(),

@@ -29,8 +29,7 @@ class _DatacellState extends State<Datacell> {
           icon: const Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const MainPage()));
+            Navigator.pop(context);
           },
         ),),
         body: Stack(children: [
@@ -59,7 +58,7 @@ class _DatacellState extends State<Datacell> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const FacultyDetails(),
@@ -80,7 +79,7 @@ class _DatacellState extends State<Datacell> {
                         const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const CourseDetail(),
@@ -101,7 +100,7 @@ class _DatacellState extends State<Datacell> {
                         const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const Approved(),
@@ -122,7 +121,7 @@ class _DatacellState extends State<Datacell> {
                         const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const Printed(),

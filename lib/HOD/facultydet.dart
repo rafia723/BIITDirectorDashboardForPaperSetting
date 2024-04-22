@@ -91,8 +91,7 @@ class _FacultyListState extends State<FacultyList> {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => const HOD()));
+           Navigator.pop(context);
           },
         ),
       ),

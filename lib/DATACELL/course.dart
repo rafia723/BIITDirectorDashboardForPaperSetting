@@ -48,8 +48,7 @@ String url="${APIHandler().apiUrl}Course/addCourse";
           icon: const Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const CourseDetail()));
+            Navigator.pop(context);
           },
         ),
          ),
@@ -95,7 +94,7 @@ String url="${APIHandler().apiUrl}Course/addCourse";
                // Close the dialog after 2 seconds
             if (code == 200) {
               Future.delayed(const Duration(seconds: 1), () {
-            Navigator.pushReplacement(
+            Navigator.push(
                  context,
                  MaterialPageRoute(
                  builder: (context) => const CourseDetail(),

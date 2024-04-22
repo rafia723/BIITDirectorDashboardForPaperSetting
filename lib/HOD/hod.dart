@@ -59,7 +59,7 @@ class _HODState extends State<HOD> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const GridViewScreen(),
@@ -80,7 +80,7 @@ class _HODState extends State<HOD> {
                         const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const AssignCoursetoFaculty(),
@@ -101,7 +101,7 @@ class _HODState extends State<HOD> {
                         const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const FacultyList(),
@@ -122,7 +122,7 @@ class _HODState extends State<HOD> {
                         const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const CourseList(),
@@ -143,7 +143,7 @@ class _HODState extends State<HOD> {
                           const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => const AssignRole(),

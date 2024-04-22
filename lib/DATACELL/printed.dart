@@ -72,8 +72,7 @@ class _PrintedState extends State<Printed> {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => const Datacell()));
+            Navigator.pop(context);
           },
         ),
       ),

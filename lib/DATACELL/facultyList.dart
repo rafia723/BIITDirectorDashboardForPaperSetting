@@ -151,8 +151,7 @@ class _FacultyDetailsState extends State<FacultyDetails> {
           icon: const Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const Datacell()));
+            Navigator.pop(context);
           },
         ),
       ),

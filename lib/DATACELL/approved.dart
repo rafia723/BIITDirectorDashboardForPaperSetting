@@ -75,8 +75,7 @@ class _ApprovedState extends State<Approved> {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => const Datacell()));
+            Navigator.pop(context);
           },
         ),
       ),

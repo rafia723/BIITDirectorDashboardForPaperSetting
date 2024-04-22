@@ -61,8 +61,7 @@ Future<int> updateCourse(int id, Map<String, dynamic> CourseData) async {
           icon: const Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const CourseDetail()));
+            Navigator.pop(context);
           },
         ),
       ),
@@ -105,7 +104,7 @@ Future<int> updateCourse(int id, Map<String, dynamic> CourseData) async {
                    );
                 if (code == 200) {
              Future.delayed(const Duration(seconds: 1), () {
-                     Navigator.pushReplacement(
+                     Navigator.push(
                 context,
                 MaterialPageRoute(
                 builder: (context) => const CourseDetail(),

@@ -178,8 +178,7 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => const HOD()));
+            Navigator.pop(context);
           },
         ),
       ),

@@ -161,8 +161,7 @@ class _AssignRoleState extends State<AssignRole> {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => const HOD()));
+            Navigator.pop(context);
           },
         ),
       ),

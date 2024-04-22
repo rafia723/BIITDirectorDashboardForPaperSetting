@@ -92,8 +92,7 @@ class _CourseListState extends State<CourseList> {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => const HOD()));
+          Navigator.pop(context);
           },
         ),
       ),

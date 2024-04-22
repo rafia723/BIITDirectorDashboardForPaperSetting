@@ -53,8 +53,7 @@ class _FacultyFormState extends State<FacultyForm> {
           icon: const Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const FacultyDetails()));
+            Navigator.pop(context);
           },
         ),
       ),
@@ -120,7 +119,7 @@ class _FacultyFormState extends State<FacultyForm> {
                       // Close the dialog after 2 seconds
                       if (code == 200) {
                         Future.delayed(const Duration(seconds: 1), () {
-                          Navigator.pushReplacement(
+                          Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const FacultyDetails(),

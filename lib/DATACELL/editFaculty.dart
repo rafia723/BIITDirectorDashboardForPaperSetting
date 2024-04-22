@@ -59,8 +59,7 @@ Future<int> updateFaculty(int id, Map<String, dynamic> facultyData) async {
           icon: const Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const FacultyDetails()));
+            Navigator.pop(context);
           },
         ),
          ),
@@ -102,7 +101,7 @@ Future<int> updateFaculty(int id, Map<String, dynamic> facultyData) async {
                      );
                   if (code == 200) {
                Future.delayed(const Duration(seconds: 1), () {
-           Navigator.pushReplacement(
+           Navigator.push(
                   context,
                   MaterialPageRoute(
                   builder: (context) => const FacultyDetails(),

@@ -75,8 +75,7 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => const Director()));
+            Navigator.pop(context);
           },
         ),
       ),

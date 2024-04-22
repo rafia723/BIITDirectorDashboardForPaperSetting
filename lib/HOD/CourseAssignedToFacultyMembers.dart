@@ -128,8 +128,7 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
             color: Colors.white,
           ),
           onPressed: () {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => const HOD()));
+           Navigator.pop(context);
           },
         ),
       ),
