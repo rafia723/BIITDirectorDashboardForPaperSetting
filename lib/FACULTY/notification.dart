@@ -26,7 +26,7 @@ class _NotificationsState extends State<Notifications> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pushReplacement(
+            Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>  Faculty(facultyname: widget.facultyname,fid: widget.fid,),

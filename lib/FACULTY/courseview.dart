@@ -64,7 +64,7 @@ class _CourseViewState extends State<CourseView> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) =>
@@ -118,7 +118,7 @@ class _CourseViewState extends State<CourseView> {
                   customButton(text: 'View Topics', onPressed: () {}),
                   const SizedBox(height: 10),
                   customButton(text: 'View Clos', onPressed: () {
-                     Navigator.pushReplacement(
+                     Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>  ViewClos(courseName: widget.courseName, ccode: widget.ccode, cid: widget.cid),
@@ -132,7 +132,7 @@ class _CourseViewState extends State<CourseView> {
                         customButton(text: 'Manage Paper', onPressed: () {}),
                         const SizedBox(height: 10),
                         customButton(text: 'Manage Topics', onPressed: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>  ManageTopics(coursename: widget.courseName,ccode: widget.ccode,cid:widget.cid),
@@ -143,7 +143,7 @@ class _CourseViewState extends State<CourseView> {
                         customButton(
                             text: 'Manage Clos',
                             onPressed: () {
-                              Navigator.pushReplacement(
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>  ManageClos(coursename: widget.courseName,ccode: widget.ccode,cid:widget.cid),

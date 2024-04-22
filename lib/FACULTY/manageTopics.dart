@@ -62,7 +62,7 @@ class _ManageTopicsState extends State<ManageTopics> {
 
   Future<void> loadClo(int cid) async {
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Clo/getClo/$cid');
+      Uri uri = Uri.parse('${APIHandler().apiUrl}Clo/getCloWithApprovedStatus/$cid');
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -546,7 +546,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                                                     clist[indexxx]['c_code'];
                                               });
                                             }
-                                            Navigator.pushReplacement(
+                                            Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>

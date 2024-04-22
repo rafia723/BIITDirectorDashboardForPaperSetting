@@ -34,10 +34,11 @@ Future<void> loginFaculty(BuildContext context) async {
   if (response.statusCode == 200) {
      Map<String, dynamic> responseData = jsonDecode(response.body);
       int fid = responseData['fid']; // Extract fid from response
+      String fname=responseData['fname'];
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => Faculty(facultyname: username.text, fid: fid),
+        builder: (context) => Faculty(facultyname: fname, fid: fid),
       ),
     );
   } else {

@@ -190,8 +190,8 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '    ' + widget.coursename,
-                    style: TextStyle(color: Colors.white, fontSize: 15),
+                    '    ${widget.coursename}',
+                    style: const TextStyle(color: Colors.white, fontSize: 15),
                   ),
                   const SizedBox(height: 10),
                   const Text(

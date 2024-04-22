@@ -237,11 +237,9 @@ class _ManageClosState extends State<ManageClos> {
                                 }
                               } else {
                                 int cloid =selectedCloID!; // Use the faculty ID provided in the widget
-                                String status = 'disapproved';
                                 Map<String, dynamic> cloData = {
                                   "clo_text": desc.text,
                                   "c_id": selectedCourseId,
-                                  "status": status,
                                 };
                                 int code = await APIHandler()
                                     .updateClo(cloid, cloData);

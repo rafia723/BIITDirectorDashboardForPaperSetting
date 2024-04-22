@@ -65,7 +65,7 @@ class _FacultyState extends State<Faculty> {
       children: [
         ElevatedButton(
           onPressed: () {
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => CourseView(
@@ -141,7 +141,7 @@ class _FacultyState extends State<Faculty> {
             ), // Replace with your icon or message box widget
             onPressed: () {
               // Handle the notification icon or message box click event
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) =>  Notifications(facultyname: widget.facultyname,fid: widget.fid,),

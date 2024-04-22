@@ -124,7 +124,7 @@ class _ViewClosState extends State<ViewClos> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15.0),
                         ),
-                        color: Colors.transparent,
+                        color: Colors.white10,
                         child: ListTile(
                           title: Text(
                             'Clo ${index+1}',
