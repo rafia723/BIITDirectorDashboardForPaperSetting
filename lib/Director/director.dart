@@ -1,6 +1,5 @@
 import 'package:biit_directors_dashbooard/Director/ApprovedPapersList.dart';
 import 'package:biit_directors_dashbooard/Director/UploadedPapersList.dart';
-import 'package:biit_directors_dashbooard/MainPage.dart';
 import 'package:flutter/material.dart';
 
 class Director extends StatefulWidget {

@@ -4,7 +4,6 @@ import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/DATACELL/editFaculty.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'datacell.dart';
 import 'faculty.dart';
 
 class FacultyDetails extends StatefulWidget {

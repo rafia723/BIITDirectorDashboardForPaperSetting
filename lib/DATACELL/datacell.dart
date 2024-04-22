@@ -2,7 +2,6 @@ import 'package:biit_directors_dashbooard/DATACELL/approved.dart';
 import 'package:biit_directors_dashbooard/DATACELL/courseList.dart';
 import 'package:biit_directors_dashbooard/DATACELL/facultyList.dart';
 import 'package:biit_directors_dashbooard/DATACELL/printed.dart';
-import 'package:biit_directors_dashbooard/MainPage.dart';
 import 'package:flutter/material.dart';
 
 class Datacell extends StatefulWidget {

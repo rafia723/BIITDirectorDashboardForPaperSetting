@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:biit_directors_dashbooard/HOD/AssignedCoursesList.dart';
-import 'package:biit_directors_dashbooard/HOD/hod.dart';
 import 'package:http/http.dart' as http;
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:flutter/material.dart';

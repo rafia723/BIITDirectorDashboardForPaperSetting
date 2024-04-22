@@ -3,7 +3,6 @@ import 'package:biit_directors_dashbooard/HOD/CloCheck.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:biit_directors_dashbooard/API/api.dart';
-import 'package:biit_directors_dashbooard/HOD/hod.dart';
 import 'package:flutter/material.dart';
 
 class AssignedtoDetails extends StatefulWidget {
