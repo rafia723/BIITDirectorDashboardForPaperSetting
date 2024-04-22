@@ -142,7 +142,7 @@ class _ManageClosState extends State<ManageClos> {
                               5), // Optional: Add border radius
                         ),
                         child: DropdownButton<String>(
-                          hint:  Text(widget.coursename ?? ' Select Course'),
+                          hint:  Text(widget.coursename),
                           isExpanded: true,
                           elevation: 9,
                           value: selectedCourseCode,

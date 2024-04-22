@@ -6,11 +6,12 @@ import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+
 class ManageTopics extends StatefulWidget {
-  String coursename;
+  final String coursename;
   final String ccode;
   final int? cid;
-   ManageTopics({
+   const ManageTopics({
     Key? key,
     required this.coursename,
     required this.ccode,
