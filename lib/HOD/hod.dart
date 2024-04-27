@@ -74,7 +74,7 @@ class _HODState extends State<HOD> {
                               side: const BorderSide(color: Colors.black),
                             ),
                           ),
-                          child: const Text('Manage \nGrid View',
+                          child: const Text(" Manage \nClo's Grid",
                               style: TextStyle(color: Colors.black)),
                         ),
                         const SizedBox(height: 30),

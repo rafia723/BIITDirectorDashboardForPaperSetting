@@ -203,7 +203,7 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
                                   CloCheckingScreen(courseTitle: widget.courseTitle,ccode: widget.ccode,cid:widget.cid),
                                 ),
                               );
-                      }, buttonText: 'CLOs'))
+                      }, buttonText: 'Manage CLOs'))
             ],
           ),
         ),

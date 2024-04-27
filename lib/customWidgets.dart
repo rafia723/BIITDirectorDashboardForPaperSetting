@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 
+ Color customColor = const Color.fromARGB(255, 78, 223, 180);
 Widget customTextField({
   required TextEditingController controller,
   required String hintText,
@@ -78,6 +79,19 @@ void showConfirmationDialog(BuildContext context, {
       );
     },
   );
-
-
 }
+
+Widget customButton(  //for topics
+      {required VoidCallback onPressed,
+      required String buttonText,
+      required bool isPressed}) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.black,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        backgroundColor: isPressed ? customColor : Colors.white,
+      ),
+      onPressed: onPressed,
+      child: Text(buttonText),
+    );
+  }

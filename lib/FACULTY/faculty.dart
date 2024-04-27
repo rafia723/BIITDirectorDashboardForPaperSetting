@@ -50,6 +50,7 @@ class _FacultyState extends State<Faculty> {
       }
     } catch (e) {
       showDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         builder: (context) {
           return const AlertDialog(
@@ -69,7 +70,7 @@ class _FacultyState extends State<Faculty> {
               context,
               MaterialPageRoute(
                 builder: (context) => CourseView(
-                  courseName: course['c_title'] ?? 'No Title Available',
+                  coursename: course['c_title'] ?? 'No Title Available',
                   ccode: course['c_code'] ?? 'No Title Available',
                   fname: widget.facultyname,
                   fid: widget.fid,
@@ -124,12 +125,7 @@ class _FacultyState extends State<Faculty> {
        leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            // Navigator.pushReplacement(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) =>  Faculty(),
-            //   ),
-            // );
+            Navigator.pop(context);
           },
         ),
         actions: [

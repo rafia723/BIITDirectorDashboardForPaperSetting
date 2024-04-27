@@ -1,11 +1,11 @@
-import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
+import 'package:biit_directors_dashbooard/FACULTY/coveredTopics.dart';
 import 'package:biit_directors_dashbooard/FACULTY/manageClos.dart';
 import 'package:biit_directors_dashbooard/FACULTY/manageTopics.dart';
 import 'package:biit_directors_dashbooard/FACULTY/viewClos.dart';
 import 'package:flutter/material.dart';
 
 class CourseView extends StatefulWidget {
-  final String courseName;
+  final String coursename;
   final String ccode;
   final int cid;
   final String fname;
@@ -13,7 +13,7 @@ class CourseView extends StatefulWidget {
   final String role;
   const CourseView(
       {Key? key,
-      required this.courseName,
+      required this.coursename,
       required this.ccode,
       required this.cid,
       required this.fname,
@@ -64,13 +64,7 @@ class _CourseViewState extends State<CourseView> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    Faculty(facultyname: widget.fname, fid: widget.fid),
-              ),
-            );
+            Navigator.pop(context);
           },
         ),
       ),
@@ -94,7 +88,7 @@ class _CourseViewState extends State<CourseView> {
               children: [
                 const SizedBox(height: 100),
                 Text(
-                  widget.courseName,
+                  widget.coursename,
                   style: const TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
@@ -115,13 +109,22 @@ class _CourseViewState extends State<CourseView> {
                   const SizedBox(height: 50),
                   customButton(text: 'Paper Settings', onPressed: () {}),
                   const SizedBox(height: 10),
-                  customButton(text: 'View Topics', onPressed: () {}),
+                  customButton(text: 'View Topics', onPressed: () {
+                       Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>  CoveredTopics(
+                                    coursename: widget.coursename, 
+                                  ccode: widget.ccode, cid: widget.cid),
+                                ),
+                              );
+                  }),
                   const SizedBox(height: 10),
                   customButton(text: 'View Clos', onPressed: () {
                      Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>  ViewClos(courseName: widget.courseName, ccode: widget.ccode, cid: widget.cid),
+                                  builder: (context) =>  ViewClos(coursename: widget.coursename, ccode: widget.ccode, cid: widget.cid),
                                 ),
                               );
                   }),
@@ -135,7 +138,7 @@ class _CourseViewState extends State<CourseView> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>  ManageTopics(coursename: widget.courseName,ccode: widget.ccode,cid:widget.cid),
+                                  builder: (context) =>  ManageTopics(coursename: widget.coursename,ccode: widget.ccode,cid:widget.cid),
                                 ),
                               );
                         }),
@@ -146,7 +149,7 @@ class _CourseViewState extends State<CourseView> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>  ManageClos(coursename: widget.courseName,ccode: widget.ccode,cid:widget.cid),
+                                  builder: (context) =>  ManageClos(coursename: widget.coursename,ccode: widget.ccode,cid:widget.cid),
                                 ),
                               );
                             })

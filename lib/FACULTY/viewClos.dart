@@ -7,11 +7,11 @@ import 'package:http/http.dart' as http;
 
 class ViewClos extends StatefulWidget {
   final int? cid;
-  final String courseName;
+  final String coursename;
   final String ccode;
   const ViewClos({
     Key? key,
-    required this.courseName,
+    required this.coursename,
     required this.ccode,
     required this.cid,
   }) : super(key: key);
@@ -22,6 +22,8 @@ class ViewClos extends StatefulWidget {
 
 class _ViewClosState extends State<ViewClos> {
   List<dynamic> clolist = [];
+  bool isLoading = true;
+
   Future<void> loadClo(int cid) async {
     BuildContext? contextt = context; // Store the context in a local variable
     try {
@@ -32,6 +34,7 @@ class _ViewClosState extends State<ViewClos> {
         clolist = jsonDecode(response.body);
          if (contextt.mounted) {
         setState(() {});
+         isLoading = false;
          }
       } else {
         throw Exception('Failed to load clos');
@@ -94,7 +97,7 @@ class _ViewClosState extends State<ViewClos> {
               children: [
                 const SizedBox(height: 100),
                 Text(
-                  widget.courseName,
+                  widget.coursename,
                   style: const TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
@@ -108,14 +111,23 @@ class _ViewClosState extends State<ViewClos> {
               ],
             ),
           ),
-        Positioned(
-          top: 150, // Adjust position as needed
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: Column(
-            children: [
-              Expanded(
+            if (isLoading) // Show loading indicator if data is still loading
+                  const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Colors.white,
+                      ),
+                    ),
+                  ),
+                   if (!isLoading)
+                Positioned(
+                top: 150, // Adjust position as needed
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Column(
+                children: [
+                 Expanded(
                   child: ListView.builder(
                     itemCount: clolist.length,
                     itemBuilder: (context, index) {

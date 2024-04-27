@@ -22,7 +22,6 @@ class CloCheckingScreen extends StatefulWidget {
 
 class _CloCheckingScreenState extends State<CloCheckingScreen> {
   List<dynamic> clolist = [];
-  int count = 1;
   Future<void> loadClo(int cid) async {
     try {
       Uri uri = Uri.parse('${APIHandler().apiUrl}Clo/getClo/$cid');
@@ -119,7 +118,7 @@ class _CloCheckingScreenState extends State<CloCheckingScreen> {
                       color: Colors.transparent,
                       child: ListTile(
                         title: Text(
-                          'Clo ${count + index}',
+                          'Clo ${index+1}',
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, color: Colors.white),
                         ),
