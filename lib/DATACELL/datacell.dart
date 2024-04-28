@@ -35,7 +35,7 @@ class _DatacellState extends State<Datacell> {
           // Background Image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/bgWhite.png', // Replace with the path to your background image
+              'assets/images/bg.png', // Replace with the path to your background image
               fit: BoxFit.cover,
             ),
           ),
