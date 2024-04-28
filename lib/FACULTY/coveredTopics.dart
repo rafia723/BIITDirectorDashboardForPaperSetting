@@ -216,7 +216,7 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                           builder: (context, snapshot) {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
-                              return SizedBox(); // Return an empty container
+                              return const SizedBox(); // Return an empty container
                             } else if (snapshot.hasError) {
                               return Text('Error: ${snapshot.error}');
                             } else {
@@ -273,7 +273,7 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                                           scrollDirection: Axis.horizontal,
                                           child: Row(
                                             children: [
-                                               SizedBox(width: 10,),
+                                               const SizedBox(width: 10,),
                                               Checkbox(
                                                 value:
                                                     subtopicCheckboxState[index * 1000 + i] ??
