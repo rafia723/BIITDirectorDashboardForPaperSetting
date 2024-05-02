@@ -209,29 +209,13 @@ class _ManageTopicsState extends State<ManageTopics> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Topics',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'Topics'),
       body: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/Faculty.png',
+              'assets/images/bg.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -244,7 +228,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                   const Text(
                     'Course',
                     style: TextStyle(
-                        color: Colors.white,
+                      
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),
@@ -255,7 +239,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                       Container(
                         constraints: const BoxConstraints(maxWidth: 350),
                         decoration: BoxDecoration(
-                          color: Colors.white, // Set background color to white
+                          color: const Color.fromARGB(26, 112, 106, 106),
                           borderRadius: BorderRadius.circular(
                               5), // Optional: Add border radius
                         ),
@@ -301,7 +285,6 @@ class _ManageTopicsState extends State<ManageTopics> {
                   const Text(
                     'Topic',
                     style: TextStyle(
-                        color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),
@@ -326,7 +309,6 @@ class _ManageTopicsState extends State<ManageTopics> {
                   const Text(
                     'CLOs',
                     style: TextStyle(
-                        color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),
@@ -370,12 +352,11 @@ class _ManageTopicsState extends State<ManageTopics> {
                                   },
                                   child: Text(
                                     'CLO ${cloIndex + 1}',
-                                    style: const TextStyle(color: Colors.white),
+                                    style: const TextStyle(color: Colors.black),
                                   ),
                                 ),
                                 Checkbox(
                                   checkColor: Colors.white,
-                                 
                                   value: cloCheckBoxes[cloIndex],
                                   onChanged: (bool? value) {
                                     setState(() {

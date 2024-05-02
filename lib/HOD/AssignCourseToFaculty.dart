@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -36,6 +39,7 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
       }
     } catch (e) {
       showDialog(
+      
         context: context,
         builder: (context) {
           return AlertDialog(
@@ -164,29 +168,13 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Assign Courses',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'Assign Courses'),
       body: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/HOD.png',
+              'assets/images/bg.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -199,7 +187,6 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                 const Text(
                   'Teacher Name',
                   style: TextStyle(
-                      color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold),
                 ),
@@ -210,9 +197,10 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                     Container(
                       constraints: const BoxConstraints(maxWidth: 350),
                       decoration: BoxDecoration(
-                        color: Colors.white, // Set background color to white
+                        color:const Color.fromARGB(26, 112, 106, 106),
                         borderRadius: BorderRadius.circular(
-                            5), // Optional: Add border radius
+                            10), // Optional: Add border radius
+                         
                       ),
                       child: DropdownButton<String>(
                         hint: Text(widget.facultyname ?? ' Select Teacher '),
@@ -252,7 +240,6 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                         selectedFacultyText ??
                         "--------------", // Show selected faculty
                     style: const TextStyle(
-                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 16),
                   ),
@@ -260,25 +247,24 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                 const Text(
                   'Courses',
                   style: TextStyle(
-                      color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(15.0),
                   child: TextField(
-                    style: const TextStyle(color: Colors.white),
                     controller: search,
                     onChanged: (value) {
                       searchCourses(value);
                     },
                     decoration: const InputDecoration(
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
                       suffixIcon: Icon(
                         Icons.search,
-                        color: Colors.white54,
+                        color: Colors.black54,
                       ),
                       labelText: 'Search Courses',
-                      labelStyle: TextStyle(color: Colors.white54),
+                      labelStyle: TextStyle(color: Colors.black87),
                       border: OutlineInputBorder(),
                     ),
                   ),

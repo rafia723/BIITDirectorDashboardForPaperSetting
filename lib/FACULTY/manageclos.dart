@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
@@ -21,7 +23,6 @@ final int? cid;
 }
 
 class _ManageClosState extends State<ManageClos> {
-  Color customColor = const Color.fromARGB(255, 78, 223, 180);
   List<dynamic> clist = [];
   List<dynamic> clolist = [];
   String? selectedCourse; // Nullable initially
@@ -91,29 +92,13 @@ class _ManageClosState extends State<ManageClos> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'CLOs',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'CLOs'),
       body: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/Faculty.png',
+              'assets/images/bg.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -126,7 +111,6 @@ class _ManageClosState extends State<ManageClos> {
                   const Text(
                     'Course',
                     style: TextStyle(
-                        color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),
@@ -137,11 +121,12 @@ class _ManageClosState extends State<ManageClos> {
                       Container(
                         constraints: const BoxConstraints(maxWidth: 350),
                         decoration: BoxDecoration(
-                          color: Colors.white, // Set background color to white
+                          color: const Color.fromARGB(26, 112, 106, 106),
                           borderRadius: BorderRadius.circular(
                               5), // Optional: Add border radius
                         ),
                         child: DropdownButton<String>(
+                          
                           hint:  Text(widget.coursename),
                           isExpanded: true,
                           elevation: 9,
@@ -176,7 +161,6 @@ class _ManageClosState extends State<ManageClos> {
                   const Text(
                     'Description',
                     style: TextStyle(
-                        color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),
@@ -284,15 +268,13 @@ class _ManageClosState extends State<ManageClos> {
                         itemCount: clolist.length,
                         itemBuilder: (context, index) {
                           return Card(
-                             // elevation: 5,
+                            // elevation: 5,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15.0),
                               ),
-                            //  color: Colors.white.withOpacity(0.8),
-                             color: Colors.transparent,
                               child: ListTile(
-                                  title: Text('Clo ${index+1}', style: const TextStyle(color: Colors.white),),
-                                  subtitle: Text(clolist[index]['clo_text'], style: const TextStyle(color: Colors.white),),
+                                  title: Text('Clo ${index+1}',),
+                                  subtitle: Text(clolist[index]['clo_text'],),
                                   trailing: IconButton(
                                       onPressed: () {
                                         // Find the index of the item with matching c_id
@@ -319,7 +301,7 @@ class _ManageClosState extends State<ManageClos> {
                                         // Set CLO text to desc TextFormField
                                         desc.text = clolist[index]['clo_text'];
                                       },
-                                      icon: const Icon(Icons.edit,color: Colors.white))));
+                                      icon: const Icon(Icons.edit))));
                         }),
                   ),
                 ],

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -47,29 +48,13 @@ Future<void> loadCourse() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-   appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Grid View',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+   appBar:customAppBar(context: context, title: 'Clos Grid'),
         body: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/HOD.png',
+              'assets/images/bg.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -82,7 +67,6 @@ Future<void> loadCourse() async {
                 const Text(
                   'Course:',
                   style: TextStyle(
-                      color: Colors.white,
                       fontSize: 18,
                       fontWeight: FontWeight.bold),
                 ),
@@ -93,9 +77,10 @@ Future<void> loadCourse() async {
                     Container(
                        constraints: const BoxConstraints(maxWidth: 350),
                       decoration: BoxDecoration(
-                        color: Colors.white, // Set background color to white
+                        color: const Color.fromARGB(26, 112, 106, 106), // Set background color to white
                         borderRadius: BorderRadius.circular(
-                            5), // Optional: Add border radius
+                            10),
+                         //   border: Border.all(color: Colors.black) // Optional: Add border radius
                       ),
                       child: DropdownButton<String>(
                         hint: const Text(' Select Course '),

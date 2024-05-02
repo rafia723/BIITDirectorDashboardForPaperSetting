@@ -1,6 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:biit_directors_dashbooard/HOD/AssignCourseToFaculty.dart';
-import 'package:biit_directors_dashbooard/HOD/facultydet.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:biit_directors_dashbooard/API/api.dart';
@@ -17,7 +18,6 @@ class AssignedCourses extends StatefulWidget {
   State<AssignedCourses> createState() => _AssignedCoursesState();
 }
 class _AssignedCoursesState extends State<AssignedCourses> {
-  Color customColor = const Color.fromARGB(255, 78, 223, 180);
   List<dynamic> aclist = [];
   Future<void> loadAssignedCourses(int id) async {
     try {
@@ -115,35 +115,24 @@ class _AssignedCoursesState extends State<AssignedCourses> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:  AppBar(
-           backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text('View Course',style: TextStyle(color: Colors.white),),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back,color: Colors.white,),
-          onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const FacultyList()));
-          },
-        ),
-      ),
+      appBar:  customAppBar(context: context, title: 'View Course'),
          body:  Stack(
            fit: StackFit.expand,
            children: [
              Positioned.fill(
                child: Image.asset(
-                 'assets/images/HOD.png',
+                 'assets/images/bg.png',
                  fit: BoxFit.cover,
                ),
              ),
              Column(
                children: [
                 const SizedBox(height: 80),
-                 const Text('Teacher Name',style: TextStyle(color: Colors.white,fontSize: 24,fontWeight: FontWeight.bold),),
+                 const Text('Teacher Name',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold),),
                  const SizedBox(height: 10,),
-                 Text(widget.facultyname,style: const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.w500),),
+                 Text(widget.facultyname,style: const TextStyle(fontSize: 18,fontWeight: FontWeight.w500),),
                   const SizedBox(height: 50,),
-                 const Text('Assigned Courses',style: TextStyle(color: Colors.white,fontSize: 22,fontWeight: FontWeight.w600),),
+                 const Text('Assigned Courses',style: TextStyle(fontSize: 22,fontWeight: FontWeight.w600),),
                  const SizedBox(height: 10,),
                  Expanded(
                    child: ListView.builder(
@@ -176,9 +165,9 @@ class _AssignedCoursesState extends State<AssignedCourses> {
          ),
           floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
-        backgroundColor: customColor,
+        backgroundColor: customButtonColor,
         onPressed: add,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add,color: Colors.white,),
       ),
     );
   }

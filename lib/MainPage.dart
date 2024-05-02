@@ -2,6 +2,7 @@ import 'package:biit_directors_dashbooard/DATACELL/loginDatacell.dart';
 import 'package:biit_directors_dashbooard/Director/LoginDirector.dart';
 import 'package:biit_directors_dashbooard/FACULTY/loginFaculty.dart';
 import 'package:biit_directors_dashbooard/HOD/LoginHod.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
 class MainPage extends StatefulWidget {
@@ -25,7 +26,7 @@ class _MainPageState extends State<MainPage> {
               child: Container(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage('assets/images/MainApp.png'),
+                    image: AssetImage('assets/images/bg.png'),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -40,10 +41,11 @@ class _MainPageState extends State<MainPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                        const SizedBox(height: 40,),
-                        const Text("What's Your Role?",style: TextStyle(color: Colors.white,fontSize: 24,fontWeight: FontWeight.bold),),
+                        const Text("What's Your Role?",style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold),),
                       const SizedBox(height: 70,),
                      ElevatedButton(
                       style: ButtonStyle(
+                      backgroundColor:  MaterialStateProperty.all<Color>(customButtonColor),
                         fixedSize: MaterialStateProperty.all(const Size(150.0, 50.0)),),
                         onPressed: () { Navigator.push(context,
                         MaterialPageRoute(builder: (context) => const LoginDatacell()));},
@@ -51,6 +53,7 @@ class _MainPageState extends State<MainPage> {
                       const SizedBox(height: 20,),
                       ElevatedButton(
                       style: ButtonStyle(
+                         backgroundColor:  MaterialStateProperty.all<Color>(customButtonColor),
                         fixedSize: MaterialStateProperty.all(const Size(150.0, 50.0)),),
                         onPressed: () {
                            Navigator.push(context,
@@ -59,7 +62,9 @@ class _MainPageState extends State<MainPage> {
                         child: const Text('HOD',style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),),
                         const SizedBox(height: 20,),
                        ElevatedButton(
+                        
                       style: ButtonStyle(
+                         backgroundColor:  MaterialStateProperty.all<Color>(customButtonColor),
                         fixedSize: MaterialStateProperty.all(const Size(150.0, 50.0)),),
                         onPressed: () {
                             Navigator.push(context,
@@ -69,6 +74,7 @@ class _MainPageState extends State<MainPage> {
                         const SizedBox(height: 20,),
                       ElevatedButton(
                       style: ButtonStyle(
+                         backgroundColor:  MaterialStateProperty.all<Color>(customButtonColor),
                         fixedSize: MaterialStateProperty.all(const Size(150.0, 50.0)),),
                         onPressed: () {
                           Navigator.push(context,
@@ -79,7 +85,7 @@ class _MainPageState extends State<MainPage> {
                         const Padding(
                           padding: EdgeInsets.all(10.0),
                           child: Text("Welcome to the Director Dashboard! The Director Dashboard is a powerful tool that provides you with valuable insights and control over your organization's operations. With this dashboard, you can easily monitor key performance indicators, track project progress, and make informed decisions to drive your team's success.",
-                        style: TextStyle(color: Colors.white),textAlign: TextAlign.center,),
+                        style: TextStyle(color: Colors.black),textAlign: TextAlign.center,),
                         )
                     ],
                   ),

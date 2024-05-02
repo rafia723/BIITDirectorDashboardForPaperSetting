@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
@@ -149,29 +151,13 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Sub-Topics',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'Sub-Topics'),
       body: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/Faculty.png',
+              'assets/images/bg.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -184,20 +170,18 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
                   const Text(
                     'Course',
                     style: TextStyle(
-                        color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
                   Text(
                     '    ${widget.coursename}',
-                    style: const TextStyle(color: Colors.white, fontSize: 15),
+                    style: const TextStyle( fontSize: 16,fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 10),
                   const Text(
                     'Topic',
                     style: TextStyle(
-                        color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),
@@ -208,7 +192,7 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
                       Container(
                         constraints: const BoxConstraints(maxWidth: 350),
                         decoration: BoxDecoration(
-                          color: Colors.white, // Set background color to white
+                          color: const Color.fromARGB(26, 112, 106, 106),
                           borderRadius: BorderRadius.circular(
                               5), // Optional: Add border radius
                         ),
@@ -248,7 +232,7 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
                   const Text(
                     'Sub Topic',
                     style: TextStyle(
-                        color: Colors.white,
+           
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
                   ),
@@ -256,6 +240,7 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
                     padding: const EdgeInsets.all(10.0),
                     child: TextFormField(
                       decoration: const InputDecoration(
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
                         focusColor: Colors.black,
                         fillColor: Colors.white70,
                         filled: true,
@@ -316,7 +301,7 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
                         itemCount: subtopiclist.length,
                         itemBuilder: (context, index) {
                           return Card(
-                              // elevation: 5,
+                               elevation: 5,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15.0),
                               ),

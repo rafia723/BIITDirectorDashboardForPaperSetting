@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
@@ -63,7 +65,7 @@ Future<void> loginFaculty(BuildContext context) async {
         // Background Image
         Positioned.fill(
           child: Image.asset(
-            'assets/images/Faculty.png', // Replace with the path to your background image
+            'assets/images/bg.png', // Replace with the path to your background image
             fit: BoxFit.cover,
           ),
         ),
@@ -89,12 +91,13 @@ Future<void> loginFaculty(BuildContext context) async {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Login', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: Colors.white)),
+                const Text('Login', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
                 TextFormField(
 
                   controller: username,
                   decoration: InputDecoration(
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.7),
                     border: OutlineInputBorder(
@@ -110,6 +113,7 @@ Future<void> loginFaculty(BuildContext context) async {
                   obscureText: true,
                   controller: password,
                   decoration: InputDecoration(
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.7),
                     border: OutlineInputBorder(
@@ -125,7 +129,7 @@ Future<void> loginFaculty(BuildContext context) async {
                   onPressed: () {
                    loginFaculty(context);
                   },
-                  child: const Text('Login'),
+            child: const Text('Login',style: TextStyle(color: Colors.black),),
                 ),
               ],
             ),

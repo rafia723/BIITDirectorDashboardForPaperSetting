@@ -1,6 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/DATACELL/course.dart';
 import 'package:biit_directors_dashbooard/DATACELL/editCourse.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -11,7 +14,6 @@ class CourseDetail extends StatefulWidget {
   @override
   State<CourseDetail> createState() => _CourseDetailState();
 }
-Color customColor = const Color.fromARGB(255, 78, 223, 180);
 class _CourseDetailState extends State<CourseDetail> {
   List<dynamic> clist = [];
 
@@ -121,6 +123,7 @@ class _CourseDetailState extends State<CourseDetail> {
       }
     } catch (e) {
       showDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         builder: (context) {
           return const AlertDialog(
@@ -141,21 +144,7 @@ class _CourseDetailState extends State<CourseDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Course Details',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          color: Colors.white,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-         ),
+        appBar: customAppBar(context: context, title: 'Course Details'),
       body: 
       SizedBox(
            height: double.infinity, 
@@ -163,7 +152,7 @@ class _CourseDetailState extends State<CourseDetail> {
               children: [
                 Positioned.fill(
                   child: Image.asset(
-                    'assets/images/datacell.png',
+                    'assets/images/bg.png',
                     fit: BoxFit.cover,
                   ),
                 ),Column(
@@ -179,6 +168,7 @@ class _CourseDetailState extends State<CourseDetail> {
                     searchCourses(value);
                   },
                   decoration: const InputDecoration(
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
                       suffixIcon: Icon(Icons.search),
                       labelText: 'Search Course',
                       border: OutlineInputBorder(),
@@ -236,9 +226,9 @@ class _CourseDetailState extends State<CourseDetail> {
       ),
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
-        backgroundColor: customColor,
+        backgroundColor: customButtonColor,
         onPressed: add,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add,color: Colors.white,),
       ),
     );
   }

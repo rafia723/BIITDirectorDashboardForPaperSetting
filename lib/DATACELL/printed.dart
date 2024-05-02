@@ -1,4 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -16,13 +19,15 @@ class _PrintedState extends State<Printed> {
     var response = await http.get(uri);
     if (response.statusCode == 200) {
       pplist = jsonDecode(response.body);
+      if(mounted){
       setState(() {});
+      }
     } else {
       throw Exception('Failed to load Printed Papers');
     }
   }
 
-  Future<void> SearchPrintedPapers(String courseTitle) async {
+  Future<void> searchPrintedPapers(String courseTitle) async {
     try {
       if (courseTitle.isNotEmpty) {
       Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/SearchPrintedPapers?courseTitle=$courseTitle');
@@ -58,23 +63,7 @@ class _PrintedState extends State<Printed> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Printed Papers',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'Printed Papers'),
       body:
          SizedBox(
         height: double.infinity,
@@ -82,7 +71,7 @@ class _PrintedState extends State<Printed> {
           children: [
             Positioned.fill(
               child: Image.asset(
-                'assets/images/datacell.png',
+                'assets/images/bg.png',
                 fit: BoxFit.cover,
               ),
             ),
@@ -94,18 +83,16 @@ class _PrintedState extends State<Printed> {
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: TextField(
-                      style: const TextStyle(color: Colors.white),
                       controller: search,
                       onChanged: (value) {
-                        SearchPrintedPapers(value);
+                        searchPrintedPapers(value);
                       },
                       decoration: const InputDecoration(
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
                         suffixIcon: Icon(
                           Icons.search,
-                          color: Colors.white54,
                         ),
                         labelText: 'Search Course',
-                        labelStyle: TextStyle(color: Colors.white54),
                         border: OutlineInputBorder(),
                       ),
                     ),

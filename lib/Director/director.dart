@@ -1,5 +1,6 @@
 import 'package:biit_directors_dashbooard/Director/ApprovedPapersList.dart';
 import 'package:biit_directors_dashbooard/Director/UploadedPapersList.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
 class Director extends StatefulWidget {
@@ -12,26 +13,13 @@ class Director extends StatefulWidget {
 class _DirectorState extends State<Director> {
   @override
   Widget build(BuildContext context) {
-     Color customColor = const Color.fromARGB(255, 78, 223, 180);
     return Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-        elevation: 10,
-          title: const Text('Director Dashboard',style: TextStyle(color: Colors.white),),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back,color: Colors.white,),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      //  backgroundColor: Colors.black.withOpacity(0.9),),
-        ),
+        appBar: customAppBar(context: context, title: 'Director Dashboard'),
         body: Stack(children: [
           // Background Image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/director.png', // Replace with the path to your background image
+              'assets/images/bg.png', // Replace with the path to your background image
               fit: BoxFit.cover,
             ),
           ),
@@ -42,13 +30,13 @@ class _DirectorState extends State<Director> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(height: 100),
+                  Container(height: 10),
                   const Text(
                     'Welcome, Dr. Jameel Sawar!', // Replace with the actual user's name
                     style:
-                        TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold,color: Colors.white),
+                        TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 120),
+                  const SizedBox(height: 80),
                   SingleChildScrollView(
                     child: Column(
                       children: [
@@ -62,7 +50,7 @@ class _DirectorState extends State<Director> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: customColor,
+                            backgroundColor: customButtonColor,
                             minimumSize: const Size(160, 80),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),
@@ -83,7 +71,7 @@ class _DirectorState extends State<Director> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: customColor,
+                            backgroundColor: customButtonColor,
                             minimumSize: const Size(160, 80),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),

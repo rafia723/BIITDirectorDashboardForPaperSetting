@@ -86,7 +86,7 @@ class _LoginDatacellState extends State<LoginDatacell> {
                       ),
                     );
                   },
-                  child: const Text('Login'),
+                  child: const Text('Login',style: TextStyle(color: Colors.black),),
                 ),
               ],
             ),

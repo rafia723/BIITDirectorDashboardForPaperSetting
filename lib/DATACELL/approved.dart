@@ -42,6 +42,7 @@ class _ApprovedState extends State<Approved> {
     }
   } catch (e) {
     showDialog(
+      // ignore: use_build_context_synchronously
       context: context,
       builder: (context) {
         return const AlertDialog(
@@ -61,23 +62,7 @@ class _ApprovedState extends State<Approved> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Approved Papers',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'Approved Papers'),
       body: 
       SizedBox(
         height: double.infinity,
@@ -85,7 +70,7 @@ class _ApprovedState extends State<Approved> {
           children: [
             Positioned.fill(
               child: Image.asset(
-                'assets/images/datacell.png',
+                'assets/images/bg.png',
                 fit: BoxFit.cover,
               ),
             ),
@@ -97,18 +82,17 @@ class _ApprovedState extends State<Approved> {
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: TextField(
-                      style: const TextStyle(color: Colors.white),
                       controller: search,
                       onChanged: (value) {
                         SearchApprovedPapers(value);
                       },
                       decoration: const InputDecoration(
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
                         suffixIcon: Icon(
                           Icons.search,
-                          color: Colors.white54,
                         ),
                         labelText: 'Search Course',
-                        labelStyle: TextStyle(color: Colors.white54),
+                  
                         border: OutlineInputBorder(),
                       ),
                     ),

@@ -50,27 +50,13 @@ Future<int> updateCourse(int id, Map<String, dynamic> CourseData) async {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-     appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Edit Course',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          color: Colors.white,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+     appBar: customAppBar(context: context, title: 'Edit Course'),
       body: Stack(
         children: [
           // Background Image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/datacell.png', // Replace with the path to your background image
+              'assets/images/bg.png', // Replace with the path to your background image
               fit: BoxFit.cover,
             ),
           ),
@@ -79,9 +65,9 @@ Future<int> updateCourse(int id, Map<String, dynamic> CourseData) async {
         child: SafeArea(
           child: Column(
             children: [
-               customTextField(controller: ccode, hintText: 'Enter Course Code...', labelText: 'Course Code', prefixIcon: Icons.code,obscureText: false),
-                customTextField(controller: ctitle, hintText: 'Enter Course Title...', labelText: 'Course Title', prefixIcon: Icons.abc,obscureText: false),
-               customTextField(controller: crhrs, hintText: 'Enter Credit Hours...', labelText: 'Credit Hours', prefixIcon: Icons.hourglass_bottom,obscureText:false),
+               customTextFieldWithoutLabelAndHint(controller: ccode, prefixIcon: Icons.code,obscureText: false),
+                customTextFieldWithoutLabelAndHint(controller: ctitle, prefixIcon: Icons.abc,obscureText: false),
+               customTextFieldWithoutLabelAndHint(controller: crhrs,prefixIcon: Icons.hourglass_bottom,obscureText:false),
                const SizedBox(height: 10),
            
               customElevatedButton(onPressed: () async {

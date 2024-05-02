@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
@@ -54,27 +56,11 @@ class _CloCheckingScreenState extends State<CloCheckingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'CLOs',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'CLOs'),
       body: Stack(fit: StackFit.expand, children: [
         Positioned.fill(
           child: Image.asset(
-            'assets/images/HOD.png',
+            'assets/images/bg.png',
             fit: BoxFit.cover,
           ),
         ),
@@ -90,11 +76,11 @@ class _CloCheckingScreenState extends State<CloCheckingScreen> {
                 style: const TextStyle(
                     fontSize: 18.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white),
+                 ),
               ),
               Text(
                 'Course Code: ${widget.ccode}',
-                style: const TextStyle(fontSize: 16.0, color: Colors.white),
+                style: const TextStyle(fontSize: 16.0,),
               ),
             ],
           ),
@@ -111,20 +97,20 @@ class _CloCheckingScreenState extends State<CloCheckingScreen> {
                   itemCount: clolist.length,
                   itemBuilder: (context, index) {
                     return Card(
-                      elevation: 30,
+                      elevation: 5,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15.0),
                       ),
-                      color: Colors.transparent,
+                      color: Colors.white.withOpacity(0.8),
                       child: ListTile(
                         title: Text(
                           'Clo ${index+1}',
                           style: const TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.white),
+                              fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
                           clolist[index]['clo_text'],
-                          style: const TextStyle(color: Colors.white),
+                        
                         ),
                         trailing: customElevatedButton(
                           onPressed: () async {

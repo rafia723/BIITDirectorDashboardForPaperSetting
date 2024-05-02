@@ -17,7 +17,6 @@ class CommonTopics extends StatefulWidget {
 }
 
 class _CommonTopicsState extends State<CommonTopics> {
-Color customColor = const Color.fromARGB(255, 78, 223, 180);
   bool isPressedCovered = false;
   bool isPressedCommon = false;
   bool isPressedProgress = false;
@@ -25,30 +24,13 @@ Color customColor = const Color.fromARGB(255, 78, 223, 180);
   @override
   Widget build(BuildContext context) {
      return Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          title: const Text(
-            'Covered Topics',
-            style: TextStyle(
-                fontSize: 21.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.white),
-          ),
-          backgroundColor: Colors.transparent,
-          elevation: 10,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-        ),
+        appBar: customAppBar(context: context, title: 'Covered Topics'),
         body: Stack(children: [
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/Faculty.png'),
+                  image: AssetImage('assets/images/bg.png'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -56,7 +38,7 @@ Color customColor = const Color.fromARGB(255, 78, 223, 180);
           ),
           Container(
             alignment: Alignment.topLeft,
-            padding: const EdgeInsets.only(left: 30.0), // Adjust as needed
+            padding: const EdgeInsets.only(left: 15.0), // Adjust as needed
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -66,11 +48,11 @@ Color customColor = const Color.fromARGB(255, 78, 223, 180);
                   style: const TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                     ),
                 ),
                 Text(
                   'Course Code: ${widget.ccode}',
-                  style: const TextStyle(fontSize: 16.0, color: Colors.white),
+                  style: const TextStyle(fontSize: 16.0),
                 ),
                 const SizedBox(
                   height: 20,
@@ -124,7 +106,7 @@ Color customColor = const Color.fromARGB(255, 78, 223, 180);
             style: TextStyle(
                 fontSize: 18.0,
                 fontWeight: FontWeight.bold,
-                color: Colors.white),
+            ),
           ),
               ],
             ),

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
@@ -22,7 +24,6 @@ class CoveredTopics extends StatefulWidget {
 }
 
 class _CoveredTopicsState extends State<CoveredTopics> {
-  Color customColor = const Color.fromARGB(255, 78, 223, 180);
   bool isPressedCovered = false;
   bool isPressedCommon = false;
   bool isPressedProgress = false;
@@ -46,6 +47,7 @@ class _CoveredTopicsState extends State<CoveredTopics> {
       }
     } catch (e) {
       showDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         builder: (context) {
           return const AlertDialog(
@@ -90,32 +92,14 @@ class _CoveredTopicsState extends State<CoveredTopics> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text(
-          'Covered Topics',
-          style: TextStyle(
-            fontSize: 21.0,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 10,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'Covered Topics'),
       body: Stack(
         children: [
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/Faculty.png'),
+                  image: AssetImage('assets/images/bg.png'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -127,62 +111,63 @@ class _CoveredTopicsState extends State<CoveredTopics> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 100),
+                const SizedBox(height: 10),
                 Text(
                   widget.coursename,
                   style: const TextStyle(
                     fontSize: 18.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
                   ),
                 ),
                 Text(
                   'Course Code: ${widget.ccode}',
                   style: const TextStyle(
                     fontSize: 16.0,
-                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    const SizedBox(width: 10),
-                    customButton(
-                      onPressed: () {
-                        setState(() {
-                          isPressedCovered = true;
-                          isPressedCommon = false;
-                          isPressedProgress = false;
-                        });
-                      },
-                      buttonText: 'Covered',
-                      isPressed: isPressedCovered,
-                    ),
-                    const SizedBox(width: 10),
-                    customButton(
-                      onPressed: () {
-                        setState(() {
-                          isPressedCovered = false;
-                          isPressedCommon = true;
-                          isPressedProgress = false;
-                        });
-                      },
-                      buttonText: 'Common',
-                      isPressed: isPressedCommon,
-                    ),
-                    const SizedBox(width: 10),
-                    customButton(
-                      onPressed: () {
-                        setState(() {
-                          isPressedCovered = false;
-                          isPressedCommon = false;
-                          isPressedProgress = true;
-                        });
-                      },
-                      buttonText: 'Progress',
-                      isPressed: isPressedProgress,
-                    ),
-                  ],
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 10),
+                      customButton(
+                        onPressed: () {
+                          setState(() {
+                            isPressedCovered = true;
+                            isPressedCommon = false;
+                            isPressedProgress = false;
+                          });
+                        },
+                        buttonText: 'Covered',
+                        isPressed: isPressedCovered,
+                      ),
+                      const SizedBox(width: 10),
+                      customButton(
+                        onPressed: () {
+                          setState(() {
+                            isPressedCovered = false;
+                            isPressedCommon = true;
+                            isPressedProgress = false;
+                          });
+                        },
+                        buttonText: 'Common',
+                        isPressed: isPressedCommon,
+                      ),
+                      const SizedBox(width: 10),
+                      customButton(
+                        onPressed: () {
+                          setState(() {
+                            isPressedCovered = false;
+                            isPressedCommon = false;
+                            isPressedProgress = true;
+                          });
+                        },
+                        buttonText: 'Progress',
+                        isPressed: isPressedProgress,
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 20),
                 const Text(
@@ -190,14 +175,13 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                   style: TextStyle(
                     fontSize: 18.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
                   ),
                 ),
                 if (isLoading) // Show loading indicator if data is still loading
                   const Center(
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.white,
+                        Colors.black,
                       ),
                     ),
                   ),
@@ -223,11 +207,11 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                               List<dynamic> subtopics =
                                   snapshot.data as List<dynamic>;
                               return Card(
-                                elevation: 8,
+                                elevation: 5,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
-                                color: Colors.white10,
+                                color: Colors.white.withOpacity(0.8),
                                 child: ListTile(
                                   title: SingleChildScrollView(
                                     scrollDirection: Axis.horizontal,
@@ -256,7 +240,6 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                                           '${index + 1}. ${topiclist[index]['t_name']}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            color: Colors.white,
                                           ),
                                         ),
                                       ],
@@ -289,13 +272,12 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                                               Text(
                                                 '  ${index + 1}.${i + 1} ',
                                                 style: const TextStyle(
-                                                  color: Colors.white,
+
                                                 ),
                                               ),
                                               Text(
                                                 '${subtopics[i]['st_name']}',
                                                 style: const TextStyle(
-                                                  color: Colors.white,
                                                 ),
                                               ),
                                             ],

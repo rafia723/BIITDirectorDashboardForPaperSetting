@@ -42,27 +42,13 @@ class _FacultyFormState extends State<FacultyForm> {
   Widget build(BuildContext context) {
     return Scaffold(
        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Faculty Form',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          color: Colors.white,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+        appBar: customAppBar(context: context, title: 'Faculty Form'),
       body: Stack(
         children: [
           // Background Image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/datacell.png', // Replace with the path to your background image
+              'assets/images/bg.png', // Replace with the path to your background image
               fit: BoxFit.cover,
             ),
           ),

@@ -19,7 +19,7 @@ class _LoginHodState extends State<LoginHod> {
         // Background Image
         Positioned.fill(
           child: Image.asset(
-            'assets/images/HOD.png', // Replace with the path to your background image
+            'assets/images/bg.png', // Replace with the path to your background image
             fit: BoxFit.cover,
           ),
         ),
@@ -45,7 +45,7 @@ class _LoginHodState extends State<LoginHod> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Login', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: Colors.white)),
+                const Text('Login', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
                 TextFormField(
 
@@ -86,7 +86,7 @@ class _LoginHodState extends State<LoginHod> {
                       ),
                     );
                   },
-                  child: const Text('Login'),
+         child: const Text('Login',style: TextStyle(color: Colors.black),),
                 ),
               ],
             ),

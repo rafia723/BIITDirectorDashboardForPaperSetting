@@ -1,6 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -61,30 +64,14 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
   Widget build(BuildContext context) {
     return Scaffold(
        resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Approved Papers',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'Approved Papers'),
         body: SizedBox(
         height: double.infinity,
         child: Stack(
           children: [
             Positioned.fill(
               child: Image.asset(
-                'assets/images/director.png',
+                'assets/images/bg.png',
                 fit: BoxFit.cover,
               ),
             ),
@@ -96,18 +83,17 @@ class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: TextField(
-                      style: const TextStyle(color: Colors.white),
+                    
                       controller: search,
                       onChanged: (value) {
                         SearchApprovedPapers(value);
                       },
                       decoration: const InputDecoration(
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
                         suffixIcon: Icon(
                           Icons.search,
-                          color: Colors.white54,
                         ),
                         labelText: 'Search',
-                        labelStyle: TextStyle(color: Colors.white54),
                         border: OutlineInputBorder(),
                       ),
                     ),

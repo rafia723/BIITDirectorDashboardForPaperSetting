@@ -61,29 +61,14 @@ class _ViewClosState extends State<ViewClos> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text(
-          'View Clos',
-          style: TextStyle(
-              fontSize: 21.0, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 10,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-           Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'View Clos'),
       body: Stack(
         children: [
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/Faculty.png'),
+                  image: AssetImage('assets/images/bg.png'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -91,21 +76,21 @@ class _ViewClosState extends State<ViewClos> {
           ),
           Container(
             alignment: Alignment.topLeft,
-            padding: const EdgeInsets.only(left: 30.0), // Adjust as needed
+            padding: const EdgeInsets.only(left: 15.0), // Adjust as needed
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 100),
+                const SizedBox(height: 10),
                 Text(
                   widget.coursename,
                   style: const TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                    ),
                 ),
                 Text(
                   'Course Code: ${widget.ccode}',
-                  style: const TextStyle(fontSize: 16.0, color: Colors.white),
+                  style: const TextStyle(fontSize: 16.0),
                 ),
 
               ],
@@ -115,13 +100,13 @@ class _ViewClosState extends State<ViewClos> {
                   const Center(
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.white,
+                        Colors.black,
                       ),
                     ),
                   ),
                    if (!isLoading)
                 Positioned(
-                top: 150, // Adjust position as needed
+                top: 100, // Adjust position as needed
                 left: 0,
                 right: 0,
                 bottom: 0,
@@ -132,23 +117,26 @@ class _ViewClosState extends State<ViewClos> {
                     itemCount: clolist.length,
                     itemBuilder: (context, index) {
                       return Card(
-                        elevation: 30,
+                        elevation: 5,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15.0),
                         ),
-                        color: Colors.white10,
+                        color: Colors.white.withOpacity(0.8),
                         child: ListTile(
                           title: Text(
                             'Clo ${index+1}',
-                            style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          subtitle: Text(clolist[index]['clo_text'],style: const TextStyle(color: Colors.white),),
+                          subtitle: Text(clolist[index]['clo_text'],),
                         ),
                       );
                     },
                   ),
                 ),
-                customElevatedButton(onPressed: (){}, buttonText: 'Paper Settings')
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: customElevatedButton(onPressed: (){}, buttonText: 'Paper Settings'),
+                )
                   ],
                 ),
       ),

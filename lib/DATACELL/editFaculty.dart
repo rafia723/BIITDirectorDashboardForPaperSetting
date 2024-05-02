@@ -48,27 +48,13 @@ Future<int> updateFaculty(int id, Map<String, dynamic> facultyData) async {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Edit Faculty',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          color: Colors.white,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-         ),
+        appBar: customAppBar(context: context, title: 'Edit Faculty'),
       body: Stack(
         children: [
           // Background Image
           Positioned.fill(
             child: Image.asset(
-              'assets/images/datacell.png', // Replace with the path to your background image
+              'assets/images/bg.png', 
               fit: BoxFit.cover,
             ),
           ),
@@ -77,9 +63,10 @@ Future<int> updateFaculty(int id, Map<String, dynamic> facultyData) async {
          child: SafeArea(
              child: Column(
                children: [
-                  customTextField(controller: name, hintText: 'Enter Name...', labelText: 'Name', prefixIcon: Icons.abc,obscureText: false),
-                  customTextField(controller: username, hintText: 'Enter Username...', labelText: 'Username', prefixIcon: Icons.person,obscureText: false),
-                 customTextField(controller: password, hintText: 'Password...', labelText: 'Password', prefixIcon: Icons.lock,obscureText:true),
+               
+                  customTextFieldWithoutLabelAndHint(controller: name, prefixIcon: Icons.abc,obscureText: false),
+                  customTextFieldWithoutLabelAndHint(controller: username,prefixIcon: Icons.person,obscureText: false),
+                 customTextFieldWithoutLabelAndHint(controller: password,prefixIcon: Icons.lock,obscureText:true),
                  const SizedBox(height: 10),
                  customElevatedButton(onPressed: () async {
                       int facultyId = widget.fid; // Use the faculty ID provided in the widget

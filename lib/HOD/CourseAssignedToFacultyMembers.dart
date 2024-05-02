@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:biit_directors_dashbooard/HOD/CloCheck.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
@@ -21,7 +23,6 @@ class AssignedtoDetails extends StatefulWidget {
 }
 
 class _AssignedtoDetailsState extends State<AssignedtoDetails> {
-  Color customColor = const Color.fromARGB(255, 78, 223, 180);
   List<dynamic> atlist = [];
 
   Future<void> loadAssignedToCourses(int id) async {
@@ -114,27 +115,11 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'View Faculty',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-           Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'View Faculty'),
       body: Stack(fit: StackFit.expand, children: [
         Positioned.fill(
           child: Image.asset(
-            'assets/images/HOD.png',
+            'assets/images/bg.png',
             fit: BoxFit.cover,
           ),
         ),
@@ -150,11 +135,11 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
                 style: const TextStyle(
                     fontSize: 18.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white),
+                   ),
               ),
               Text(
                 'Course Code: ${widget.ccode}',
-                style: const TextStyle(fontSize: 16.0, color: Colors.white),
+                style: const TextStyle(fontSize: 16.0),
               ),
               const SizedBox(
                 height: 80,
@@ -164,7 +149,6 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
                   'Assigned To:',
                   style: TextStyle(
                       fontSize: 23.0,
-                      color: Colors.white,
                       fontWeight: FontWeight.w500),
                 ),
               ),
@@ -194,16 +178,19 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
                     }),
               ),
               Center(
-                  child: customElevatedButton(
-                      onPressed: () {
-                         Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>  
-                                  CloCheckingScreen(courseTitle: widget.courseTitle,ccode: widget.ccode,cid:widget.cid),
-                                ),
-                              );
-                      }, buttonText: 'Manage CLOs'))
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: customElevatedButton(
+                        onPressed: () {
+                           Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>  
+                                    CloCheckingScreen(courseTitle: widget.courseTitle,ccode: widget.ccode,cid:widget.cid),
+                                  ),
+                                );
+                        }, buttonText: 'Manage CLOs'),
+                  ))
             ],
           ),
         ),

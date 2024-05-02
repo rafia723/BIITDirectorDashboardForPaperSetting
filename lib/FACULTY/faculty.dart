@@ -1,8 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/courseview.dart';
 import 'package:biit_directors_dashbooard/FACULTY/notification.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -17,7 +20,6 @@ class Faculty extends StatefulWidget {
 }
 
 class _FacultyState extends State<Faculty> {
-  Color customColor = const Color.fromARGB(255, 78, 223, 180);
 
   List<dynamic> aclist = [];
   Future<void> loadAssignedCourses(int id) async {
@@ -50,7 +52,6 @@ class _FacultyState extends State<Faculty> {
       }
     } catch (e) {
       showDialog(
-        // ignore: use_build_context_synchronously
         context: context,
         builder: (context) {
           return const AlertDialog(
@@ -80,8 +81,10 @@ class _FacultyState extends State<Faculty> {
               ),
             );
           },
+        
           style: ElevatedButton.styleFrom(
-            backgroundColor: customColor,
+            backgroundColor: customButtonColor,
+       
             fixedSize: const Size(170, 100),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
@@ -90,13 +93,13 @@ class _FacultyState extends State<Faculty> {
           ),
           child: Text(
             course['c_title'] ?? 'No Title Available',
-            style: const TextStyle(color: Colors.black),
+          style: const TextStyle(color: Colors.black),
             textAlign: TextAlign.center,
           ),
         ),
         Text(
           course['c_code'] ?? 'No Title Available',
-          style: const TextStyle(color: Colors.white),
+         
           textAlign: TextAlign.center,
         ),
          const SizedBox(height: 20,),
@@ -113,30 +116,31 @@ class _FacultyState extends State<Faculty> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: customAppBarColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.only(
+        bottomLeft: Radius.circular(30),
+        bottomRight: Radius.circular(30),
+      ),
+    ),
         title: const Text(
           'Faculty Dashboard',
           style: TextStyle(
-              fontSize: 21.0, fontWeight: FontWeight.bold, color: Colors.white),
+              fontSize: 21.0, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 10,
        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         actions: [
-          // Add your notification icon or message box widget here
           IconButton(
             icon: const Icon(
               Icons.message,
-              color: Colors.white,
-            ), // Replace with your icon or message box widget
+            ), 
             onPressed: () {
-              // Handle the notification icon or message box click event
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -148,16 +152,9 @@ class _FacultyState extends State<Faculty> {
           IconButton(
             icon: const Icon(
               Icons.timer,
-              color: Colors.white,
-            ), // Replace with your icon or message box widget
+            ), 
             onPressed: () {
-              // Handle the notification icon or message box click event
-              // Navigator.pushReplacement(
-              //   context,
-              //   MaterialPageRoute(
-              //     builder: (context) => const Notifications(),
-              //   ),
-              // );
+              
             },
           ),
         ],
@@ -166,7 +163,7 @@ class _FacultyState extends State<Faculty> {
         children: [
           Positioned.fill(
             child: Image.asset(
-              'assets/images/Faculty.png',
+              'assets/images/bg.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -175,13 +172,13 @@ class _FacultyState extends State<Faculty> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(height: 100),
+                Container(height: 10),
                 Text(
                   'Welcome, ${widget.facultyname}!',
                   style: const TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                    ),
                 ),
                 Container(height: 80),
                 Expanded(

@@ -1,5 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:biit_directors_dashbooard/HOD/AssignedCoursesList.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:flutter/material.dart';
@@ -77,30 +80,14 @@ class _FacultyListState extends State<FacultyList> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 10,
-        title: const Text(
-          'Faculty Details',
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.white,
-          ),
-          onPressed: () {
-           Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'Faculty Details'),
       body: SizedBox(
         height: double.infinity,
         child: Stack(
           children: [
             Positioned.fill(
               child: Image.asset(
-                'assets/images/HOD.png',
+                'assets/images/bg.png',
                 fit: BoxFit.cover,
               ),
             ),
@@ -112,18 +99,18 @@ class _FacultyListState extends State<FacultyList> {
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: TextField(
-                      style: const TextStyle(color: Colors.white),
                       controller: search,
                       onChanged: (value) {
                         searchFaculty(value);
                       },
                       decoration: const InputDecoration(
+                        floatingLabelBehavior: FloatingLabelBehavior.never,
                         suffixIcon: Icon(
                           Icons.search,
-                          color: Colors.white54,
+                          color: Colors.black54,
                         ),
                         labelText: 'Search Faculty',
-                        labelStyle: TextStyle(color: Colors.white54),
+                        labelStyle: TextStyle(color: Colors.black54),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -154,7 +141,7 @@ class _FacultyListState extends State<FacultyList> {
                           },
                           child: flist.isEmpty
                           ?const Center(
-                            child:CircularProgressIndicator(color: Colors.white,)
+                            child:CircularProgressIndicator(color: Colors.black,)
                             ):ListTile(
                             title: Text(
                               flist[index]['f_name'],

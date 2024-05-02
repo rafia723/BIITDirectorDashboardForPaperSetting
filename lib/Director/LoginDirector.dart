@@ -19,7 +19,7 @@ class _LoginDirectorState extends State<LoginDirector> {
         // Background Image
         Positioned.fill(
           child: Image.asset(
-            'assets/images/director.png', // Replace with the path to your background image
+            'assets/images/bg.png', // Replace with the path to your background image
             fit: BoxFit.cover,
           ),
         ),
@@ -45,12 +45,12 @@ class _LoginDirectorState extends State<LoginDirector> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Login', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: Colors.white)),
+                const Text('Login', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
                 TextFormField(
-
                   controller: username,
                   decoration: InputDecoration(
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.7),
                     border: OutlineInputBorder(
@@ -60,12 +60,14 @@ class _LoginDirectorState extends State<LoginDirector> {
                     labelText: 'Username',
                     prefixIcon: const Icon(Icons.person),
                   ),
+                  
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
                   obscureText: true,
                   controller: password,
                   decoration: InputDecoration(
+                       floatingLabelBehavior: FloatingLabelBehavior.never,
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.7),
                     border: OutlineInputBorder(
@@ -86,7 +88,7 @@ class _LoginDirectorState extends State<LoginDirector> {
                       ),
                     );
                   },
-                  child: const Text('Login'),
+                 child: const Text('Login',style: TextStyle(color: Colors.black),),
                 ),
               ],
             ),

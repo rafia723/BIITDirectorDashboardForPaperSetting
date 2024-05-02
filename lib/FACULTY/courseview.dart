@@ -1,7 +1,9 @@
 import 'package:biit_directors_dashbooard/FACULTY/coveredTopics.dart';
 import 'package:biit_directors_dashbooard/FACULTY/manageClos.dart';
 import 'package:biit_directors_dashbooard/FACULTY/manageTopics.dart';
+import 'package:biit_directors_dashbooard/FACULTY/paperHeader.dart';
 import 'package:biit_directors_dashbooard/FACULTY/viewClos.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
 class CourseView extends StatefulWidget {
@@ -26,7 +28,7 @@ class CourseView extends StatefulWidget {
 }
 
 class _CourseViewState extends State<CourseView> {
-  Color customColor = const Color.fromARGB(255, 78, 223, 180);
+
 
   Widget customButton({
     required String text,
@@ -35,7 +37,7 @@ class _CourseViewState extends State<CourseView> {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: customColor,
+        backgroundColor: customButtonColor,
         minimumSize: const Size(250, 60),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.0),
@@ -53,28 +55,14 @@ class _CourseViewState extends State<CourseView> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: const Text(
-          'Settings',
-          style: TextStyle(
-              fontSize: 21.0, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 10,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      appBar: customAppBar(context: context, title: 'Settings'),
       body: Stack(
         children: [
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/images/Faculty.png'),
+                  image: AssetImage('assets/images/bg.png'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -82,7 +70,7 @@ class _CourseViewState extends State<CourseView> {
           ),
           Container(
             alignment: Alignment.topLeft,
-            padding: const EdgeInsets.only(left: 30.0), // Adjust as needed
+            padding: const EdgeInsets.only(left: 15.0), // Adjust as needed
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -92,11 +80,11 @@ class _CourseViewState extends State<CourseView> {
                   style: const TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white),
+                      ),
                 ),
                 Text(
                   'Course Code: ${widget.ccode}',
-                  style: const TextStyle(fontSize: 16.0, color: Colors.white),
+                  style: const TextStyle(fontSize: 16.0),
                 ),
               ],
             ),
@@ -107,7 +95,8 @@ class _CourseViewState extends State<CourseView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 50),
-                  customButton(text: 'Paper Settings', onPressed: () {}),
+                  customButton(text: 'Paper Settings', onPressed: () {
+                  }),
                   const SizedBox(height: 10),
                   customButton(text: 'View Topics', onPressed: () {
                        Navigator.push(
@@ -132,7 +121,16 @@ class _CourseViewState extends State<CourseView> {
                     children: <Widget>[
                       if (widget.role == 'Senior') ...[
                         const SizedBox(height: 10),
-                        customButton(text: 'Manage Paper', onPressed: () {}),
+                        customButton(text: 'Manage Paper', onPressed: () {
+                           Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>  PaperHeader(
+                                    coursename: widget.coursename, 
+                                  ccode: widget.ccode, cid: widget.cid),
+                                ),
+                              );
+                        }),
                         const SizedBox(height: 10),
                         customButton(text: 'Manage Topics', onPressed: () {
                             Navigator.push(
