@@ -78,6 +78,7 @@ class _PaperHeaderState extends State<PaperHeader> {
                   ],
                 ),
               ),
+              
          //      const SizedBox(height: 30,),
                 const Row(
                   children: [
@@ -94,43 +95,43 @@ class _PaperHeaderState extends State<PaperHeader> {
                 '  Teachers:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(
-                height: 10,
-              ),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    const Text(
-                      '  Course Title:',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                    ),
-                    Text(
-                      '    ${widget.coursename}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Row(
-                children: [
-                  const Text(
-                    '  Course Code:',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  Text(
-                    '    ${widget.ccode}',
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 10,
-              ),
+              // const SizedBox(
+              //   height: 10,
+              // ),
+              // SingleChildScrollView(
+              //   scrollDirection: Axis.horizontal,
+              //   child: Row(
+              //     children: [
+              //       const Text(
+              //         '  Course Title:',
+              //         style:
+              //             TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              //       ),
+              //       Text(
+              //         '    ${widget.coursename}',
+              //         style: const TextStyle(fontSize: 16),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+              // const SizedBox(
+              //   height: 10,
+              // ),
+              // Row(
+              //   children: [
+              //     const Text(
+              //       '  Course Code:',
+              //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              //     ),
+              //     Text(
+              //       '    ${widget.ccode}',
+              //       style: const TextStyle(fontSize: 16),
+              //     ),
+              //   ],
+              // ),
+              // const SizedBox(
+              //   height: 10,
+              // ),
               Row(
                 children: [
                   const Text(
@@ -145,9 +146,6 @@ class _PaperHeaderState extends State<PaperHeader> {
                       onPressed: _showDatePicker,
                       icon: const Icon(Icons.calendar_month)),
                 ],
-              ),
-              const SizedBox(
-                height: 10,
               ),
               Row(
                 children: [
@@ -275,9 +273,6 @@ class _PaperHeaderState extends State<PaperHeader> {
                   const Text('Summer'),
                 ],
               ),
-              const SizedBox(
-                height: 10,
-              ),
               const Text(
                 '  Term:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
@@ -309,9 +304,6 @@ class _PaperHeaderState extends State<PaperHeader> {
                       }),
                   const Text('Final'),
                 ],
-              ),
-              const SizedBox(
-                height: 10,
               ),
               Row(
                 children: [
