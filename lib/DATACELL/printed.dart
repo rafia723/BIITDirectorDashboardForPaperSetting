@@ -29,7 +29,10 @@ class _PrintedState extends State<Printed> {
 
   Future<void> searchPrintedPapers(String courseTitle) async {
     try {
-      if (courseTitle.isNotEmpty) {
+    if (courseTitle.isEmpty) { 
+      loadPrintedPapers();
+      return;
+    }
       Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/SearchPrintedPapers?courseTitle=$courseTitle');
       var response = await http.get(uri);
       if (response.statusCode == 200) {
@@ -37,7 +40,6 @@ class _PrintedState extends State<Printed> {
         setState(() {});
       } else {
         throw Exception('Failed to load Printed Papers');
-      }
       }
     } catch (e) {
       showDialog(

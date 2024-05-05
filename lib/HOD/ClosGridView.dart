@@ -15,7 +15,7 @@ class GridViewScreen extends StatefulWidget {
 class _GridViewScreenState extends State<GridViewScreen> {
   List<dynamic> clist = [];
     String? selectedCourse; // Nullable initially
-Future<void> loadCourse() async {
+Future<void> loadCourse(BuildContext context) async {
     try {
       Uri uri =
           Uri.parse('${APIHandler().apiUrl}Course/getCourseWithEnabledStatus');
@@ -28,6 +28,7 @@ Future<void> loadCourse() async {
         throw Exception('Failed to load course');
       }
     } catch (e) {
+      if(mounted){
       showDialog(
         context: context,
         builder: (context) {
@@ -36,13 +37,14 @@ Future<void> loadCourse() async {
           );
         },
       );
+      }
     }
   }
 
  @override
   void initState() {
     super.initState();
-    loadCourse();
+    loadCourse(context);
   }
 
   @override

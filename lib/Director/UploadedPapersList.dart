@@ -27,9 +27,12 @@ class _DRTUploadedPapersState extends State<DRTUploadedPapers> {
     }
   }
 
-  Future<void> SearchUploadedPapers(String courseTitle) async {
+  Future<void> searchUploadedPapers(String courseTitle) async {
     try {
-       if (courseTitle.isNotEmpty) {
+       if (courseTitle.isEmpty) {
+        loadUploadedPapers();
+         return;
+       }
       Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/SearchUploadedPapers?courseTitle=$courseTitle');
       var response = await http.get(uri);
       if (response.statusCode == 200) {
@@ -38,7 +41,6 @@ class _DRTUploadedPapersState extends State<DRTUploadedPapers> {
       } else {
         throw Exception('Failed to load Uploaded Papers');
       }
-    } 
     }catch (e) {
       showDialog(
         context: context,
@@ -83,7 +85,7 @@ class _DRTUploadedPapersState extends State<DRTUploadedPapers> {
                     child: TextField(
                       controller: search,
                       onChanged: (value) {
-                        SearchUploadedPapers(value);
+                        searchUploadedPapers(value);
                       },
                       decoration: const InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,

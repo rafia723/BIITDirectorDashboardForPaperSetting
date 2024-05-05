@@ -21,13 +21,13 @@ class _FacultyDetailsState extends State<FacultyDetails> {
   @override
   void initState() {
     super.initState();
-    loadFaculty();
+    loadFaculty(context);
   }
 
   Future<void> searchFaculty(String query) async {
     try {
       if (query.isEmpty) {
-        loadFaculty();
+        loadFaculty(context);
         return;
       }
       Uri url = Uri.parse(
@@ -63,7 +63,7 @@ Future<void> updateStatus(int id, bool newStatus) async {
     );
     if (mounted) {
       if (response.statusCode == 200) {
-        loadFaculty();
+        loadFaculty(context);
         showDialog(
           context: context,
           builder: (context) {
@@ -107,10 +107,10 @@ Future<void> updateStatus(int id, bool newStatus) async {
         builder: (context) => EditFaculty(fid, data),
       ),
     );
-    loadFaculty();
+    loadFaculty(context);
   }
 
- Future<void> loadFaculty() async {
+ Future<void> loadFaculty(BuildContext context) async {
   try {
     Uri uri = Uri.parse("${APIHandler().apiUrl}Faculty/getFaculty");
     var response = await http.get(uri);

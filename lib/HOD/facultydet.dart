@@ -18,7 +18,7 @@ List<dynamic> flist = [];
 TextEditingController search = TextEditingController();
 
 class _FacultyListState extends State<FacultyList> {
-  Future<void> loadFaculty() async {
+  Future<void> loadFaculty(BuildContext context) async {
     try {
       Uri uri = Uri.parse(
           "${APIHandler().apiUrl}Faculty/getFacultyWithEnabledStatus");
@@ -45,13 +45,13 @@ class _FacultyListState extends State<FacultyList> {
   @override
   void initState() {
     super.initState();
-    loadFaculty();
+    loadFaculty(context);
   }
 
   Future<void> searchFaculty(String query) async {
     try {
       if (query.isEmpty) {
-        loadFaculty();
+        loadFaculty(context);
         return;
       }
       Uri url = Uri.parse(

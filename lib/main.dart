@@ -16,6 +16,11 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
         // Define your custom focus color here
         primaryColor: Colors.black, // Example: Blue color
+        listTileTheme: const ListTileThemeData(
+       //  tileColor: Colors.white,
+          textColor: Colors.black,
+          //dense: true
+        ),
         inputDecorationTheme: const InputDecorationTheme(
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.black), // Set your custom color here

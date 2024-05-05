@@ -27,9 +27,12 @@ class _ApprovedState extends State<Approved> {
     }
   }
 
-  Future<void> SearchApprovedPapers(String courseTitle) async {
-     try {
-    if (courseTitle.isNotEmpty) { // Only proceed if the search query is not empty
+  Future<void> searchApprovedPapers(BuildContext context, String courseTitle) async {
+  try {
+    if (courseTitle.isEmpty) { 
+      loadApprovedPapers();
+      return;
+    }
       Uri uri = Uri.parse(
           '${APIHandler().apiUrl}Paper/SearchApprovedPapers?courseTitle=$courseTitle');
       var response = await http.get(uri);
@@ -39,10 +42,8 @@ class _ApprovedState extends State<Approved> {
       } else {
         throw Exception('Failed to load Approved Papers');
       }
-    }
   } catch (e) {
     showDialog(
-      // ignore: use_build_context_synchronously
       context: context,
       builder: (context) {
         return const AlertDialog(
@@ -84,7 +85,7 @@ class _ApprovedState extends State<Approved> {
                     child: TextField(
                       controller: search,
                       onChanged: (value) {
-                        SearchApprovedPapers(value);
+                        searchApprovedPapers(context,value);
                       },
                       decoration: const InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,
