@@ -1,7 +1,6 @@
+import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class PaperHeader extends StatefulWidget {
   final int? cid;
@@ -26,6 +25,37 @@ class _PaperHeaderState extends State<PaperHeader> {
   String selectedtermValue = '';
   DateTime _dateTime = DateTime.now();
   int _selectedYear = DateTime.now().year;
+  List<dynamic> _teachers = [];
+  dynamic status;
+
+    @override
+  void initState() {
+    super.initState();
+    _loadTeachers();
+    _loadPaperStatus();
+
+  }
+
+
+void _loadPaperStatus() async {
+  try {
+     status = await APIHandler().loadPaperStatus(widget.cid!); 
+  } catch (e) {
+    print('Error: $e');
+  }
+}
+
+  Future<void> _loadTeachers() async {
+    try {
+      List<dynamic> teachers =
+          await APIHandler().loadTeachersByCourseId(widget.cid!);
+      setState(() {
+        _teachers = teachers;
+      });
+    } catch (e) {
+      print('Error loading teachers: $e');
+    }
+  }
 
   void _showDatePicker() {
     showDatePicker(
@@ -80,20 +110,42 @@ class _PaperHeaderState extends State<PaperHeader> {
               ),
               
          //      const SizedBox(height: 30,),
-                const Row(
+                 Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      '  Status:',style: TextStyle(fontSize: 16),
+                    const Text(
+                      '  Status: ',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),
                       ),
-                  ],
-                ),
+                        Text(
+                 status == null ? 'Loading...' : '$status    ',
+                  style:   TextStyle(fontSize: 16,
+                  color: status=="approved"||status=="printed" ? Colors.green: status=="rejected" ? Colors.red : Colors.black,
+                  fontWeight: FontWeight.w500),
+                  ),
+                  ], ),
           
               const SizedBox(
                 height: 10,
               ),
-              const Text(
-                '  Teachers:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    const Text(
+                      '  Teacher: ',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                Text(
+                  _teachers.isEmpty
+                      ? 'Loading...' // Display loading text
+                      : _teachers
+                          .map<String>((teacher) => teacher['f_name'] as String)
+                          .join(', '), // Extract teacher names and join with commas
+                  style: const TextStyle(fontSize: 16),
+                ),
+
+                  ],
+                ),
               ),
               // const SizedBox(
               //   height: 10,

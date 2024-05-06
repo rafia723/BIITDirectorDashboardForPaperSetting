@@ -1,4 +1,5 @@
 import 'package:biit_directors_dashbooard/Director/director.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
 class LoginDirector extends StatefulWidget {
@@ -30,8 +31,8 @@ class _LoginDirectorState extends State<LoginDirector> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 100, // Adjust the width of the circular logo
-                  height: 100, // Adjust the height of the circular logo
+                  width: 80, // Adjust the width of the circular logo
+                  height: 80, // Adjust the height of the circular logo
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
@@ -39,15 +40,16 @@ class _LoginDirectorState extends State<LoginDirector> {
                       width: 1.0, // Adjust the border width
                     ),
                     image: const DecorationImage(
-                      image: AssetImage('assets/images/logo.jpeg'), // Replace with the path to your logo image
-                      fit: BoxFit.cover,
+                      image: AssetImage('assets/images/logo.png'), // Replace with the path to your logo image
+                      fit: BoxFit.fitWidth,
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 const Text('Login', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 TextFormField(
+
                   controller: username,
                   decoration: InputDecoration(
                     floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -60,14 +62,13 @@ class _LoginDirectorState extends State<LoginDirector> {
                     labelText: 'Username',
                     prefixIcon: const Icon(Icons.person),
                   ),
-                  
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 TextFormField(
                   obscureText: true,
                   controller: password,
                   decoration: InputDecoration(
-                       floatingLabelBehavior: FloatingLabelBehavior.never,
+                     floatingLabelBehavior: FloatingLabelBehavior.never,
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.7),
                     border: OutlineInputBorder(
@@ -78,7 +79,7 @@ class _LoginDirectorState extends State<LoginDirector> {
                     prefixIcon: const Icon(Icons.lock),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pushReplacement(
@@ -88,7 +89,8 @@ class _LoginDirectorState extends State<LoginDirector> {
                       ),
                     );
                   },
-                 child: const Text('Login',style: TextStyle(color: Colors.black),),
+                  style:  ButtonStyle(backgroundColor:MaterialStatePropertyAll(customButtonColor)),
+                  child: const Text('Login',style: TextStyle(color: Colors.white),),
                 ),
               ],
             ),

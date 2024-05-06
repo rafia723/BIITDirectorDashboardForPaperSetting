@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 
- Color customButtonColor = const Color.fromARGB(255, 78, 223, 180);
+  Color customButtonColor =  const Color.fromARGB(255, 78, 223, 180);
   
     Color customAppBarColor =const Color.fromRGBO(0, 233, 206, 1);
 Widget customTextField({

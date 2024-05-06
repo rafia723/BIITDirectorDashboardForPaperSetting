@@ -1,3 +1,5 @@
+import 'package:biit_directors_dashbooard/FACULTY/paperSetting.dart';
+import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:biit_directors_dashbooard/splash.dart';
 import 'package:flutter/material.dart';
 
@@ -28,7 +30,7 @@ class MyApp extends StatelessWidget {
           floatingLabelStyle: TextStyle(color: Colors.white)
         ),
         ),
-      home:  const SplashScreen(),
+      home:  const PaperSetting(),
     );
   }
 }

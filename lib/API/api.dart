@@ -188,6 +188,44 @@ Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
   }
 }
 
+///////////////////////////////////////////////Paper//////////////////////////////////////////////////////
+Future<List<dynamic>> loadTeachersByCourseId(int cid) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${apiUrl}Paper/getTeachersNamebyCourseId/$cid');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+       
+      } else {
+        throw Exception('Error....');
+      }
+    } catch (e) {
+      throw Exception('Failed to load clos mapped with topic');
+    }
+    return list;
+  }
+
+
+  Future<dynamic> loadPaperStatus(int cid) async {
+  dynamic status;
+    try {
+      Uri uri = Uri.parse('${apiUrl}Paper/getPaperStatus/$cid');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        status = jsonDecode(response.body);
+       
+      } else {
+        throw Exception('Error....');
+      }
+    } catch (e) {
+      throw Exception('Failed to load clos mapped with topic');
+    }
+    return status;
+  }
+
 
 
 
