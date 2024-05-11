@@ -1,4 +1,5 @@
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/FACULTY/paperSetting.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
@@ -24,9 +25,10 @@ class _PaperHeaderState extends State<PaperHeader> {
   String selectedSessionValue = '';
   String selectedtermValue = '';
   DateTime _dateTime = DateTime.now();
+    String selectedDate ='';
   int _selectedYear = DateTime.now().year;
   List<dynamic> _teachers = [];
-  dynamic status;
+  dynamic status='pending';
 
     @override
   void initState() {
@@ -64,7 +66,9 @@ void _loadPaperStatus() async {
             firstDate: DateTime(2000),
             lastDate: DateTime(2100))
         .then((value) => setState(() {
-              _dateTime = value!;
+              // _dateTime = value!;
+              //    selectedDate = '${DateTime(_dateTime.day, _dateTime.month, _dateTime.year)}';
+               _dateTime = DateTime(value!.year, value.month, value.day);
             }));
   }
 
@@ -408,7 +412,14 @@ void _loadPaperStatus() async {
               ),
               Center(
                   child: customElevatedButton(
-                      onPressed: () {}, buttonText: 'Save'))
+                      onPressed: () {
+                        Navigator.push(context,MaterialPageRoute(builder: (context)=>PaperSetting(cid: widget.cid, ccode: widget.ccode, coursename: widget.coursename, teachers: _teachers, 
+                        date: _dateTime, duration: durationController.text, degree: degreeController.text, 
+                        tMarks: totalMarksController.text, session: selectedSessionValue, term: selectedtermValue, 
+                        questions: int.parse(noOfQuestionsController.text), year: _selectedYear),
+                        )
+                        );
+                      }, buttonText: 'Continue'))
             ],
           ),
         ]));
