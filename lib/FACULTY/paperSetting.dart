@@ -18,10 +18,10 @@ class PaperSetting extends StatefulWidget {
     final int year;
   const PaperSetting(
       {super.key,
-      required this.cid,
+       this.cid,
       required this.ccode,
       required this.coursename,
-      required this.teachers,
+       required this.teachers,
       required this.date,
      required this.duration,
      required this.degree,
@@ -40,6 +40,8 @@ class PaperSetting extends StatefulWidget {
 
 class _PaperSettingState extends State<PaperSetting> {
   TextEditingController questionController=TextEditingController();
+  TextEditingController marksController=TextEditingController();
+  String dropdownValue = 'Easy';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,45 +61,48 @@ class _PaperSettingState extends State<PaperSetting> {
           ),
           Column(
             children: [
-              Row(
-             mainAxisAlignment: MainAxisAlignment.start,
-             children: [
-               Container(
-                 width: 70, // Adjust the width of the circular logo
-                 height: 70, // Adjust the height of the circular logo
-                 decoration: BoxDecoration(
-                   shape: BoxShape.circle,
-                   border: Border.all(
-           color: Colors.white, // Adjust the border color
-           width: 1.0, // Adjust the border width
-                   ),
-                   image: const DecorationImage(
-           image: AssetImage('assets/images/biit.png'), // Replace with the path to your logo image
-           fit: BoxFit.fitWidth,
-                   ),
-                 ),
-               ),
-                Text(
-                 'Barani Institute of Information Technology\n       PMAS Arid Agriculture University,\n                 Rawalpindi,Pakistan\n      ${widget.session} ${widget.year} : ${widget.term} Term Examination',
-                 style: const TextStyle(fontSize: 11.5,fontWeight: FontWeight.bold),
-               ),
-               Container(
-                 width: 70, // Adjust the width of the circular logo
-                 height: 70, // Adjust the height of the circular logo
-                 decoration: BoxDecoration(
-                   shape: BoxShape.circle,
-                   border: Border.all(
-           color: Colors.white, // Adjust the border color
-           width: 1.0, // Adjust the border width
-                   ),
-                   image: const DecorationImage(
-           image: AssetImage('assets/images/biit.png'), // Replace with the path to your logo image
-           fit: BoxFit.fitWidth,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                             mainAxisAlignment: MainAxisAlignment.start,
+                             children: [
+                 Container(
+                   width: 70, // Adjust the width of the circular logo
+                   height: 70, // Adjust the height of the circular logo
+                   decoration: BoxDecoration(
+                     shape: BoxShape.circle,
+                     border: Border.all(
+                           color: Colors.white, // Adjust the border color
+                           width: 1.0, // Adjust the border width
+                     ),
+                     image: const DecorationImage(
+                           image: AssetImage('assets/images/biit.png'), // Replace with the path to your logo image
+                           fit: BoxFit.fitWidth,
+                     ),
                    ),
                  ),
-               ),
-             ],
-           ),
+                  Text(
+                   'Barani Institute of Information Technology\n       PMAS Arid Agriculture University,\n                 Rawalpindi,Pakistan\n      ${widget.session} ${widget.year} : ${widget.term} Term Examination',
+                   style: const TextStyle(fontSize: 11.5,fontWeight: FontWeight.bold),
+                 ),
+                 Container(
+                   width: 70, // Adjust the width of the circular logo
+                   height: 70, // Adjust the height of the circular logo
+                   decoration: BoxDecoration(
+                     shape: BoxShape.circle,
+                     border: Border.all(
+                           color: Colors.white, // Adjust the border color
+                           width: 1.0, // Adjust the border width
+                     ),
+                     image: const DecorationImage(
+                           image: AssetImage('assets/images/biit.png'), // Replace with the path to your logo image
+                           fit: BoxFit.fitWidth,
+                     ),
+                   ),
+                 ),
+                             ],
+                           ),
+              ),
 
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -159,7 +164,72 @@ class _PaperSettingState extends State<PaperSetting> {
               ),
             ),
           ),
-           
+         Padding(
+  padding: const EdgeInsets.all(8.0),
+  child: Row(
+    children: [
+      Expanded(
+        child: TextFormField(
+          controller: questionController,
+          decoration: const InputDecoration(
+            contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 12.0),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16.0))
+            )
+          ),
+        ),
+      ),
+           IconButton(onPressed: (){}, icon: const Icon(Icons.photo_library)),
+           IconButton(onPressed: (){}, icon: const Icon(Icons.add)),
+    ],
+  ),
+),
+    Row(
+      children: [
+        const Text('    Difficulty:  '),
+        DropdownButton<String>(
+            value: dropdownValue,
+            onChanged: (String? newValue) {
+          setState(() {
+            dropdownValue = newValue!;
+          });
+            },
+            items: <String>['Easy', 'Medium', 'Hard']
+            .map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+            }).toList(),
+          ),
+          const SizedBox(width: 50,),
+          const Text('Topic:  '),
+          ElevatedButton(onPressed: (){},style: ElevatedButton.styleFrom( minimumSize: Size(80, 30),), 
+          child: Text('Select',style: TextStyle(color: Colors.black),),),
+      ],
+    ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('Marks:  '),
+             SizedBox(
+          width: 50, 
+          height: 35,// Set the width as needed
+          child: TextFormField(
+            keyboardType: TextInputType.number,
+            maxLines: 1,
+            controller: marksController,
+            decoration: const InputDecoration(
+               
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(8.0)),
+              ),
+            ),
+          ),
+        ),
+          ],
+        ),
+
             ],
           )
         ],

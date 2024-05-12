@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.12:3000/';
+  String apiUrl='http://192.168.10.7:3000/';
  ///////////////////////////////CLO///////////////////////////////////////
   Future<int> addClo(
       String cloText, int cId,String status) async {
