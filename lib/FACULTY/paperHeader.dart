@@ -30,32 +30,35 @@ class _PaperHeaderState extends State<PaperHeader> {
   DateTime _dateTime = DateTime.now();
   String selectedDate = '';
   int _selectedYear = DateTime.now().year;
-  List<dynamic> _teachers = [];
-  dynamic status = 'pending';
+  List<dynamic> teachers = [];
+  dynamic status= 'pending';
   dynamic sid;
 
   @override
   void initState() {
     super.initState();
-    loadSession();
-    _loadTeachers();
-    _loadPaperStatus();
+    loadTeachers();
+    initializeData();
   }
 
-  void _loadPaperStatus() async {
+    Future<void> initializeData() async {
     try {
-      status = await APIHandler().loadPaperStatus(widget.cid!, sid);
+      // Making loadSession and loadTeachers calls in parallel
+      await Future.wait([loadSession(), loadTeachers()]);
+      if (sid != null) {
+        status = await APIHandler().loadPaperStatus(widget.cid!, sid);
+        setState(() {}); // Update the UI after loading the status
+      }
     } catch (e) {
-      print('Error: $e');
+      print('Error initializing data: $e');
     }
   }
 
-  Future<void> _loadTeachers() async {
+  Future<void> loadTeachers() async {
     try {
-      List<dynamic> teachers =
-          await APIHandler().loadTeachersByCourseId(widget.cid!);
+      List<dynamic> teachersList = await APIHandler().loadTeachersByCourseId(widget.cid!);
       setState(() {
-        _teachers = teachers;
+        teachers = teachersList; // Correctly update the state with the loaded teachers
       });
     } catch (e) {
       print('Error loading teachers: $e');
@@ -69,13 +72,11 @@ class _PaperHeaderState extends State<PaperHeader> {
       if (response.statusCode == 200) {
         List<dynamic> responseData = jsonDecode(response.body);
         if (responseData.isNotEmpty) {
-          // Assuming you only need the first session data if multiple are returned
-          Map<String, dynamic> sessionData = responseData[0];
-          sid = sessionData['s_id'];
-          setState(() {});
+          sid = responseData[0]['s_id'];
         } else {
           print('Session data not found');
         }
+        setState(() {}); // Update the UI after loading the session
       } else {
         print('Failed to load session: ${response.statusCode}');
       }
@@ -90,7 +91,6 @@ class _PaperHeaderState extends State<PaperHeader> {
       );
     }
   }
-
   void _showDatePicker() {
     showDatePicker(
             context: context,
@@ -180,9 +180,9 @@ class _PaperHeaderState extends State<PaperHeader> {
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                     Text(
-                      _teachers.isEmpty
+                      teachers.isEmpty
                           ? 'Loading...' // Display loading text
-                          : _teachers
+                          : teachers
                               .map<String>(
                                   (teacher) => teacher['f_name'] as String)
                               .join(
@@ -192,43 +192,6 @@ class _PaperHeaderState extends State<PaperHeader> {
                   ],
                 ),
               ),
-              // const SizedBox(
-              //   height: 10,
-              // ),
-              // SingleChildScrollView(
-              //   scrollDirection: Axis.horizontal,
-              //   child: Row(
-              //     children: [
-              //       const Text(
-              //         '  Course Title:',
-              //         style:
-              //             TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              //       ),
-              //       Text(
-              //         '    ${widget.coursename}',
-              //         style: const TextStyle(fontSize: 16),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              // const SizedBox(
-              //   height: 10,
-              // ),
-              // Row(
-              //   children: [
-              //     const Text(
-              //       '  Course Code:',
-              //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              //     ),
-              //     Text(
-              //       '    ${widget.ccode}',
-              //       style: const TextStyle(fontSize: 16),
-              //     ),
-              //   ],
-              // ),
-              // const SizedBox(
-              //   height: 10,
-              // ),
               Row(
                 children: [
                   const Text(
@@ -458,7 +421,7 @@ class _PaperHeaderState extends State<PaperHeader> {
               Center(
                   child: customElevatedButton(
                       onPressed: () {
-                        APIHandler()
+                         APIHandler()
                             .addPaperHeader(
                           durationController.text,
                           degreeController.text,
@@ -467,6 +430,7 @@ class _PaperHeaderState extends State<PaperHeader> {
                           _selectedYear,
                           _dateTime,
                           selectedSessionValue,
+                          int.parse(noOfQuestionsController.text),
                           widget.cid!,
                           sid,
                           status,
@@ -484,25 +448,38 @@ class _PaperHeaderState extends State<PaperHeader> {
                                   title: Text('Added'),
                                 );
                               },
-                            );
-                              Navigator.push(
+                            ).then((value) {
+                                Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => PaperSetting(
                                   cid: widget.cid,
                                   ccode: widget.ccode,
                                   coursename: widget.coursename,
-                                  teachers: _teachers,
-                                  date: _dateTime,
-                                  duration: durationController.text,
-                                  degree: degreeController.text,
-                                  tMarks: totalMarksController.text,
-                                  session: selectedSessionValue,
-                                  term: selectedtermValue,
-                                  questions:
-                                      int.parse(noOfQuestionsController.text),
-                                  year: _selectedYear),
-                            ));
+                            )));
+                            });
+
+                           durationController.clear();
+                           degreeController.clear();
+                           totalMarksController.clear();
+                           noOfQuestionsController.clear();
+
+                        } else if (code == 409) {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                Future.delayed(const Duration(seconds: 4), () {
+                                  Navigator.of(context)
+                                      .pop(); // Close the dialog after 2 seconds
+                                });
+                                return  AlertDialog(
+                                  title: Text(
+                                      'Paper term $selectedtermValue and session $selectedSessionValue added for the course and session'),
+                                );
+                              },
+                            );
+
+                          
                           } else if (code == 400) {
                             showDialog(
                               context: context,
@@ -513,7 +490,7 @@ class _PaperHeaderState extends State<PaperHeader> {
                                 });
                                 return const AlertDialog(
                                   title: Text(
-                                      'Paper term already added for the course and session'),
+                                      'You can only create Spring Mid term exams right now'),
                                 );
                               },
                             );
@@ -534,7 +511,7 @@ class _PaperHeaderState extends State<PaperHeader> {
                         });
                       
                       },
-                      buttonText: 'Continue'))
+                      buttonText: 'Save'))
             ],
           ),
         ]));

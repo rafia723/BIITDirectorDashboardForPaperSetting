@@ -2,6 +2,7 @@ import 'package:biit_directors_dashbooard/FACULTY/coveredTopics.dart';
 import 'package:biit_directors_dashbooard/FACULTY/manageClos.dart';
 import 'package:biit_directors_dashbooard/FACULTY/manageTopics.dart';
 import 'package:biit_directors_dashbooard/FACULTY/paperHeader.dart';
+import 'package:biit_directors_dashbooard/FACULTY/paperSetting.dart';
 import 'package:biit_directors_dashbooard/FACULTY/viewClos.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
@@ -28,8 +29,13 @@ class CourseView extends StatefulWidget {
 }
 
 class _CourseViewState extends State<CourseView> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
 
+  
   Widget customButton({
     required String text,
     required VoidCallback onPressed,
@@ -96,6 +102,8 @@ class _CourseViewState extends State<CourseView> {
                 children: [
                   const SizedBox(height: 50),
                   customButton(text: 'Paper Settings', onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>PaperSetting(ccode:  widget.ccode, 
+                    coursename: widget.coursename, cid: widget.cid,)));
                   }),
                   const SizedBox(height: 10),
                   customButton(text: 'View Topics', onPressed: () {

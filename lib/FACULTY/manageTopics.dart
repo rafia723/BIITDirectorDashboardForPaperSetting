@@ -129,7 +129,6 @@ class _ManageTopicsState extends State<ManageTopics> {
           selectedCloIds.add(clolist[i]['clo_id']);
         }
       }
-      // Validate if at least one CLO is selected
       if (selectedCloIds.isEmpty) {
         showDialog(
           context: context,
@@ -159,8 +158,7 @@ class _ManageTopicsState extends State<ManageTopics> {
         return;
       }
       int topicId = await APIHandler().addTopic(topicText, selectedCourseId!);
-      int code =
-          await APIHandler().addMappingsofCloAndTopic(topicId, selectedCloIds);
+      int code =await APIHandler().addMappingsofCloAndTopic(topicId, selectedCloIds);
       if (code == 200) {
         showDialog(
           context: context,
@@ -259,8 +257,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                                   selectedCourseName=e['c_title'];
                                   topicController.clear();
                                   isUpdateMode = false;
-                                  cloCheckBoxes =
-                                      List<bool>.filled(clolist.length, false);
+                                  cloCheckBoxes =List<bool>.filled(clolist.length, false);
                                 });
                                 loadClo(selectedCourseId!);
                               },

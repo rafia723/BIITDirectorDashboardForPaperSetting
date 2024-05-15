@@ -24,6 +24,7 @@ class _CourseDetailState extends State<CourseDetail> {
   }
 
   TextEditingController search = TextEditingController();
+  
   Future<void> updateStatus(int id, bool newStatus) async {
     String status = newStatus ? 'enabled' : 'disabled';
     Uri url =
