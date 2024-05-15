@@ -13,7 +13,10 @@ class Faculty extends StatefulWidget {
   final String facultyname;
   final int fid;
 
-  const Faculty({Key? key, required this.facultyname, required this.fid})
+  const Faculty({
+    Key? key, 
+    required this.facultyname, 
+    required this.fid})
       : super(key: key);
   @override
   State<Faculty> createState() => _FacultyState();

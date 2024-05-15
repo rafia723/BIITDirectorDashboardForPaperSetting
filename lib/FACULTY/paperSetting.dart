@@ -1,35 +1,33 @@
 import 'package:biit_directors_dashbooard/customWidgets.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class PaperSetting extends StatefulWidget {
   final int? cid;
   final String coursename;
   final String ccode;
   final List<dynamic> teachers;
-  final DateTime date;
-  final String duration;
-  final String degree;
-  final String tMarks;
-  final String session;
-    final String term;
-    final int questions;
-    final int year;
+  final DateTime? date;
+  final String? duration;
+  final String? degree;
+  final String? tMarks;
+  final String? session;
+    final String? term;
+    final int? questions;
+    final int? year;
   const PaperSetting(
       {super.key,
        this.cid,
       required this.ccode,
       required this.coursename,
        required this.teachers,
-      required this.date,
-     required this.duration,
-     required this.degree,
-      required this.tMarks,
-      required this.session,
-         required this.term,
-            required this.questions,
-               required this.year,
+       this.date,
+      this.duration,
+      this.degree,
+       this.tMarks,
+       this.session,
+       this.term,
+       this.questions,
+       this.year,
       });
 
   
@@ -64,8 +62,8 @@ class _PaperSettingState extends State<PaperSetting> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
-                             mainAxisAlignment: MainAxisAlignment.start,
-                             children: [
+                 mainAxisAlignment: MainAxisAlignment.start,
+                 children: [
                  Container(
                    width: 70, // Adjust the width of the circular logo
                    height: 70, // Adjust the height of the circular logo
@@ -112,6 +110,7 @@ class _PaperSettingState extends State<PaperSetting> {
                 onTap: () => {
                   Navigator.pop(context),
                 },
+              
                 child: Column(
                   children: [
                     Row(
@@ -130,17 +129,17 @@ class _PaperSettingState extends State<PaperSetting> {
                  Row(
                    children: [
                      const Text('Date of Exam: ',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 12),),
-                      Expanded(child: Text('${widget.date.day}/${widget.date.month}/${widget.date.year}',style: const TextStyle(fontSize: 12)),),
+                      Expanded(child: Text('${widget.date!.day}/${widget.date!.month}/${widget.date!.year}',style: const TextStyle(fontSize: 12)),),
                          const Text('Duration: ',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 12),),
-                     Expanded(child: Text(widget.duration,style: const TextStyle(fontSize: 12),)),
+                     Expanded(child: Text(widget.duration!,style: const TextStyle(fontSize: 12),)),
                    ],
                  ),
                    Row(
                    children: [
                     const Text('Degree Program: ',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 12),),
-                      Expanded(child: Text(widget.degree,style: const TextStyle(fontSize: 12))),
+                      Expanded(child: Text(widget.degree!,style: const TextStyle(fontSize: 12))),
                             const Text('Total Marks: ',style: TextStyle(fontWeight: FontWeight.bold,fontSize: 12),),
-                     Expanded(child: Text(widget.tMarks,style: const TextStyle(fontSize: 12),)),
+                     Expanded(child: Text(widget.tMarks!,style: const TextStyle(fontSize: 12),)),
                    ],
                  ),
                   Row(
@@ -204,8 +203,8 @@ class _PaperSettingState extends State<PaperSetting> {
           ),
           const SizedBox(width: 50,),
           const Text('Topic:  '),
-          ElevatedButton(onPressed: (){},style: ElevatedButton.styleFrom( minimumSize: Size(80, 30),), 
-          child: Text('Select',style: TextStyle(color: Colors.black),),),
+          ElevatedButton(onPressed: (){},style: ElevatedButton.styleFrom( minimumSize: const Size(80, 30),), 
+          child: const Text('Select',style: TextStyle(color: Colors.black),),),
       ],
     ),
         Row(

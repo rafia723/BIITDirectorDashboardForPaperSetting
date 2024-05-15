@@ -208,10 +208,10 @@ Future<List<dynamic>> loadTeachersByCourseId(int cid) async {
   }
 
 
-  Future<dynamic> loadPaperStatus(int cid) async {
+  Future<dynamic> loadPaperStatus(int cid,int sid) async {
   dynamic status;
     try {
-      Uri uri = Uri.parse('${apiUrl}Paper/getPaperStatus/$cid');
+      Uri uri = Uri.parse('${apiUrl}Paper/getPaperStatus/$cid/$sid');
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -221,11 +221,33 @@ Future<List<dynamic>> loadTeachersByCourseId(int cid) async {
         throw Exception('Error....');
       }
     } catch (e) {
-      throw Exception('Failed to load clos mapped with topic');
+      throw Exception('Failed to load paper status');
     }
     return status;
   }
 
+  Future<int> addPaperHeader (
+      String duration,String degree,int tMarks,String term,int year,DateTime date,String session, int cId,int sid,String status) async {
+    String url = "${apiUrl}Paper/addPaperHeader";
+    var headerobj = {
+      'duration': duration,
+      'degree': degree,
+      't_marks': tMarks,
+      'term': term,
+      'year': year,
+      'exam_date': date.toString(),
+      'session': session,
+      'c_id': cId,
+      's_id': sid,
+      'status': status
+    };
+    var json = jsonEncode(headerobj);
+    Uri uri = Uri.parse(url);
+    var response = await http.post(uri,
+        body: json,
+        headers: {"Content-Type": "application/json; charset=UTF-8"});
+    return response.statusCode;
+  }
 
 
 

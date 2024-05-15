@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/paperSetting.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class PaperHeader extends StatefulWidget {
   final int? cid;
@@ -25,27 +28,27 @@ class _PaperHeaderState extends State<PaperHeader> {
   String selectedSessionValue = '';
   String selectedtermValue = '';
   DateTime _dateTime = DateTime.now();
-    String selectedDate ='';
+  String selectedDate = '';
   int _selectedYear = DateTime.now().year;
   List<dynamic> _teachers = [];
-  dynamic status='pending';
+  dynamic status = 'pending';
+  dynamic sid;
 
-    @override
+  @override
   void initState() {
     super.initState();
+    loadSession();
     _loadTeachers();
     _loadPaperStatus();
-
   }
 
-
-void _loadPaperStatus() async {
-  try {
-     status = await APIHandler().loadPaperStatus(widget.cid!); 
-  } catch (e) {
-    print('Error: $e');
+  void _loadPaperStatus() async {
+    try {
+      status = await APIHandler().loadPaperStatus(widget.cid!, sid);
+    } catch (e) {
+      print('Error: $e');
+    }
   }
-}
 
   Future<void> _loadTeachers() async {
     try {
@@ -59,6 +62,35 @@ void _loadPaperStatus() async {
     }
   }
 
+  Future<void> loadSession() async {
+    try {
+      Uri uri = Uri.parse("${APIHandler().apiUrl}Paper/getSession");
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+        List<dynamic> responseData = jsonDecode(response.body);
+        if (responseData.isNotEmpty) {
+          // Assuming you only need the first session data if multiple are returned
+          Map<String, dynamic> sessionData = responseData[0];
+          sid = sessionData['s_id'];
+          setState(() {});
+        } else {
+          print('Session data not found');
+        }
+      } else {
+        print('Failed to load session: ${response.statusCode}');
+      }
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            title: Text('An error occurred. Please try again later.'),
+          );
+        },
+      );
+    }
+  }
+
   void _showDatePicker() {
     showDatePicker(
             context: context,
@@ -68,7 +100,7 @@ void _loadPaperStatus() async {
         .then((value) => setState(() {
               // _dateTime = value!;
               //    selectedDate = '${DateTime(_dateTime.day, _dateTime.month, _dateTime.year)}';
-               _dateTime = DateTime(value!.year, value.month, value.day);
+              _dateTime = DateTime(value!.year, value.month, value.day);
             }));
   }
 
@@ -112,22 +144,29 @@ void _loadPaperStatus() async {
                   ],
                 ),
               ),
-              
-         //      const SizedBox(height: 30,),
-                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    const Text(
-                      '  Status: ',style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),
-                      ),
-                        Text(
-                 status == null ? 'Loading...' : '$status    ',
-                  style:   TextStyle(fontSize: 16,
-                  color: status=="approved"||status=="printed" ? Colors.green: status=="rejected" ? Colors.red : Colors.black,
-                  fontWeight: FontWeight.w500),
+
+              //      const SizedBox(height: 30,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Text(
+                    '  Status: ',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
-                  ], ),
-          
+                  Text(
+                    status == null ? 'Loading...' : '$status    ',
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: status == "approved" || status == "printed"
+                            ? Colors.green
+                            : status == "rejected"
+                                ? Colors.red
+                                : Colors.black,
+                        fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+
               const SizedBox(
                 height: 10,
               ),
@@ -137,17 +176,19 @@ void _loadPaperStatus() async {
                   children: [
                     const Text(
                       '  Teacher: ',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
-                Text(
-                  _teachers.isEmpty
-                      ? 'Loading...' // Display loading text
-                      : _teachers
-                          .map<String>((teacher) => teacher['f_name'] as String)
-                          .join(', '), // Extract teacher names and join with commas
-                  style: const TextStyle(fontSize: 16),
-                ),
-
+                    Text(
+                      _teachers.isEmpty
+                          ? 'Loading...' // Display loading text
+                          : _teachers
+                              .map<String>(
+                                  (teacher) => teacher['f_name'] as String)
+                              .join(
+                                  ', '), // Extract teacher names and join with commas
+                      style: const TextStyle(fontSize: 16),
+                    ),
                   ],
                 ),
               ),
@@ -384,12 +425,16 @@ void _loadPaperStatus() async {
                           ),
                         )),
                   ),
-                  const SizedBox(width: 10,),
+                  const SizedBox(
+                    width: 10,
+                  ),
                   const Text(
                     '  Year: ',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
-                  const SizedBox(width: 10,),
+                  const SizedBox(
+                    width: 10,
+                  ),
                   DropdownButton<int>(
                     value: _selectedYear,
                     onChanged: (int? newValue) {
@@ -413,13 +458,83 @@ void _loadPaperStatus() async {
               Center(
                   child: customElevatedButton(
                       onPressed: () {
-                        Navigator.push(context,MaterialPageRoute(builder: (context)=>PaperSetting(cid: widget.cid, ccode: widget.ccode, coursename: widget.coursename, teachers: _teachers, 
-                        date: _dateTime, duration: durationController.text, degree: degreeController.text, 
-                        tMarks: totalMarksController.text, session: selectedSessionValue, term: selectedtermValue, 
-                        questions: int.parse(noOfQuestionsController.text), year: _selectedYear),
+                        APIHandler()
+                            .addPaperHeader(
+                          durationController.text,
+                          degreeController.text,
+                          int.parse(totalMarksController.text),
+                          selectedtermValue,
+                          _selectedYear,
+                          _dateTime,
+                          selectedSessionValue,
+                          widget.cid!,
+                          sid,
+                          status,
                         )
-                        );
-                      }, buttonText: 'Continue'))
+                            .then((code) {
+                          if (code == 200) {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                Future.delayed(const Duration(seconds: 2), () {
+                                  Navigator.of(context)
+                                      .pop(); // Close the dialog after 2 seconds
+                                });
+                                return const AlertDialog(
+                                  title: Text('Added'),
+                                );
+                              },
+                            );
+                              Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PaperSetting(
+                                  cid: widget.cid,
+                                  ccode: widget.ccode,
+                                  coursename: widget.coursename,
+                                  teachers: _teachers,
+                                  date: _dateTime,
+                                  duration: durationController.text,
+                                  degree: degreeController.text,
+                                  tMarks: totalMarksController.text,
+                                  session: selectedSessionValue,
+                                  term: selectedtermValue,
+                                  questions:
+                                      int.parse(noOfQuestionsController.text),
+                                  year: _selectedYear),
+                            ));
+                          } else if (code == 400) {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                Future.delayed(const Duration(seconds: 2), () {
+                                  Navigator.of(context)
+                                      .pop(); // Close the dialog after 2 seconds
+                                });
+                                return const AlertDialog(
+                                  title: Text(
+                                      'Paper term already added for the course and session'),
+                                );
+                              },
+                            );
+                          } else {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                Future.delayed(const Duration(seconds: 2), () {
+                                  Navigator.of(context)
+                                      .pop(); // Close the dialog after 2 seconds
+                                });
+                                return AlertDialog(
+                                  title: Text('Error....$code'),
+                                );
+                              },
+                            );
+                          }
+                        });
+                      
+                      },
+                      buttonText: 'Continue'))
             ],
           ),
         ]));
