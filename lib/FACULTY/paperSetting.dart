@@ -70,15 +70,16 @@ class _PaperSettingState extends State<PaperSetting> {
     initializeData();
   }
 
-  Future<void> _selectImage() async {
-    final picker = ImagePicker();
-    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedImage != null) {
-      setState(() async {
-        selectedImage = await pickedImage.readAsBytes();
-      });
-    }
+Future<void> _selectImage() async {
+  final picker = ImagePicker();
+  final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+  if (pickedImage != null) {
+    final bytes = await pickedImage.readAsBytes();
+    setState(() {
+      selectedImage = bytes;
+    });
   }
+}
 
   Future<void> loadPaperHeader(int cid, int sid, context) async {
     try {
