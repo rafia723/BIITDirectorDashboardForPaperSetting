@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.5:3000/';
+  String apiUrl='http://192.168.10.2:3000/';
  ///////////////////////////////CLO///////////////////////////////////////
   Future<int> addClo(
       String cloText, int cId,String status) async {
@@ -254,26 +254,29 @@ Future<List<dynamic>> loadTeachersByCourseId(int cid) async {
 
 Future<int> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int tid, int pid, int fid) async {
   String url = "${apiUrl}Question/addQuestion";
-  var questionobj = {
+
+  // Prepare the multipart request
+  var request = http.MultipartRequest('POST', Uri.parse(url));
+  request.headers.addAll({"Content-Type": "application/json; charset=UTF-8"});
+  request.fields.addAll({
     'q_text': qtext,
-    'q_image': qimage != null ? base64Encode(qimage) : null, // Convert Uint8List to base64 string
-    'q_marks': qmarks,
+    'q_marks': qmarks.toString(),
     'q_difficulty': qdifficulty,
     'q_status': qstatus,
-    't_id': tid,
-    'p_id': pid,
-    'f_id': fid,
-  };
-  var json = jsonEncode(questionobj);
-  Uri uri = Uri.parse(url);
-  var response = await http.post(
-    uri,
-    body: json,
-    headers: {"Content-Type": "application/json; charset=UTF-8"},
-  );
+    't_id': tid.toString(),
+    'p_id': pid.toString(),
+    'f_id': fid.toString(),
+  });
+  if (qimage != null) {
+    // Attach the image file to the request
+    request.files.add(http.MultipartFile.fromBytes('q_image', qimage, filename: 'image.jpg',)); // Set a filename for the image
+  }
+  // Send the request and await the response
+  var response = await request.send();
+
+  // Return the status code
   return response.statusCode;
 }
-
 
 
 
