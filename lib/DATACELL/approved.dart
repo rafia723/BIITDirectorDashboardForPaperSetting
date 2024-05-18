@@ -1,8 +1,6 @@
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 
 class Approved extends StatefulWidget {
@@ -16,48 +14,61 @@ List<dynamic> plist = [];
 TextEditingController search = TextEditingController();
 
 class _ApprovedState extends State<Approved> {
-  Future<void> loadApprovedPapers() async {
-    Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/getApprovedPapers');
-    var response = await http.get(uri);
-    if (response.statusCode == 200) {
-      plist = jsonDecode(response.body);
-      setState(() {});
-    } else {
-      throw Exception('Failed to load Approved Papers');
-    }
-  }
 
-  Future<void> searchApprovedPapers(BuildContext context, String courseTitle) async {
-  try {
-    if (courseTitle.isEmpty) { 
-      loadApprovedPapers();
-      return;
-    }
-      Uri uri = Uri.parse(
-          '${APIHandler().apiUrl}Paper/SearchApprovedPapers?courseTitle=$courseTitle');
-      var response = await http.get(uri);
-      if (response.statusCode == 200) {
-        plist = jsonDecode(response.body);
-        setState(() {});
-      } else {
-        throw Exception('Failed to load Approved Papers');
-      }
-  } catch (e) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return const AlertDialog(
-          title: Text('Error loading Approved Papers'),
-        );
-      },
-    );
-  }
-}
   @override
   void initState() {
     super.initState();
-    loadApprovedPapers();
+    loadApprovedPapersData();
   }
+
+  Future<void> loadApprovedPapersData() async {
+    try {
+      plist=await APIHandler().loadApprovedPapers();
+       setState(() {
+      });
+    }
+    catch(e){
+  if(mounted){
+ showDialog(
+        context: context,
+        builder: (context) {
+          return  AlertDialog(
+            title: const Text('Error loading approved papers'),
+            content: Text(e.toString()),
+          );
+        },
+      );
+      }
+    }
+  }
+
+  Future<void> searchApprovedPapers(String courseTitle) async {
+  try {
+    if (courseTitle.isEmpty) { 
+      loadApprovedPapersData();
+      return;
+    }
+     plist=await APIHandler().searchApprovedPapers(courseTitle);
+      setState(() {
+     });
+  } catch (e) {
+    if(mounted){
+ showDialog(
+        context: context,
+        builder: (context) {
+          return  AlertDialog(
+            title: const Text('Error searching approved papers'),
+            content: Text(e.toString()),
+          );
+        },
+      );
+       Future.delayed(const Duration(seconds: 1), () {
+          Navigator.of(context).pop();
+        });
+      }
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -84,8 +95,8 @@ class _ApprovedState extends State<Approved> {
                     padding: const EdgeInsets.all(16.0),
                     child: TextField(
                       controller: search,
-                      onChanged: (value) {
-                        searchApprovedPapers(context,value);
+                      onChanged: (value) async{
+                        searchApprovedPapers(value);
                       },
                       decoration: const InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,

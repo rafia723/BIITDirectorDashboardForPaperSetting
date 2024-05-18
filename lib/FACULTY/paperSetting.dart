@@ -57,13 +57,17 @@ class _PaperSettingState extends State<PaperSetting> {
      List<dynamic> cloMappedWithfetchedTopic=[]; //already added topics---get
 
   Future<void> initializeData() async {
+      final parentContext = context;
     await loadSession();
     if (sid != null) {
-      await loadPaperHeader(widget.cid!, sid, context);
+      await loadPaperHeader(widget.cid!, sid, parentContext);
+      if(mounted){
       setState(() {});
+      }
+
     }
     if (paperId != null) {
-      await loadQuestion(paperId, context);
+      await loadQuestion(paperId, parentContext);
       setState(() {});
     }
     if (selectedTopicId != null) {
@@ -84,7 +88,7 @@ class _PaperSettingState extends State<PaperSetting> {
 
 Map<int, List<dynamic>> cloMap = {};
 
-Future<void> loadClosMappedWithTopic(int tid) async {
+Future<void> loadClosMappedWithTopic(int tid,BuildContext context) async {
   try {
     Uri uri = Uri.parse('${APIHandler().apiUrl}Clo_Topic_Mapping/getClosMappedWithTopic/$tid');
     var response = await http.get(uri);
@@ -108,7 +112,8 @@ Future<void> loadClosMappedWithTopic(int tid) async {
       throw Exception('Error: ${response.statusCode}');
     }
   } catch (e) {
-    showDialog(
+    if(mounted){
+showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
@@ -116,6 +121,8 @@ Future<void> loadClosMappedWithTopic(int tid) async {
         );
       },
     );
+    }
+    
   }
 }
 
@@ -140,7 +147,7 @@ Future<void> loadClosMappedWithTopic(int tid) async {
     }
   }
 
-  Future<void> loadPaperHeader(int cid, int sid, context) async {
+  Future<void> loadPaperHeader(int cid, int sid, BuildContext context) async {
     try {
       Uri uri =
           Uri.parse("${APIHandler().apiUrl}Paper/getPaperHeader/$cid/$sid");
@@ -182,7 +189,8 @@ Future<void> loadClosMappedWithTopic(int tid) async {
         );
       }
     } catch (e) {
-      showDialog(
+      if(mounted){
+showDialog(
         context: context,
         builder: (context) {
           return const AlertDialog(
@@ -190,10 +198,12 @@ Future<void> loadClosMappedWithTopic(int tid) async {
           );
         },
       );
+      }
+      
     }
   }
 
-  Future<void> loadTopic(int cid, context) async {
+  Future<void> loadTopic(int cid, BuildContext context) async {
     try {
       Uri uri = Uri.parse('${APIHandler().apiUrl}Topic/getTopic/$cid');
       var response = await http.get(uri);
@@ -298,6 +308,8 @@ Future<void> loadClosMappedWithTopic(int tid) async {
       );
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -474,7 +486,7 @@ Future<void> loadClosMappedWithTopic(int tid) async {
                   ),
                 ),
               ),
-              ////////////////////////////////////// Add Questions Section
+              ////////////////////////////////////// Add Questions Section////////////////////////////////////////
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
@@ -514,7 +526,7 @@ Future<void> loadClosMappedWithTopic(int tid) async {
                          else {
                           dynamic code = await APIHandler().addQuestion(
                             questionController.text,
-                            selectedImage==null?null:selectedImage,
+                            selectedImage,
                             int.parse(marksController.text),
                             dropdownValue,
                             'pending',
@@ -579,8 +591,7 @@ Future<void> loadClosMappedWithTopic(int tid) async {
                           child: GestureDetector(
                             onTap: () {
                               setState(() {
-                                selectedImage =
-                                    null; // Remove the selected image
+                                selectedImage =null; // Remove the selected image
                               });
                             },
                             child: Container(
@@ -650,14 +661,32 @@ Future<void> loadClosMappedWithTopic(int tid) async {
                                         onChanged: (bool? value) {
                                           setState(() {
                                             isCheckedList[index] = value!;
-                                            selectedTopicId =
-                                                topicList[index]['t_id'];
+                                            selectedTopicId =topicList[index]['t_id'];
                                           });
                                         },
                                       );
                                     },
                                   ),
                                 ),
+                                actions: [
+                                  GestureDetector(
+                                    onTap: (){
+                                        selectedTopicId=null;
+                                    },
+                                    child: Container(
+                                      color: Colors.red,
+                                      padding: const EdgeInsets.all(5),
+                                      child: const Icon(Icons.close,color: Colors.white,),
+                                    ),
+                                  ),
+
+                                  Center(
+                                    child: customElevatedButton(onPressed: (){
+                                      Navigator.pop(context);
+                                    }, buttonText: 'Save')
+                                    
+                                  )
+                                ],
                               );
                             },
                           );
@@ -701,7 +730,7 @@ Future<void> loadClosMappedWithTopic(int tid) async {
 
       // Fetch CLOs for the current topic if not already fetched
       if (!cloMap.containsKey(fetchedTopicId)) {
-        loadClosMappedWithTopic(fetchedTopicId);
+        loadClosMappedWithTopic(fetchedTopicId,context);
       }
 
       final cloList = cloMap[fetchedTopicId] ?? [];
@@ -712,43 +741,61 @@ Future<void> loadClosMappedWithTopic(int tid) async {
           borderRadius: BorderRadius.circular(15.0),
         ),
         color: Colors.white.withOpacity(0.8),
-        child: ListTile(
-          title: Text(
-            'Question # ${index + 1}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(question['q_text']),
-              if (imageUrl != null)
-                Image.network(
-                  imageUrl,
-                  height: 150,
-                  width: 300,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const CircularProgressIndicator();
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Text('Error loading image: $error');
-                  },
+        child: GestureDetector(
+          // onTap: (){     ///////////////////////////////////////////////////To handle edit
+          //   questionController.text=question['q_text'];
+          //   dropdownValue=question['q_difficulty'];
+          //   marksController.text=question['q_marks'].toString();
+          //   if(question['q_image']!=null){
+          //  selectedImage = '${APIHandler().apiUrl}${question['q_image']}' as Uint8List?;
+          //   }
+         
+          //   setState(() {
+              
+          //   });
+
+          // },
+          child: ListTile(
+            title: Text(
+              'Question # ${index + 1}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(question['q_text']),
+                if (imageUrl != null)
+                  Image.network(
+                    imageUrl,
+                    height: 150,
+                    width: 300,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const CircularProgressIndicator();
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Text('Error loading image: $error');
+                    },
+                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text('${question['q_difficulty']},'),
+                    Text('${question['q_marks']},'),
+                     Text('CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
+                  ],
                 ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text('${question['q_difficulty']},'),
-                  Text('${question['q_marks']},'),
-                   Text('CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
     },
   ),
 ),
+customElevatedButton(onPressed: (){
+  Navigator.pop(context);
+}, buttonText: 'Save')
             ],
           )
         ],

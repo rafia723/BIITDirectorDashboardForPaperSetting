@@ -1,10 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
+
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 
 class Printed extends StatefulWidget {
@@ -14,53 +12,66 @@ class Printed extends StatefulWidget {
 }
 
 class _PrintedState extends State<Printed> {
-  Future<void> loadPrintedPapers() async {
-    Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/getPrintedPapers');
-    var response = await http.get(uri);
-    if (response.statusCode == 200) {
-      pplist = jsonDecode(response.body);
-      if(mounted){
-      setState(() {});
-      }
-    } else {
-      throw Exception('Failed to load Printed Papers');
-    }
+    List<dynamic> pplist = [];
+  TextEditingController search = TextEditingController();
+
+    @override
+  void initState() {
+    super.initState();
+    loadPrintedPapersData();
   }
 
-  Future<void> searchPrintedPapers(String courseTitle) async {
-    try {
-    if (courseTitle.isEmpty) { 
-      loadPrintedPapers();
-      return;
-    }
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/SearchPrintedPapers?courseTitle=$courseTitle');
-      var response = await http.get(uri);
-      if (response.statusCode == 200) {
-        pplist = jsonDecode(response.body);
-        setState(() {});
-      } else {
-        throw Exception('Failed to load Printed Papers');
-      }
-    } catch (e) {
-      showDialog(
+  Future<void> loadPrintedPapersData() async {
+   try {
+     pplist=await APIHandler().loadPrintedPapers();
+     setState(() {
+       
+     });
+   } catch (e) {
+      if(mounted){
+ showDialog(
         context: context,
         builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading Printed Papers'),
+          return  AlertDialog(
+            title: const Text('Error loading printed papers'),
+            content: Text(e.toString()),
           );
         },
       );
+      }
+   }
+  }
+
+  Future<void> searchPrintedPapers(String courseTitle) async {
+  try {
+    if (courseTitle.isEmpty) { 
+      loadPrintedPapersData();
+      return;
     }
+     pplist=await APIHandler().searchPrintedPapers(courseTitle);
+      setState(() {
+     });
+  } catch (e) {
+    if(mounted){
+ showDialog(
+        context: context,
+        builder: (context) {
+          return  AlertDialog(
+            title: const Text('Error searching printed papers'),
+            content: Text(e.toString()),
+          );
+        },
+      );
+       Future.delayed(const Duration(seconds: 1), () {
+          Navigator.of(context).pop();
+        });
+      }
   }
+}
 
-  @override
-  void initState() {
-    super.initState();
-    loadPrintedPapers();
-  }
 
-  List<dynamic> pplist = [];
-  TextEditingController search = TextEditingController();
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,7 +97,7 @@ class _PrintedState extends State<Printed> {
                     padding: const EdgeInsets.all(16.0),
                     child: TextField(
                       controller: search,
-                      onChanged: (value) {
+                      onChanged: (value) async{
                         searchPrintedPapers(value);
                       },
                       decoration: const InputDecoration(

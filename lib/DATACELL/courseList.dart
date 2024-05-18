@@ -1,12 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/DATACELL/course.dart';
 import 'package:biit_directors_dashbooard/DATACELL/editCourse.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class CourseDetail extends StatefulWidget {
   const CourseDetail({super.key});
@@ -16,88 +13,97 @@ class CourseDetail extends StatefulWidget {
 }
 class _CourseDetailState extends State<CourseDetail> {
   List<dynamic> clist = [];
+  TextEditingController search = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    loadCourse();
+    loadCourseData();
   }
 
-  TextEditingController search = TextEditingController();
-  
-  Future<void> updateStatus(int id, bool newStatus) async {
-    String status = newStatus ? 'enabled' : 'disabled';
-    Uri url =
-        Uri.parse('${APIHandler().apiUrl}Course/editCourseStatus/$id');
-    try {
-      var response = await http.put(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"status": status}),
-      );
-      if (response.statusCode == 200) {
-        loadCourse();
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Status Changed'),
-            );
-          },
-        );
-        Future.delayed(const Duration(seconds: 1), () {
-          Navigator.of(context).pop();
-        });
-      } else {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Error....'),
-            );
-          },
-        );
-      }
-    } catch (e) {
-      showDialog(
+  Future<void> loadCourseData() async {
+    try{
+     clist=await APIHandler().loadCourse();
+      setState(() {
+      });
+    }
+    catch(e){
+  if(mounted){
+ showDialog(
         context: context,
         builder: (context) {
-          return const AlertDialog(
-            title: Text('Error changing status of Course'),
+          return  AlertDialog(
+            title: const Text('Error loading course'),
+            content: Text(e.toString()),
           );
         },
       );
+      }
     }
   }
 
-  Future<void> searchCourses(String query) async {
+Future<void> updateStatus(int id, bool newStatus) async {
+  try {
+    dynamic code = await APIHandler().updateCourseStatus(id, newStatus);
+    if (mounted) {
+      if (code == 200) {
+        loadCourseData();
+        // showDialog(
+        //   context: context,
+        //   builder: (context) {
+        //     return const AlertDialog(
+        //       title: Text('Status Changed'),
+        //     );
+        //   },
+        // );
+        // Future.delayed(const Duration(seconds: 1), () {
+        //   Navigator.of(context).pop();
+        // });
+      } else {
+        throw Exception('Non-200 response code');
+      }
+    }
+  } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Error changing status of course'),
+            content: Text(e.toString()), // Optionally show the error message
+          );
+        },
+      );
+  }
+}
+
+   Future<void> searchCourseData(String query) async {
     try {
       if (query.isEmpty) {
-        loadCourse();
+       loadCourseData();
         return;
       }
-      Uri url = Uri.parse(
-          '${APIHandler().apiUrl}Course/searchCourse?search=$query');
-      var response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        clist = jsonDecode(response.body);
-        setState(() {});
-      } else {
-        throw Exception('Failed to search courses');
-      }
+     clist=await APIHandler().searchCourse(query);
+     setState(() {
+     });
     } catch (e) {
-      showDialog(
+      if(mounted){
+ showDialog(
         context: context,
         builder: (context) {
-          return const AlertDialog(
-            title: Text('Error searching courses'),
+          return  AlertDialog(
+            title: const Text('Error searching course'),
+            content: Text(e.toString()),
           );
         },
       );
+       Future.delayed(const Duration(seconds: 1), () {
+          Navigator.of(context).pop();
+        });
+      }
+     
     }
   }
- 
+
 
   void editCourseRecords(int cid, dynamic data) async {
     await Navigator.push(
@@ -106,32 +112,8 @@ class _CourseDetailState extends State<CourseDetail> {
         builder: (context) => EditCourse(cid, data),
       ),
     );
-    loadCourse();
+    loadCourseData();
   
-  }
-
-   
-  Future<void> loadCourse() async {
-    try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Course/getCourse');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        clist = jsonDecode(response.body);
-        setState(() {});
-      } else {
-        throw Exception('Failed to load course');
-      }
-    } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading course'),
-          );
-        },
-      );
-    }
   }
 
   void add() {
@@ -164,8 +146,8 @@ class _CourseDetailState extends State<CourseDetail> {
                 padding: const EdgeInsets.all(16.0),
                 child: TextField(
                   controller: search,
-                  onChanged: (value) {
-                    searchCourses(value);
+                  onChanged: (value) async{
+                    searchCourseData(value);
                   },
                   decoration: const InputDecoration(
                     floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -197,8 +179,7 @@ class _CourseDetailState extends State<CourseDetail> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                onPressed: () {
-                                  // Handle edit
+                                onPressed: () async{
                                   editCourseRecords(
                                       clist[index]['c_id'], clist[index]);
                                 },
@@ -206,10 +187,11 @@ class _CourseDetailState extends State<CourseDetail> {
                               ),
                               Switch(
                                   value: clist[index]['status'] == 'enabled',
-                                  onChanged: (newValue) {
-                                    setState(() {
-                                      updateStatus(
+                                  onChanged: (newValue) async{
+                                 
+                                      await updateStatus(
                                           clist[index]['c_id'], newValue);
+                                             setState(() {
                                     });
                                   })
                             ],

@@ -2,8 +2,246 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.2:3000/';
- ///////////////////////////////CLO///////////////////////////////////////
+  String apiUrl='http://192.168.62.92:3000/';
+  /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
+
+ ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
+
+Future<List<dynamic>> loadFaculty() async {
+  List<dynamic> flist=[];
+  try {
+    Uri uri = Uri.parse("${apiUrl}Faculty/getFaculty");
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      flist = jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load Faculty');
+    }
+  } catch (e) {
+    throw Exception('Error: $e');
+    }
+    return flist;
+}
+
+Future<List<dynamic>> searchFaculty(String query) async {
+    List<dynamic> flist=[];
+    try {
+      Uri url = Uri.parse(
+          '${apiUrl}Faculty/searchFaculty?search=$query');
+      var response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        flist = jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to search faculty');
+      }
+    } catch (e) {
+     throw Exception('Error: $e');
+    }
+    return flist;
+  }
+
+  Future<int> updateFacultyStatus(int id, bool newStatus) async {
+  String status = newStatus ? 'enabled' : 'disabled';
+  Uri url = Uri.parse('${apiUrl}Faculty/editFacultyStatus/$id');
+  try {
+    var response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"status": status}),
+    );
+    return response.statusCode;
+  }
+   catch (e) {
+   throw Exception('Error: $e');
+  }
+   
+}
+
+Future<int> updateFaculty(int id, Map<String, dynamic> facultyData) async {
+  Uri url = Uri.parse('${apiUrl}Faculty/editFaculty/$id');
+  try {
+    var facultyJson = jsonEncode(facultyData);
+    var response = await http.put(
+      url,
+      body: facultyJson,
+      headers: {"Content-Type": "application/json"},
+    );
+      return response.statusCode;
+  } catch (error) {
+    throw Exception('Error: $error');
+  }
+}
+
+Future<int> addFaculty(
+      String name, String username, String password, String status) async {
+    String url = "${apiUrl}Faculty/addFaculty";
+    var facultyobj = {
+      'f_name': name,
+      'username': username,
+      'password': password,
+      'status': status
+    };
+    var json = jsonEncode(facultyobj);
+    Uri uri = Uri.parse(url);
+    var response = await http.post(uri,
+        body: json,
+        headers: {"Content-Type": "application/json; charset=UTF-8"});
+    return response.statusCode;
+  }
+
+/////////////////////////////////////////////////////////////////Course///////////////////////////////////////////////////////////////////////////
+ 
+   Future<List<dynamic>> loadCourse() async {
+    List<dynamic> clist=[];
+    try {
+      Uri uri = Uri.parse('${apiUrl}Course/getCourse');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        clist = jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to load course');
+      }
+      return clist;
+    } 
+    catch (e) {
+      throw Exception('Error $e');
+    }
+  }
+
+  Future<List<dynamic>> searchCourse(String query) async {
+    List<dynamic> clist=[];
+    try {
+      Uri url = Uri.parse('${apiUrl}Course/searchCourse?search=$query');
+      var response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        clist = jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to search course');
+      }
+    } catch (e) {
+     throw Exception('Error: $e');
+    }
+    return clist;
+  }
+
+   Future<int> updateCourseStatus(int id, bool newStatus) async {
+  String status = newStatus ? 'enabled' : 'disabled';
+  Uri url = Uri.parse('${apiUrl}Course/editCourseStatus/$id');
+  try {
+    var response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"status": status}),
+    );
+    return response.statusCode;
+  }
+   catch (e) {
+   throw Exception('Error: $e');
+  }
+   
+}
+
+Future<int> updateCourse(int id, Map<String, dynamic> courseData) async {
+  Uri url = Uri.parse('${apiUrl}Course/editCourse/$id');
+  try {
+    var courseJson = jsonEncode(courseData);
+    var response = await http.put(
+      url,
+      body: courseJson,
+      headers: {"Content-Type": "application/json"},
+    );
+      return response.statusCode;
+  } catch (error) {
+    throw Exception('Error: $error');
+  }
+}
+
+ Future<int> addCourse(String cCode,String cTitle,String cHours,String status)async
+  {
+String url="${apiUrl}Course/addCourse";
+    var courseobj={
+      'c_code':cCode,
+      'c_title':cTitle,
+      'cr_hours':cHours,
+      'status':status
+    };
+    var json=jsonEncode(courseobj);
+    Uri uri=Uri.parse(url);
+    var response =await  http.post(uri,body: json,headers:{"Content-Type":"application/json; charset=UTF-8"});
+   return response.statusCode;
+  }
+
+  /////////////////////////////////////////////////////////Paper/////////////////////////////////////////////////////////////////////////
+ Future<List<dynamic>> loadApprovedPapers() async {
+  List<dynamic>plist=[];
+  try{
+    Uri uri = Uri.parse('${apiUrl}Paper/getApprovedPapers');
+    var response = await http.get(uri);
+    if (response.statusCode == 200) {
+      plist = jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load Approved Papers');
+    }
+    return plist;
+    }catch(e){
+        throw Exception('Error $e');
+    }
+  }
+
+  Future<List<dynamic>> searchApprovedPapers(String courseTitle) async {
+      List<dynamic>plist=[];
+  try {
+      Uri uri = Uri.parse('${apiUrl}Paper/SearchApprovedPapers?courseTitle=$courseTitle');
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+        plist = jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to load Approved Papers');
+      }
+      return plist;
+  } catch (e) {
+    throw Exception('Error $e');
+  }
+}
+
+ Future<List<dynamic>> loadPrintedPapers() async {
+  List<dynamic>plist=[];
+  try{
+    Uri uri = Uri.parse('${apiUrl}Paper/getPrintedPapers');
+    var response = await http.get(uri);
+    if (response.statusCode == 200) {
+      plist = jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load Printed Papers');
+    }
+    return plist;
+    }catch(e){
+        throw Exception('Error $e');
+    }
+  }
+
+   Future<List<dynamic>> searchPrintedPapers(String courseTitle) async {
+      List<dynamic>plist=[];
+  try {
+      Uri uri = Uri.parse('${apiUrl}Paper/SearchPrintedPapers?courseTitle=$courseTitle');
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+        plist = jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to load printed Papers');
+      }
+      return plist;
+  } catch (e) {
+    throw Exception('Error $e');
+  }
+}
+
+/////////////////////////////////////////////////////////////Faculty Module//////////////////////////////////////////////////////////////
+ ////////////////////////////////////////////////////////////CLO//////////////////////////////////////////////////////////////////////////
   Future<int> addClo(
       String cloText, int cId,String status) async {
     String url = "${apiUrl}Clo/addClo";
@@ -49,7 +287,7 @@ class APIHandler{
     throw Exception('Error: $error');
   }
  }
-/////////////////////////////////////Topic///////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////Topic////////////////////////////////////////////////////////////////////
 
 Future<int> addTopic(String tName, int cId) async {
   String url = "${apiUrl}Topic/addTopic";
@@ -159,7 +397,7 @@ Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
   // }
 
 
-  ///////////////////////////////////////////SubTopics////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////SubTopics/////////////////////////////////////////////////////////////////////////////
   Future<int> addSubTopic(String stName, int tId) async {
   String url = "${apiUrl}SubTopic/addSubTopic";
   var subtopicobj = {
@@ -189,7 +427,7 @@ Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
   }
 }
 
-///////////////////////////////////////////////Paper//////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////Paper/////////////////////////////////////////////////////////////////////////
 Future<List<dynamic>> loadTeachersByCourseId(int cid) async {
   List<dynamic> list=[];
     try {

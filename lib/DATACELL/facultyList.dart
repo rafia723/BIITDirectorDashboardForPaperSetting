@@ -1,12 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/DATACELL/editFaculty.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'faculty.dart';
 
 class FacultyDetails extends StatefulWidget {
@@ -18,85 +14,101 @@ class FacultyDetails extends StatefulWidget {
 class _FacultyDetailsState extends State<FacultyDetails> {
   List<dynamic> flist = [];
   TextEditingController search = TextEditingController();
+
+  
   @override
   void initState() {
     super.initState();
-    loadFaculty(context);
+    loadFacultyData(); 
   }
 
-  Future<void> searchFaculty(String query) async {
-    try {
-      if (query.isEmpty) {
-        loadFaculty(context);
-        return;
-      }
-      Uri url = Uri.parse(
-          '${APIHandler().apiUrl}Faculty/searchFaculty?search=$query');
-      var response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        flist = jsonDecode(response.body);
-        setState(() {});
-      } else {
-        throw Exception('Failed to search faculty');
-      }
-    } catch (e) {
-      showDialog(
+  
+  Future<void> loadFacultyData() async {
+    try{
+ flist=await APIHandler().loadFaculty();
+      setState(() {
+      });
+    }
+    catch(e){
+  if(mounted){
+ showDialog(
         context: context,
         builder: (context) {
-          return const AlertDialog(
-            title: Text('Error searching faculty'),
+          return  AlertDialog(
+            title: const Text('Error loading faculty'),
+            content: Text(e.toString()),
           );
         },
       );
+      }
+    }
+     
+  }
+
+  Future<void> searchFacultyData(String query) async {
+    try {
+      if (query.isEmpty) {
+       loadFacultyData();
+        return;
+      }
+     flist=await APIHandler().searchFaculty(query);
+     setState(() {
+     });
+    } catch (e) {
+      if(mounted){
+ showDialog(
+        context: context,
+        builder: (context) {
+          return  AlertDialog(
+            title: const Text('Error searching faculty'),
+            content: Text(e.toString()),
+          );
+        },
+      );
+       Future.delayed(const Duration(seconds: 1), () {
+          Navigator.of(context).pop();
+        });
+      }
+     
     }
   }
 
 Future<void> updateStatus(int id, bool newStatus) async {
-  String status = newStatus ? 'enabled' : 'disabled';
-  Uri url = Uri.parse('${APIHandler().apiUrl}Faculty/editFacultyStatus/$id');
   try {
-    var response = await http.put(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"status": status}),
-    );
+    dynamic code = await APIHandler().updateFacultyStatus(id, newStatus);
     if (mounted) {
-      if (response.statusCode == 200) {
-        loadFaculty(context);
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Status Changed'),
-            );
-          },
-        );
-        Future.delayed(const Duration(seconds: 1), () {
-          Navigator.of(context).pop();
-        });
+      if (code == 200) {
+        loadFacultyData();
+        // showDialog(
+        //   context: context,
+        //   builder: (context) {
+        //     return const AlertDialog(
+        //       title: Text('Status Changed'),
+        //     );
+        //   },
+        // );
+        // Future.delayed(const Duration(seconds: 1), () {
+        //   Navigator.of(context).pop();
+        // });
       } else {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Error....'),
-            );
-          },
-        );
+        throw Exception('Non 200 error');
       }
     }
   } catch (e) {
-    if (mounted) {
-      showDialog(
+    if(mounted){
+ showDialog(
         context: context,
         builder: (context) {
-          return const AlertDialog(
-            title: Text('Error changing status of faculty'),
+          return  AlertDialog(
+            title: const Text('Error changing status of faculty'),
+            content: Text(e.toString()),
           );
         },
       );
-    }
+       Future.delayed(const Duration(seconds: 1), () {
+          Navigator.of(context).pop();
+        });
+      }
   }
 }
 
@@ -107,34 +119,9 @@ Future<void> updateStatus(int id, bool newStatus) async {
         builder: (context) => EditFaculty(fid, data),
       ),
     );
-    loadFaculty(context);
+    loadFacultyData();
   }
 
- Future<void> loadFaculty(BuildContext context) async {
-  try {
-    Uri uri = Uri.parse("${APIHandler().apiUrl}Faculty/getFaculty");
-    var response = await http.get(uri);
-
-    if (response.statusCode == 200) {
-      flist = jsonDecode(response.body);
-      
-      setState(() {});
-    } else {
-      throw Exception('Failed to load Faculty');
-    }
-  } catch (e) {
-    BuildContext currentContext = context;
-
-    showDialog(
-      context: currentContext,
-      builder: (context) {
-        return const AlertDialog(
-          title: Text('Error loading faculty'),
-        );
-      },
-    );
-  }
-}
 
   void add() {
     Navigator.of(context).push(
@@ -167,8 +154,8 @@ Future<void> updateStatus(int id, bool newStatus) async {
                 
                 child: TextField(
                   controller: search,
-                  onChanged: (value) {
-                    searchFaculty(value);
+                  onChanged: (value) async{
+                    searchFacultyData(value);
                   },
                   decoration: const InputDecoration(
                     floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -209,13 +196,11 @@ Future<void> updateStatus(int id, bool newStatus) async {
                               ),
                               Switch(
                                   value: flist[index]['status'] == 'enabled',
-                                  onChanged: (newValue) {
-                                    setState(() {
-                                      updateStatus(
-                                          flist[index]['f_id'], newValue);
+                                  onChanged: (newValue) async{
+                                      await updateStatus(flist[index]['f_id'], newValue);
+                                       setState(() {
                                     });
-                                  }),
-                                
+                                  }), 
                             ],
                           ),
                         ),

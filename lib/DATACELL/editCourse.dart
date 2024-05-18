@@ -1,8 +1,7 @@
-import 'dart:convert';
+
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/DATACELL/courseList.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 // ignore: must_be_immutable
@@ -22,21 +21,6 @@ class _EditCourseState extends State<EditCourse> {
   TextEditingController crhrs = TextEditingController();
     String status = 'enabled'; // Default status
   
-
-Future<int> updateCourse(int id, Map<String, dynamic> CourseData) async {
-  Uri url = Uri.parse('${APIHandler().apiUrl}Course/editCourse/$id');
-  try {
-    var courseJson = jsonEncode(CourseData);
-    var response = await http.put(
-      url,
-      body: courseJson,
-      headers: {"Content-Type": "application/json"},
-    );
-      return response.statusCode;
-  } catch (error) {
-    throw Exception('Error: $error');
-  }
-}
   @override
   void initState() {
     super.initState();
@@ -45,6 +29,47 @@ Future<int> updateCourse(int id, Map<String, dynamic> CourseData) async {
     ctitle.text = widget.data['c_title'];
     crhrs.text = widget.data['cr_hours'].toString();
   }
+
+Future<void> updateCourseData(int id, Map<String, dynamic> courseData) async {
+  try {
+    int code=await APIHandler().updateCourse(id, courseData);
+            if(code==200){
+             if(mounted){
+              showDialog(
+                     context: context,
+                     builder: (context) {
+                       return const AlertDialog(
+                         title: Text('Updated'),
+                       );
+                     },
+                   );
+              Future.delayed(const Duration(seconds: 1), () {
+                     Navigator.push(
+                context,
+                MaterialPageRoute(
+                builder: (context) => const CourseDetail(),
+                  ),
+              ); 
+             });
+                   }
+            }else if(code!=500&&code!=200){
+              throw Exception('${ccode.text} already exists in the database.');
+            }
+  } catch (e) {
+     if(mounted){
+              showDialog(
+                     context: context,
+                     builder: (context) {
+                       return  AlertDialog(
+                         title: const Text('Error updating course'),
+                         content: Text(e.toString()),
+                       );
+                     },
+                   );
+     }
+  }
+}
+  
 
   @override
   Widget build(BuildContext context) {
@@ -78,26 +103,7 @@ Future<int> updateCourse(int id, Map<String, dynamic> CourseData) async {
                     "cr_hours": crhrs.text,
                      "status": status,
                    };
-                   int code = await updateCourse(cId, cData);
-                   showDialog(
-                     context: context,
-                     builder: (context) {
-                       return AlertDialog(
-                         title: Text(code == 200 ? 'Updated' : 'Error...'),
-                         
-                       );
-                     },
-                   );
-                if (code == 200) {
-             Future.delayed(const Duration(seconds: 1), () {
-                     Navigator.push(
-                context,
-                MaterialPageRoute(
-                builder: (context) => const CourseDetail(),
-                  ),
-              ); 
-             });
-             }
+                  updateCourseData(cId, cData);
                  }, buttonText: 'Update'),
             ],
           ),

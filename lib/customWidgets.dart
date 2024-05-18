@@ -27,10 +27,10 @@ Widget customTextField({
           labelText: labelText,
           labelStyle: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 20,
-            color: Colors.black87, 
+            fontSize: 12,
+            color: Colors.black54, 
           ),
-          floatingLabelBehavior: FloatingLabelBehavior.always,
+          floatingLabelBehavior: FloatingLabelBehavior.never,
           prefixIcon: Icon(prefixIcon, color: Colors.black),
         ),
       ),

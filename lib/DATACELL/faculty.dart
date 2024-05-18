@@ -1,9 +1,7 @@
-import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import 'facultyList.dart';
 
@@ -15,22 +13,43 @@ class FacultyForm extends StatefulWidget {
 }
 
 class _FacultyFormState extends State<FacultyForm> {
-  List<dynamic> flist = [];
-  Future<int> addFaculty(
-      String name, String username, String password, String status) async {
-    String url = "${APIHandler().apiUrl}Faculty/addFaculty";
-    var facultyobj = {
-      'f_name': name,
-      'username': username,
-      'password': password,
-      'status': status
-    };
-    var json = jsonEncode(facultyobj);
-    Uri uri = Uri.parse(url);
-    var response = await http.post(uri,
-        body: json,
-        headers: {"Content-Type": "application/json; charset=UTF-8"});
-    return response.statusCode;
+  Future<void> addFacultyData(String name, String username, String password, String status) async {
+   try {
+     dynamic code=await APIHandler().addFaculty(name, username, password, status);
+     if(mounted){
+       showDialog(
+           context: context,
+           builder: (context) {
+            return  AlertDialog(
+               title: Text(code==200? 'Inserted': 'Error....'),
+                 );
+               },
+           );
+           if(code==200){
+            Future.delayed(const Duration(seconds: 1), () {
+                Navigator.push(
+                   context,
+                  MaterialPageRoute(
+                   builder: (context) => const FacultyDetails(),
+                            ),
+                          );
+                        });
+           }
+     }
+   } catch (e) {
+      if(mounted){
+       showDialog(
+           context: context,
+           builder: (context) {
+            return   AlertDialog(
+               title: const Text('Error inserting faculty'),
+               content: Text(e.toString()),
+                 );
+               },
+           );
+      }
+     
+   }
   }
 
   TextEditingController name = TextEditingController();
@@ -76,43 +95,8 @@ class _FacultyFormState extends State<FacultyForm> {
                     obscureText: true),
                 const SizedBox(height: 10),
                 customElevatedButton(
-                    onPressed: () async {
-                      int code = await addFaculty(
-                        name.text,
-                        username.text,
-                        password.text,
-                        'enabled',
-                      );
-                      if (code == 200) {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return const AlertDialog(
-                              title: Text('Inserted'),
-                            );
-                          },
-                        );
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return const AlertDialog(
-                              title: Text('Error....'),
-                            );
-                          },
-                        );
-                      }
-                      // Close the dialog after 2 seconds
-                      if (code == 200) {
-                        Future.delayed(const Duration(seconds: 1), () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const FacultyDetails(),
-                            ),
-                          );
-                        });
-                      }
+                    onPressed: ()  async{
+                     addFacultyData(name.text, username.text, password.text, 'enabled');
                     },
                     buttonText: 'Add'),
               ],

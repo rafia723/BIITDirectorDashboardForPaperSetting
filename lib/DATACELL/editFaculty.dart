@@ -1,8 +1,7 @@
-import 'dart:convert';
+
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/DATACELL/facultyList.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 // ignore: must_be_immutable
@@ -21,18 +20,50 @@ class _EditFacultyState extends State<EditFaculty> {
   TextEditingController password = TextEditingController();
    String status = 'enabled'; // Default status
 
-Future<int> updateFaculty(int id, Map<String, dynamic> facultyData) async {
-  Uri url = Uri.parse('${APIHandler().apiUrl}Faculty/editFaculty/$id');
+Future<void> updateFacultyData(int id, Map<String, dynamic> facultyData) async {
   try {
-    var facultyJson = jsonEncode(facultyData);
-    var response = await http.put(
-      url,
-      body: facultyJson,
-      headers: {"Content-Type": "application/json"},
-    );
-      return response.statusCode;
-  } catch (error) {
-    throw Exception('Error: $error');
+      dynamic code=await APIHandler().updateFaculty(id, facultyData);
+      
+      if(code==200){
+            if(mounted){
+             showDialog(
+            context: context,
+            builder: (context) {
+              return const AlertDialog(
+                title: Text('Updated'),
+                   );
+                  },
+                  );
+                  
+             Future.delayed(const Duration(seconds: 1), () {
+               Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                  builder: (context) => const FacultyDetails(),
+                    ),
+                ); 
+               });
+                  }
+        }
+                 else if(code!=500&&code!=200) {
+                    throw Exception('${username.text} already exists in the database.');
+                  }
+                  else{
+                    throw Exception('Error');
+                  }
+  } catch (e) {
+    if(mounted){
+          showDialog(
+            context: context,
+            builder: (context) {
+              return  AlertDialog(
+                title: const Text('Error updating faculty'),
+                content: Text(e.toString()),
+                   );
+                  },
+                  );
+    }
+
   }
 }
   @override
@@ -76,26 +107,7 @@ Future<int> updateFaculty(int id, Map<String, dynamic> facultyData) async {
                        "password": password.text,
                        "status": status,
                      };
-                     int code = await updateFaculty(facultyId, facultyData);
-                     showDialog(
-                       context: context,
-                       builder: (context) {
-                         return AlertDialog(
-                           title: Text(code == 200 ? 'Updated' : 'Error...'),
-                           
-                         );
-                       },
-                     );
-                  if (code == 200) {
-               Future.delayed(const Duration(seconds: 1), () {
-           Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                  builder: (context) => const FacultyDetails(),
-                    ),
-                ); 
-               });
-               }
+                     updateFacultyData(facultyId, facultyData);
                    }, buttonText: 'Update'),
                ],
              ),
