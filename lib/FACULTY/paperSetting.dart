@@ -11,12 +11,14 @@ class PaperSetting extends StatefulWidget {
   final int? cid;
   final String coursename;
   final String ccode;
+  final int fid;
 
   const PaperSetting({
     super.key,
     required this.cid,
     required this.ccode,
     required this.coursename,
+    required this.fid,
   });
 
   @override
@@ -54,63 +56,50 @@ class _PaperSettingState extends State<PaperSetting> {
   int? selectedTopicId;
   int? fetchedTopicId=1;
   List<dynamic> cloMappedWithSelectedTopic = []; //selected topic to be posted
-     List<dynamic> cloMappedWithfetchedTopic=[]; //already added topics---get
+  Map<int, List<dynamic>> cloMap = {};
+
+
+      @override
+  void initState() {
+    super.initState();
+    loadTeachers();
+    initializeData();
+    loadTopic(widget.cid!, context);
+  }
 
   Future<void> initializeData() async {
-      final parentContext = context;
     await loadSession();
     if (sid != null) {
-      await loadPaperHeader(widget.cid!, sid, parentContext);
+      await loadPaperHeader(widget.cid!, sid);
       if(mounted){
       setState(() {});
       }
 
     }
     if (paperId != null) {
-      await loadQuestion(paperId, parentContext);
+      await loadQuestion(paperId);
       setState(() {});
     }
     if (selectedTopicId != null) {
-      cloMappedWithSelectedTopic =
-          await APIHandler().loadClosMappedWithTopic(selectedTopicId!);
+      cloMappedWithSelectedTopic =await APIHandler().loadClosMappedWithTopic(selectedTopicId!);
     }
   }
 
-  //   Future<void> FetchedTopic() async {
-  //    if (fetchedTopicId != null) {
-  //     cloMappedWithfetchedTopic =
-  //         await APIHandler().loadClosMappedWithTopic(fetchedTopicId!);
-  //         setState(() {
-            
-  //         });
-  //   }
-  // }
+ 
 
-Map<int, List<dynamic>> cloMap = {};
 
-Future<void> loadClosMappedWithTopic(int tid,BuildContext context) async {
+
+Future<void> loadClosMappedWithTopicData(int tid) async {
   try {
-    Uri uri = Uri.parse('${APIHandler().apiUrl}Clo_Topic_Mapping/getClosMappedWithTopic/$tid');
-    var response = await http.get(uri);
-
-    if (response.statusCode == 200) {
-      final responseBody = jsonDecode(response.body);
-
-      if (responseBody is List) {
-        cloMap[tid] = responseBody;
-      } else if (responseBody is Map) {
-        cloMap[tid] = [responseBody];
+    List<dynamic> list=await APIHandler().loadClosMappedWithTopic(tid);
+      if (list is List) {
+        cloMap[tid] = list;
+      } else if (list is Map) {
+        cloMap[tid] = [list];
       } else {
         throw Exception('Unexpected response format');
       }
-
-      // Log the response for debugging
-      print('Response body: $responseBody');
-
       setState(() {});
-    } else {
-      throw Exception('Error: ${response.statusCode}');
-    }
   } catch (e) {
     if(mounted){
 showDialog(
@@ -128,13 +117,7 @@ showDialog(
 
 
 
-  @override
-  void initState() {
-    super.initState();
-    loadTeachers();
-    initializeData();
-    loadTopic(widget.cid!, context);
-  }
+ 
 
   Future<void> _selectImage() async {
     final picker = ImagePicker();
@@ -147,15 +130,11 @@ showDialog(
     }
   }
 
-  Future<void> loadPaperHeader(int cid, int sid, BuildContext context) async {
+  Future<void> loadPaperHeader(int cid, int sid) async {
     try {
-      Uri uri =
-          Uri.parse("${APIHandler().apiUrl}Paper/getPaperHeader/$cid/$sid");
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        setState(() {
-          list = jsonDecode(response.body);
+      list=await APIHandler().loadPaperHeader(cid, sid);
+      setState(() {
+      });
           if (list.isNotEmpty) {
             paperId = list[0]['p_id'];
             duration = list[0]['duration'];
@@ -167,34 +146,14 @@ showDialog(
             year = list[0]['year'];
             date = DateTime.parse(list[0]['exam_date']);
           }
-        });
-      } else if (response.statusCode == 404) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Data not found for the given id'),
-            );
-          },
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title:
-                  Text('Failed to load paper header. Please try again later.'),
-            );
-          },
-        );
-      }
     } catch (e) {
       if(mounted){
 showDialog(
         context: context,
         builder: (context) {
-          return const AlertDialog(
-            title: Text('An error occurred. Please try again later.'),
+          return  AlertDialog(
+            title: const Text('Error..'),
+            content: Text(e.toString()),
           );
         },
       );
@@ -202,6 +161,7 @@ showDialog(
       
     }
   }
+
 
   Future<void> loadTopic(int cid, BuildContext context) async {
     try {
@@ -227,44 +187,25 @@ showDialog(
     }
   }
 
-  Future<void> loadQuestion(int pid, context) async {
+  Future<void> loadQuestion(int pid) async {
     try {
-      Uri uri = Uri.parse("${APIHandler().apiUrl}Question/getQuestion/$pid");
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        setState(() {
-          qlist = jsonDecode(response.body);
-        });
-      } else if (response.statusCode == 404) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Data not found for the given id'),
-            );
-          },
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text(
-                  'Failed to load paper Questions. Please try again later.'),
-            );
-          },
-        );
-      }
+     qlist=await APIHandler().loadQuestion(pid);
+     setState(() {
+       
+     });
     } catch (e) {
-      showDialog(
+      if(mounted){
+        showDialog(
         context: context,
         builder: (context) {
-          return const AlertDialog(
-            title: Text('An error occurred. Please try again later.'),
+          return  AlertDialog(
+            title: const Text('Error'),
+            content: Text(e.toString()),
           );
         },
       );
+      }
+     
     }
   }
 
@@ -276,36 +217,37 @@ showDialog(
         teachers = teachersList;
       });
     } catch (e) {
-      print('Error loading teachers: $e');
+      if(mounted){
+        showDialog(
+        context: context,
+        builder: (context) {
+          return  AlertDialog(
+            title: const Text('Error..'),
+            content: Text(e.toString()),
+          );
+        },
+      );
+      }
     }
   }
 
   Future<void> loadSession() async {
     try {
-      Uri uri = Uri.parse("${APIHandler().apiUrl}Paper/getSession");
-      var response = await http.get(uri);
-      if (response.statusCode == 200) {
-        List<dynamic> responseData = jsonDecode(response.body);
-        if (responseData.isNotEmpty) {
-          // Assuming you only need the first session data if multiple are returned
-          Map<String, dynamic> sessionData = responseData[0];
-          sid = sessionData['s_id'];
-          setState(() {});
-        } else {
-          print('Session data not found');
-        }
-      } else {
-        print('Failed to load session: ${response.statusCode}');
-      }
+      sid=await APIHandler().loadSession();
+      setState(() {
+      });
     } catch (e) {
-      showDialog(
+      if(mounted){
+ showDialog(
         context: context,
         builder: (context) {
-          return const AlertDialog(
-            title: Text('An error occurred. Please try again later.'),
+          return  AlertDialog(
+            title: const Text('Error'),
+            content: Text(e.toString()),
           );
         },
       );
+      }
     }
   }
 
@@ -530,10 +472,9 @@ showDialog(
                             int.parse(marksController.text),
                             dropdownValue,
                             'pending',
-                            selectedTopicId ??
-                                0, 
-                            paperId ?? 0,
-                            1,
+                            selectedTopicId!, 
+                            paperId,
+                            widget.fid!,  //////////////////////////////////////////////
                           );
                           if (code == 200) {
                             showDialog(
@@ -551,11 +492,11 @@ showDialog(
                             questionController.clear();
                             marksController.clear();
                             selectedImage = null;
-                            selectedTopicId=0;
+                            selectedTopicId=null;
                             setState(() {
                               dropdownValue = 'Easy';
                               isCheckedList=List<bool>.filled(topicList.length,false);
-                              loadQuestion(paperId, context);
+                              loadQuestion(paperId);
                             });
                           } else {
                             showDialog(
@@ -669,23 +610,10 @@ showDialog(
                                   ),
                                 ),
                                 actions: [
-                                  GestureDetector(
-                                    onTap: (){
-                                        selectedTopicId=null;
-                                    },
-                                    child: Container(
-                                      color: Colors.red,
-                                      padding: const EdgeInsets.all(5),
-                                      child: const Icon(Icons.close,color: Colors.white,),
-                                    ),
-                                  ),
-
-                                  Center(
-                                    child: customElevatedButton(onPressed: (){
-                                      Navigator.pop(context);
-                                    }, buttonText: 'Save')
+                                  Center(child: customElevatedButton(onPressed: (){
+                                    Navigator.pop(context);
                                     
-                                  )
+                                  }, buttonText: 'Save'))
                                 ],
                               );
                             },
@@ -720,17 +648,18 @@ showDialog(
                   ),
                 ],
               ),
+  ///////////////////////////////////////////////////Questions Display///////////////////////////////////////////////////////////////
             Expanded(
   child: ListView.builder(
     itemCount: qlist.length,
     itemBuilder: (context, index) {
       final question = qlist[index];
-      final imageUrl = question['q_image']; // Assuming 'q_image' contains the image URL including http://Server's Wifi IP:3000
+      final imageUrl = question['q_image']; 
       final fetchedTopicId = question['t_id'];
 
       // Fetch CLOs for the current topic if not already fetched
       if (!cloMap.containsKey(fetchedTopicId)) {
-        loadClosMappedWithTopic(fetchedTopicId,context);
+        loadClosMappedWithTopicData(fetchedTopicId);
       }
 
       final cloList = cloMap[fetchedTopicId] ?? [];
@@ -741,61 +670,47 @@ showDialog(
           borderRadius: BorderRadius.circular(15.0),
         ),
         color: Colors.white.withOpacity(0.8),
-        child: GestureDetector(
-          // onTap: (){     ///////////////////////////////////////////////////To handle edit
-          //   questionController.text=question['q_text'];
-          //   dropdownValue=question['q_difficulty'];
-          //   marksController.text=question['q_marks'].toString();
-          //   if(question['q_image']!=null){
-          //  selectedImage = '${APIHandler().apiUrl}${question['q_image']}' as Uint8List?;
-          //   }
-         
-          //   setState(() {
-              
-          //   });
-
-          // },
-          child: ListTile(
-            title: Text(
-              'Question # ${index + 1}',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(question['q_text']),
-                if (imageUrl != null)
-                  Image.network(
-                    imageUrl,
-                    height: 150,
-                    width: 300,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const CircularProgressIndicator();
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Text('Error loading image: $error');
-                    },
-                  ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text('${question['q_difficulty']},'),
-                    Text('${question['q_marks']},'),
-                     Text('CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
-                  ],
+        child: ListTile(
+          tileColor: Colors.white,
+          title: Text(
+            'Question # ${index + 1}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(question['q_text']),
+              if (imageUrl != null)
+                Image.network(
+                  imageUrl,
+                  height: 150,
+                  width: 300,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return const CircularProgressIndicator();
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Text('Error loading image: $error');
+                  },
                 ),
-              ],
-            ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('${question['q_difficulty']},'),
+                  Text('${question['q_marks']},'),
+                   Text('CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
+                ],
+              ),
+            ],
           ),
         ),
       );
     },
   ),
 ),
-customElevatedButton(onPressed: (){
-  Navigator.pop(context);
-}, buttonText: 'Save')
+// customElevatedButton(onPressed: (){
+//   Navigator.pop(context);
+// }, buttonText: 'Save')
             ],
           )
         ],

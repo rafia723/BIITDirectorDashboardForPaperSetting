@@ -51,7 +51,8 @@ class _ManageTopicsState extends State<ManageTopics> {
         throw Exception('Failed to load courses with senior role');
       }
     } catch (e) {
-      showDialog(
+      if(mounted){
+  showDialog(
         context: context,
         builder: (context) {
           return const AlertDialog(
@@ -59,6 +60,8 @@ class _ManageTopicsState extends State<ManageTopics> {
           );
         },
       );
+      }
+    
     }
   }
 
@@ -76,7 +79,8 @@ class _ManageTopicsState extends State<ManageTopics> {
         throw Exception('Failed to load clos');
       }
     } catch (e) {
-      showDialog(
+      if(mounted){
+ showDialog(
         context: context,
         builder: (context) {
           return const AlertDialog(
@@ -84,6 +88,8 @@ class _ManageTopicsState extends State<ManageTopics> {
           );
         },
       );
+      }
+     
     }
   }
 

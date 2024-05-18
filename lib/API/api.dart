@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.62.92:3000/';
+  String apiUrl='http://192.168.10.5:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -175,7 +175,7 @@ String url="${apiUrl}Course/addCourse";
    return response.statusCode;
   }
 
-  /////////////////////////////////////////////////////////Paper/////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////Paper/////////////////////////////////////////////////////////////////////////
  Future<List<dynamic>> loadApprovedPapers() async {
   List<dynamic>plist=[];
   try{
@@ -427,7 +427,7 @@ Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
   }
 }
 
-/////////////////////////////////////////////////////////////Paper/////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////Paper/////////////////////////////////////////////////////////////////////////
 Future<List<dynamic>> loadTeachersByCourseId(int cid) async {
   List<dynamic> list=[];
     try {
@@ -489,6 +489,79 @@ Future<List<dynamic>> loadTeachersByCourseId(int cid) async {
         
     return response.statusCode;
   }
+
+Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri =
+          Uri.parse("${apiUrl}Paper/getPaperHeader/$cid/$sid");
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+      list=jsonDecode(response.body);
+      
+    } return list;
+    }catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
+  ///////////////////////////////////////////////////////Session///////////////////////////////////////////////////////////////////////////////
+
+  Future<int> loadSession() async {
+    dynamic sid;
+    try {
+      Uri uri = Uri.parse("${apiUrl}Session/getSession");
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+        List<dynamic> responseData = jsonDecode(response.body);
+        if (responseData.isNotEmpty) {
+          // Assuming you only need the first session data if multiple are returned
+          Map<String, dynamic> sessionData = responseData[0];
+           sid = sessionData['s_id'];
+        } 
+      }
+      return sid;
+    } 
+    catch(e){
+      throw Exception('Error: $e');
+    }
+  }
+
+/////////////////////////////////////////////////////////////Question/////////////////////////////////////////////////////////////////////
+
+ Future<List<dynamic>> loadQuestion(int pid) async {
+  List<dynamic> qlist=[];
+    try {
+      Uri uri = Uri.parse("${APIHandler().apiUrl}Question/getQuestion/$pid");
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+          qlist = jsonDecode(response.body);
+      } 
+      return qlist;
+    } catch (e) {
+     throw Exception('Error: $e');
+    }
+  }
+
+  Future<int> updateQuestionStatus(int id, bool newStatus) async {
+  String status = newStatus ? 'pending' : 'uploaded';
+  Uri url = Uri.parse('${apiUrl}Question/editQuestionStatus/$id');
+  try {
+    var response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"status": status}),
+    );
+    return response.statusCode;
+  }
+   catch (e) {
+   throw Exception('Error: $e');
+  }
+   
+}
+
+
 
 Future<int> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int tid, int pid, int fid) async {
   String url = "${apiUrl}Question/addQuestion";

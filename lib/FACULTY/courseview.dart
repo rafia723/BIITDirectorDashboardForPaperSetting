@@ -1,5 +1,7 @@
+import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/coveredTopics.dart';
 import 'package:biit_directors_dashbooard/FACULTY/manageClos.dart';
+import 'package:biit_directors_dashbooard/FACULTY/managePaper.dart';
 import 'package:biit_directors_dashbooard/FACULTY/manageTopics.dart';
 import 'package:biit_directors_dashbooard/FACULTY/paperHeader.dart';
 import 'package:biit_directors_dashbooard/FACULTY/paperSetting.dart';
@@ -29,13 +31,60 @@ class CourseView extends StatefulWidget {
 }
 
 class _CourseViewState extends State<CourseView> {
+  dynamic sid;
+  List<dynamic> list = [];
+
   @override
   void initState() {
     super.initState();
+    initializeData();
   }
 
+  void initializeData() async {
+    await loadSession();
+    if (sid != null) {
+      await loadPaperHeader(widget.cid, sid);
+    }
+  }
 
-  
+  Future<void> loadSession() async {
+    try {
+      sid = await APIHandler().loadSession();
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> loadPaperHeader(int cid, int sid) async {
+    try {
+      list = await APIHandler().loadPaperHeader(cid, sid);
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error..'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
+    }
+  }
+
   Widget customButton({
     required String text,
     required VoidCallback onPressed,
@@ -84,9 +133,9 @@ class _CourseViewState extends State<CourseView> {
                 Text(
                   widget.coursename,
                   style: const TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                      ),
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   'Course Code: ${widget.ccode}',
@@ -101,53 +150,95 @@ class _CourseViewState extends State<CourseView> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 50),
-                  customButton(text: 'Paper Settings', onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=>PaperSetting(ccode:  widget.ccode, 
-                    coursename: widget.coursename, cid: widget.cid,)));
-                  }),
+                  customButton(
+                      text: 'Paper Settings',
+                      onPressed: () {
+                        if (list.isEmpty&&widget.role == 'Senior') {
+                      
+                           Navigator.push(context, MaterialPageRoute(builder: (context)=>
+                           PaperHeader(cid: widget.cid, ccode: widget.ccode, 
+                           coursename: widget.coursename, fid: widget.fid)));
+                         
+                        } else if(list.isNotEmpty) {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PaperSetting(
+                                      ccode: widget.ccode,
+                                      coursename: widget.coursename,
+                                      cid: widget.cid,
+                                      fid: widget.fid,
+                                    )));
+                      }
+                      else{
+                        showDialog(context: context,
+                         builder: (context){
+                          return const AlertDialog(
+                              title: Text('Missing'),
+                              content: Text('The Paper header has not been created yet'),
+                          );
+                           
+                        });
+                      }}),
                   const SizedBox(height: 10),
-                  customButton(text: 'View Topics', onPressed: () {
-                       Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>  CoveredTopics(
-                                    coursename: widget.coursename, 
-                                  ccode: widget.ccode, cid: widget.cid),
-                                ),
-                              );
-                  }),
+                  customButton(
+                      text: 'View Topics',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CoveredTopics(
+                                coursename: widget.coursename,
+                                ccode: widget.ccode,
+                                cid: widget.cid),
+                          ),
+                        );
+                      }),
                   const SizedBox(height: 10),
-                  customButton(text: 'View Clos', onPressed: () {
-                     Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>  ViewClos(coursename: widget.coursename, ccode: widget.ccode, cid: widget.cid),
-                                ),
-                              );
-                  }),
+                  customButton(
+                      text: 'View Clos',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ViewClos(
+                                coursename: widget.coursename,
+                                ccode: widget.ccode,
+                                cid: widget.cid),
+                          ),
+                        );
+                      }),
                   Column(
                     children: <Widget>[
                       if (widget.role == 'Senior') ...[
                         const SizedBox(height: 10),
-                        customButton(text: 'Manage Paper', onPressed: () {
-                           Navigator.push(
+                        customButton(
+                            text: 'Manage Paper',
+                            onPressed: () {
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>  PaperHeader(
-                                    coursename: widget.coursename, 
-                                  ccode: widget.ccode, cid: widget.cid),
+                                  builder: (context) => ManagePaper(
+                                      coursename: widget.coursename,
+                                      ccode: widget.ccode,
+                                      cid: widget.cid),
                                 ),
                               );
-                        }),
+                            }),
                         const SizedBox(height: 10),
-                        customButton(text: 'Manage Topics', onPressed: () {
-                            Navigator.push(
+                        customButton(
+                            text: 'Manage Topics',
+                            onPressed: () {
+                              Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>  ManageTopics(coursename: widget.coursename,ccode: widget.ccode,cid:widget.cid),
+                                  builder: (context) => ManageTopics(
+                                      coursename: widget.coursename,
+                                      ccode: widget.ccode,
+                                      cid: widget.cid),
                                 ),
                               );
-                        }),
+                            }),
                         const SizedBox(height: 10),
                         customButton(
                             text: 'Manage Clos',
@@ -155,7 +246,10 @@ class _CourseViewState extends State<CourseView> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>  ManageClos(coursename: widget.coursename,ccode: widget.ccode,cid:widget.cid),
+                                  builder: (context) => ManageClos(
+                                      coursename: widget.coursename,
+                                      ccode: widget.ccode,
+                                      cid: widget.cid),
                                 ),
                               );
                             })

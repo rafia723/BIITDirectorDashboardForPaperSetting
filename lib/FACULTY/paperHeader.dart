@@ -1,20 +1,22 @@
-import 'dart:convert';
+
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/paperSetting.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class PaperHeader extends StatefulWidget {
-  final int? cid;
+  final int cid;
   final String coursename;
   final String ccode;
-  const PaperHeader(
-      {super.key,
-      required this.cid,
-      required this.ccode,
-      required this.coursename});
+  final int fid;
+ const PaperHeader({
+  Key? key,
+  required this.cid,
+  required this.ccode,
+  required this.coursename,
+  required this.fid,
+}) : super(key: key);
 
   @override
   State<PaperHeader> createState() => _PaperHeaderState();
@@ -65,30 +67,24 @@ class _PaperHeaderState extends State<PaperHeader> {
     }
   }
 
-  Future<void> loadSession() async {
+ Future<void> loadSession() async {
     try {
-      Uri uri = Uri.parse("${APIHandler().apiUrl}Paper/getSession");
-      var response = await http.get(uri);
-      if (response.statusCode == 200) {
-        List<dynamic> responseData = jsonDecode(response.body);
-        if (responseData.isNotEmpty) {
-          sid = responseData[0]['s_id'];
-        } else {
-          print('Session data not found');
-        }
-        setState(() {}); // Update the UI after loading the session
-      } else {
-        print('Failed to load session: ${response.statusCode}');
-      }
+      sid=await APIHandler().loadSession();
+      setState(() {
+      });
     } catch (e) {
-      showDialog(
+      if(mounted){
+ showDialog(
         context: context,
         builder: (context) {
-          return const AlertDialog(
-            title: Text('An error occurred. Please try again later.'),
+          return  AlertDialog(
+            title: const Text('Error'),
+            content: Text(e.toString()),
           );
         },
       );
+      }
+     
     }
   }
   void _showDatePicker() {
@@ -453,10 +449,12 @@ class _PaperHeaderState extends State<PaperHeader> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => PaperSetting(
+                                fid: widget.fid,
                                   cid: widget.cid,
                                   ccode: widget.ccode,
                                   coursename: widget.coursename,
                             )));
+                            
                             });
 
                            durationController.clear();

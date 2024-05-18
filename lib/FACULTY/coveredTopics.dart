@@ -46,8 +46,8 @@ class _CoveredTopicsState extends State<CoveredTopics> {
         throw Exception('Failed to load Topics');
       }
     } catch (e) {
-      showDialog(
-        // ignore: use_build_context_synchronously
+      if(mounted){
+ showDialog(
         context: context,
         builder: (context) {
           return const AlertDialog(
@@ -55,6 +55,8 @@ class _CoveredTopicsState extends State<CoveredTopics> {
           );
         },
       );
+      }
+     
     }
   }
 

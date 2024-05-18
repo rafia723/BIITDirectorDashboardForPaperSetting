@@ -1,4 +1,3 @@
-
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/DATACELL/course.dart';
 import 'package:biit_directors_dashbooard/DATACELL/editCourse.dart';
@@ -11,6 +10,7 @@ class CourseDetail extends StatefulWidget {
   @override
   State<CourseDetail> createState() => _CourseDetailState();
 }
+
 class _CourseDetailState extends State<CourseDetail> {
   List<dynamic> clist = [];
   TextEditingController search = TextEditingController();
@@ -22,88 +22,74 @@ class _CourseDetailState extends State<CourseDetail> {
   }
 
   Future<void> loadCourseData() async {
-    try{
-     clist=await APIHandler().loadCourse();
-      setState(() {
-      });
-    }
-    catch(e){
-  if(mounted){
- showDialog(
-        context: context,
-        builder: (context) {
-          return  AlertDialog(
-            title: const Text('Error loading course'),
-            content: Text(e.toString()),
-          );
-        },
-      );
+    try {
+      clist = await APIHandler().loadCourse();
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error loading course'),
+              content: Text(e.toString()),
+            );
+          },
+        );
       }
     }
   }
 
-Future<void> updateStatus(int id, bool newStatus) async {
-  try {
-    dynamic code = await APIHandler().updateCourseStatus(id, newStatus);
-    if (mounted) {
-      if (code == 200) {
-        loadCourseData();
-        // showDialog(
-        //   context: context,
-        //   builder: (context) {
-        //     return const AlertDialog(
-        //       title: Text('Status Changed'),
-        //     );
-        //   },
-        // );
-        // Future.delayed(const Duration(seconds: 1), () {
-        //   Navigator.of(context).pop();
-        // });
-      } else {
-        throw Exception('Non-200 response code');
+  Future<void> updateStatus(int id, bool newStatus) async {
+    try {
+      dynamic code = await APIHandler().updateCourseStatus(id, newStatus);
+      if (mounted) {
+        if (code == 200) {
+          loadCourseData();
+        } else {
+          throw Exception('Non-200 response code');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error changing status of course'),
+              content: Text(e.toString()), // Optionally show the error message
+            );
+          },
+        );
       }
     }
-  } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Error changing status of course'),
-            content: Text(e.toString()), // Optionally show the error message
-          );
-        },
-      );
   }
-}
 
-   Future<void> searchCourseData(String query) async {
+  Future<void> searchCourseData(String query) async {
     try {
       if (query.isEmpty) {
-       loadCourseData();
+        loadCourseData();
         return;
       }
-     clist=await APIHandler().searchCourse(query);
-     setState(() {
-     });
+      clist = await APIHandler().searchCourse(query);
+      setState(() {});
     } catch (e) {
-      if(mounted){
- showDialog(
-        context: context,
-        builder: (context) {
-          return  AlertDialog(
-            title: const Text('Error searching course'),
-            content: Text(e.toString()),
-          );
-        },
-      );
-       Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error searching course'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+        Future.delayed(const Duration(seconds: 1), () {
           Navigator.of(context).pop();
         });
       }
-     
     }
   }
-
 
   void editCourseRecords(int cid, dynamic data) async {
     await Navigator.push(
@@ -113,7 +99,6 @@ Future<void> updateStatus(int id, bool newStatus) async {
       ),
     );
     loadCourseData();
-  
   }
 
   void add() {
@@ -126,39 +111,38 @@ Future<void> updateStatus(int id, bool newStatus) async {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-        appBar: customAppBar(context: context, title: 'Course Details'),
-      body: 
-      SizedBox(
-           height: double.infinity, 
+      appBar: customAppBar(context: context, title: 'Course Details'),
+      body: SizedBox(
+        height: double.infinity,
         child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Image.asset(
-                    'assets/images/bg.png',
-                    fit: BoxFit.cover,
-                  ),
-                ),Column(
           children: [
-            SizedBox(
-              width: 300,
-              height: 80,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextField(
-                  controller: search,
-                  onChanged: (value) async{
-                    searchCourseData(value);
-                  },
-                  decoration: const InputDecoration(
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                      suffixIcon: Icon(Icons.search),
-                      labelText: 'Search Course',
-                      border: OutlineInputBorder(),
-                      filled: false),
-                ),
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/bg.png',
+                fit: BoxFit.cover,
               ),
             ),
-            
+            Column(
+              children: [
+                SizedBox(
+                  width: 300,
+                  height: 80,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TextField(
+                      controller: search,
+                      onChanged: (value) async {
+                        searchCourseData(value);
+                      },
+                      decoration: const InputDecoration(
+                          floatingLabelBehavior: FloatingLabelBehavior.never,
+                          suffixIcon: Icon(Icons.search),
+                          labelText: 'Search Course',
+                          border: OutlineInputBorder(),
+                          filled: false),
+                    ),
+                  ),
+                ),
                 Expanded(
                   child: ListView.builder(
                     itemCount: clist.length,
@@ -179,7 +163,7 @@ Future<void> updateStatus(int id, bool newStatus) async {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                onPressed: () async{
+                                onPressed: () async {
                                   editCourseRecords(
                                       clist[index]['c_id'], clist[index]);
                                 },
@@ -187,12 +171,10 @@ Future<void> updateStatus(int id, bool newStatus) async {
                               ),
                               Switch(
                                   value: clist[index]['status'] == 'enabled',
-                                  onChanged: (newValue) async{
-                                 
-                                      await updateStatus(
-                                          clist[index]['c_id'], newValue);
-                                             setState(() {
-                                    });
+                                  onChanged: (newValue) async {
+                                    await updateStatus(
+                                        clist[index]['c_id'], newValue);
+                                    setState(() {});
                                   })
                             ],
                           ),
@@ -210,7 +192,10 @@ Future<void> updateStatus(int id, bool newStatus) async {
         shape: const CircleBorder(),
         backgroundColor: customButtonColor,
         onPressed: add,
-        child: const Icon(Icons.add,color: Colors.white,),
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
     );
   }

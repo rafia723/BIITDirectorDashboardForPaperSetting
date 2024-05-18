@@ -254,8 +254,8 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                   padding: const EdgeInsets.all(15.0),
                   child: TextField(
                     controller: search,
-                    onChanged: (value) {
-                      searchCourses(value);
+                    onChanged: (value) async {
+                      await searchCourses(value);
                     },
                     decoration: const InputDecoration(
                       floatingLabelBehavior: FloatingLabelBehavior.never,

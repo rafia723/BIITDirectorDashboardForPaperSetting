@@ -28,6 +28,11 @@ class MyApp extends StatelessWidget {
           ),
           floatingLabelStyle: TextStyle(color: Colors.white)
         ),
+        switchTheme: const SwitchThemeData(
+          thumbColor: MaterialStatePropertyAll(Colors.white,),
+          trackColor: MaterialStatePropertyAll(Colors.green),
+          ),
+          
         ),
       home:  const SplashScreen(),
     );
