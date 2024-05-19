@@ -88,7 +88,8 @@ class _AssignRoleState extends State<AssignRole> {
       }
    
     } catch (e) {
-      showDialog(
+      if(mounted){
+showDialog(
         context: context,
         builder: (context) {
           return const AlertDialog(
@@ -96,6 +97,8 @@ class _AssignRoleState extends State<AssignRole> {
           );
         },
       );
+      }
+      
     }
   }
 

@@ -48,7 +48,7 @@ class _PaperHeaderState extends State<PaperHeader> {
       // Making loadSession and loadTeachers calls in parallel
       await Future.wait([loadSession(), loadTeachers()]);
       if (sid != null) {
-        status = await APIHandler().loadPaperStatus(widget.cid!, sid);
+        status = await APIHandler().loadPaperStatus(widget.cid, sid);
         setState(() {}); // Update the UI after loading the status
       }
     } catch (e) {
@@ -58,7 +58,7 @@ class _PaperHeaderState extends State<PaperHeader> {
 
   Future<void> loadTeachers() async {
     try {
-      List<dynamic> teachersList = await APIHandler().loadTeachersByCourseId(widget.cid!);
+      List<dynamic> teachersList = await APIHandler().loadTeachersByCourseId(widget.cid);
       setState(() {
         teachers = teachersList; // Correctly update the state with the loaded teachers
       });
@@ -427,7 +427,7 @@ class _PaperHeaderState extends State<PaperHeader> {
                           _dateTime,
                           selectedSessionValue,
                           int.parse(noOfQuestionsController.text),
-                          widget.cid!,
+                          widget.cid,
                           sid,
                           status,
                         )

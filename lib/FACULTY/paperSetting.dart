@@ -92,14 +92,8 @@ class _PaperSettingState extends State<PaperSetting> {
 Future<void> loadClosMappedWithTopicData(int tid) async {
   try {
     List<dynamic> list=await APIHandler().loadClosMappedWithTopic(tid);
-      if (list is List) {
-        cloMap[tid] = list;
-      } else if (list is Map) {
-        cloMap[tid] = [list];
-      } else {
-        throw Exception('Unexpected response format');
-      }
-      setState(() {});
+      cloMap[tid] = list;
+          setState(() {});
   } catch (e) {
     if(mounted){
 showDialog(
@@ -474,7 +468,7 @@ showDialog(
                             'pending',
                             selectedTopicId!, 
                             paperId,
-                            widget.fid!,  //////////////////////////////////////////////
+                            widget.fid,  //////////////////////////////////////////////
                           );
                           if (code == 200) {
                             showDialog(

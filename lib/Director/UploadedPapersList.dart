@@ -1,63 +1,75 @@
-// ignore_for_file: use_build_context_synchronously
 
-import 'dart:convert';
-
-import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:biit_directors_dashbooard/API/api.dart';
+
 class DRTUploadedPapers extends StatefulWidget {
   const DRTUploadedPapers({super.key});
 
   @override
   State<DRTUploadedPapers> createState() => _DRTUploadedPapersState();
 }
-List<dynamic> uploaded_plist = [];
-TextEditingController search = TextEditingController();
+
 class _DRTUploadedPapersState extends State<DRTUploadedPapers> {
-
- Future<void> loadUploadedPapers() async {
-    Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/getUploadedPapers');
-    var response = await http.get(uri);
-    if (response.statusCode == 200) {
-      uploaded_plist = jsonDecode(response.body);
-      setState(() {});
-    } else {
-      throw Exception('Failed to load Uploaded Papers');
-    }
-  }
-
-  Future<void> searchUploadedPapers(String courseTitle) async {
-    try {
-       if (courseTitle.isEmpty) {
-        loadUploadedPapers();
-         return;
-       }
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/SearchUploadedPapers?courseTitle=$courseTitle');
-      var response = await http.get(uri);
-      if (response.statusCode == 200) {
-        uploaded_plist = jsonDecode(response.body);
-        setState(() {});
-      } else {
-        throw Exception('Failed to load Uploaded Papers');
-      }
-    }catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading Uploaded Papers'),
-          );
-        },
-      );
-    }
-  }
+  List<dynamic> uploadedPlist = [];
+TextEditingController search = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    loadUploadedPapers();
+    initializeData();
   }
+
+
+  void initializeData() async{
+    await loadUploadedPapersData();
+  }
+
+
+ Future<void> loadUploadedPapersData() async {
+   try {
+       uploadedPlist =await loadUploadedPapers();
+      setState(() {});
+   } catch (e) {
+    if(mounted){
+     showDialog(
+        context: context,
+        builder: (context) {
+          return  AlertDialog(
+            title: const Text('Error'),
+            content: Text(e.toString()),
+          );
+        },
+      );
+    }
+   }
+    
+    
+  }
+
+  Future<void> searchUploadedPapersData(String courseTitle) async {
+    try {
+       if (courseTitle.isEmpty) {
+        loadUploadedPapersData();
+         return;
+       }
+        uploadedPlist = await APIHandler().searchUploadedPapers(courseTitle);
+        setState(() {});
+    }catch (e) {
+         if(mounted){
+     showDialog(
+        context: context,
+        builder: (context) {
+          return  AlertDialog(
+            title: const Text('Error'),
+            content: Text(e.toString()),
+          );
+        },
+      );
+    }
+    }
+  }
+
 
 
   @override
@@ -84,8 +96,8 @@ class _DRTUploadedPapersState extends State<DRTUploadedPapers> {
                     padding: const EdgeInsets.all(16.0),
                     child: TextField(
                       controller: search,
-                      onChanged: (value) {
-                        searchUploadedPapers(value);
+                      onChanged: (value) async{
+                        await searchUploadedPapersData(value);
                       },
                       decoration: const InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -101,7 +113,7 @@ class _DRTUploadedPapersState extends State<DRTUploadedPapers> {
                 Expanded(
                   child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: uploaded_plist.length,
+                    itemCount: uploadedPlist.length,
                     itemBuilder: (context, index) {
                       return Card(
                         elevation: 5,
@@ -111,7 +123,7 @@ class _DRTUploadedPapersState extends State<DRTUploadedPapers> {
                         color: Colors.white.withOpacity(0.8),
                         child: ListTile(
                            title: Text(
-                              uploaded_plist[index]['c_title'],
+                              uploadedPlist[index]['c_title'],
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
@@ -119,7 +131,7 @@ class _DRTUploadedPapersState extends State<DRTUploadedPapers> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  uploaded_plist[index]['c_code'],
+                                  uploadedPlist[index]['c_code'],
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),

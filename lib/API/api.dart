@@ -176,7 +176,7 @@ String url="${apiUrl}Course/addCourse";
   }
 
   ///////////////////////////////////////////////////////////////////Paper/////////////////////////////////////////////////////////////////////////
- Future<List<dynamic>> loadApprovedPapers() async {
+ Future<List<dynamic>> loadApprovedPapers() async {    //Faculty & Datacell
   List<dynamic>plist=[];
   try{
     Uri uri = Uri.parse('${apiUrl}Paper/getApprovedPapers');
@@ -192,8 +192,8 @@ String url="${apiUrl}Course/addCourse";
     }
   }
 
-  Future<List<dynamic>> searchApprovedPapers(String courseTitle) async {
-      List<dynamic>plist=[];
+  Future<List<dynamic>> searchApprovedPapers(String courseTitle) async {            //Faculty & Datacell
+      List<dynamic>plist=[];      
   try {
       Uri uri = Uri.parse('${apiUrl}Paper/SearchApprovedPapers?courseTitle=$courseTitle');
       var response = await http.get(uri);
@@ -592,4 +592,36 @@ Future<int> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdif
 
 
 }
+
+
+//////////////////////////////////////////////////////////Director/////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////Paper////////////////////////////////////////////////////////////////////////
+
+Future<List<dynamic>> loadUploadedPapers() async {
+  List<dynamic> list=[];
+    Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/getUploadedPapers');
+    var response = await http.get(uri);
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+     
+    } else {
+      throw Exception('Failed to load Uploaded Papers');
+    }
+    return list;
+  }
+
+  Future<List<dynamic>> searchUploadedPapers(String courseTitle) async {
+    List<dynamic> list=[];
+      Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/SearchUploadedPapers?courseTitle=$courseTitle');
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to load Uploaded Papers');
+      }
+      return list;
+  
+  }
+
 
