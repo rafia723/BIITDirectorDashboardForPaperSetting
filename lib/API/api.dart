@@ -259,7 +259,7 @@ String url="${apiUrl}Course/addCourse";
   }
 
   Future<int> updateClo(int cloid, Map<String, dynamic> cloData) async {
-  Uri url = Uri.parse('${APIHandler().apiUrl}Clo/editClo/$cloid');
+  Uri url = Uri.parse('${apiUrl}Clo/editClo/$cloid');
   try {
     var cloJson = jsonEncode(cloData);
     var response = await http.put(
@@ -275,7 +275,7 @@ String url="${apiUrl}Course/addCourse";
 
  Future<int> updateCloStatus(int id, String newStatus) async {
    String status = newStatus == 'approved' ? 'disapproved' : 'approved';
-    Uri url = Uri.parse('${APIHandler().apiUrl}Clo/updateCloStatus/$id');
+    Uri url = Uri.parse('${apiUrl}Clo/updateCloStatus/$id');
     try {
       var response = await http.put(
         url,
@@ -326,7 +326,7 @@ return response.statusCode;
   Future<int> deleteTopic(int id) async {
     try{
       Uri url = Uri.parse(
-          '${APIHandler().apiUrl}Topic/deleteTopic/$id');
+          '${apiUrl}Topic/deleteTopic/$id');
       var response = await http.delete(url);
      return response.statusCode;
   } catch (error) {
@@ -532,7 +532,7 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
  Future<List<dynamic>> loadQuestion(int pid) async {
   List<dynamic> qlist=[];
     try {
-      Uri uri = Uri.parse("${APIHandler().apiUrl}Question/getQuestion/$pid");
+      Uri uri = Uri.parse("${apiUrl}Question/getQuestion/$pid");
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -591,7 +591,7 @@ Future<int> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdif
 
 
 
-}
+
 
 
 //////////////////////////////////////////////////////////Director/////////////////////////////////////////////////////////////////////////
@@ -600,7 +600,7 @@ Future<int> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdif
 
 Future<List<dynamic>> loadUploadedPapers() async {
   List<dynamic> list=[];
-    Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/getUploadedPapers');
+    Uri uri = Uri.parse('${apiUrl}Paper/getUploadedPapers');
     var response = await http.get(uri);
     if (response.statusCode == 200) {
       list = jsonDecode(response.body);
@@ -613,7 +613,7 @@ Future<List<dynamic>> loadUploadedPapers() async {
 
   Future<List<dynamic>> searchUploadedPapers(String courseTitle) async {
     List<dynamic> list=[];
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Paper/SearchUploadedPapers?courseTitle=$courseTitle');
+      Uri uri = Uri.parse('${apiUrl}Paper/SearchUploadedPapers?courseTitle=$courseTitle');
       var response = await http.get(uri);
       if (response.statusCode == 200) {
         list = jsonDecode(response.body);
@@ -621,7 +621,7 @@ Future<List<dynamic>> loadUploadedPapers() async {
         throw Exception('Failed to load Uploaded Papers');
       }
       return list;
-  
   }
 
+}
 

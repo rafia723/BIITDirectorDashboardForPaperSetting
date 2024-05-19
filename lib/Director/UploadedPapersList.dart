@@ -28,7 +28,7 @@ TextEditingController search = TextEditingController();
 
  Future<void> loadUploadedPapersData() async {
    try {
-       uploadedPlist =await loadUploadedPapers();
+       uploadedPlist =await APIHandler().loadUploadedPapers();
       setState(() {});
    } catch (e) {
     if(mounted){
