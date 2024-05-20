@@ -1,4 +1,3 @@
-
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
@@ -13,43 +12,44 @@ class FacultyForm extends StatefulWidget {
 }
 
 class _FacultyFormState extends State<FacultyForm> {
-  Future<void> addFacultyData(String name, String username, String password, String status) async {
-   try {
-     dynamic code=await APIHandler().addFaculty(name, username, password, status);
-     if(mounted){
-       showDialog(
-           context: context,
-           builder: (context) {
-            return  AlertDialog(
-               title: Text(code==200? 'Inserted': 'Error....'),
-                 );
-               },
-           );
-           if(code==200){
-            Future.delayed(const Duration(seconds: 1), () {
-                Navigator.push(
-                   context,
-                  MaterialPageRoute(
-                   builder: (context) => const FacultyDetails(),
-                            ),
-                          );
-                        });
-           }
-     }
-   } catch (e) {
-      if(mounted){
-       showDialog(
-           context: context,
-           builder: (context) {
-            return   AlertDialog(
-               title: const Text('Error inserting faculty'),
-               content: Text(e.toString()),
-                 );
-               },
-           );
+  Future<void> addFacultyData(
+      String name, String username, String password, String status) async {
+    try {
+      dynamic code =
+          await APIHandler().addFaculty(name, username, password, status);
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(code == 200 ? 'Inserted' : 'Error....'),
+            );
+          },
+        );
+        if (code == 200) {
+          Future.delayed(const Duration(seconds: 1), () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const FacultyDetails(),
+              ),
+            );
+          });
+        }
       }
-     
-   }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error inserting faculty'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
+    }
   }
 
   TextEditingController name = TextEditingController();
@@ -60,8 +60,8 @@ class _FacultyFormState extends State<FacultyForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       resizeToAvoidBottomInset: false,
-        appBar: customAppBar(context: context, title: 'Faculty Form'),
+      resizeToAvoidBottomInset: false,
+      appBar: customAppBar(context: context, title: 'Faculty Form'),
       body: Stack(
         children: [
           // Background Image
@@ -95,8 +95,9 @@ class _FacultyFormState extends State<FacultyForm> {
                     obscureText: true),
                 const SizedBox(height: 10),
                 customElevatedButton(
-                    onPressed: ()  async{
-                     addFacultyData(name.text, username.text, password.text, 'enabled');
+                    onPressed: () async {
+                      addFacultyData(
+                          name.text, username.text, password.text, 'enabled');
                     },
                     buttonText: 'Add'),
               ],

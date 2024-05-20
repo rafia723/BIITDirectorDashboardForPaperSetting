@@ -2,28 +2,28 @@ import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
-class ManagePaper extends StatefulWidget {
-  final int? cid;
+class PaperApproval extends StatefulWidget {
+  final int cid;
   final String coursename;
   final String ccode;
-  const ManagePaper({
-    super.key,
-    required this.cid,
-    required this.ccode,
-    required this.coursename,
-  });
+ const PaperApproval({
+  Key? key,
+  required this.cid,
+  required this.ccode,
+  required this.coursename,
+}) : super(key: key);
 
   @override
-  State<ManagePaper> createState() => _ManagePaperState();
+  State<PaperApproval> createState() => _PaperApprovalState();
 }
 
-class _ManagePaperState extends State<ManagePaper> {
-  List<dynamic> plist = [];
+class _PaperApprovalState extends State<PaperApproval> {
+ List<dynamic> plist = [];
   List<dynamic> qlist = [];
   dynamic paperId;
   String? duration;
   String? degree;
-  int? tMarks;
+  String? tMarks;
   String? session;
   String? term;
   int? questions;
@@ -33,69 +33,71 @@ class _ManagePaperState extends State<ManagePaper> {
   dynamic sid;
   bool isChecked = false;
   Map<int, List<dynamic>> cloMap = {};
-  dynamic counter;
+  int counter=0;
 
   @override
   void initState() {
     super.initState();
-    loadTeachers();
     initializeData();
+   
   }
 
   Future<void> initializeData() async {
     await loadSession();
+        setState(() {
+    });
+    loadTeachers();
+
     if (sid != null) {
-      await loadPaperHeaderData(widget.cid!, sid!);
-    }
-    if (paperId != null) {
-      await loadQuestion(paperId);
-      // Deduct marks for questions already marked as uploaded
-      for (var question in qlist) {
-        if (question['q_status'] == 'uploaded') {
-          int qMarks = question['q_marks'];
-          setState(() {
-            counter = (counter! - qMarks);
-          });
-        }
-      }
+       loadPaperHeaderData(widget.cid, sid!);
     }
   }
 
+
+  
+  
+
+  
   Future<void> loadPaperHeaderData(int cid, int sid) async {
-    try {
-      plist = await APIHandler().loadPaperHeader(cid, sid);
-      setState(() {});
+  try {
+    plist = await APIHandler().loadPaperHeader(cid, sid);
+    setState(() {
       if (plist.isNotEmpty) {
         paperId = plist[0]['p_id'];
         duration = plist[0]['duration'];
         degree = plist[0]['degree'];
-        tMarks = plist[0]['t_marks'];
-        counter = tMarks;
+        tMarks = plist[0]['t_marks'].toString();
         session = plist[0]['session'];
         term = plist[0]['term'];
         questions = plist[0]['NoOfQuestions'];
         year = plist[0]['year'];
         date = DateTime.parse(plist[0]['exam_date']);
+
+        // Check if paperId is not null, then load questions
+        if (paperId != null) {
+          loadQuestionsWithUploadedStatus(paperId);
+        }
       }
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error..'),
-              content: Text(e.toString()),
-            );
-          },
-        );
-      }
+    });
+  } catch (e) {
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Error..'),
+            content: Text(e.toString()),
+          );
+        },
+      );
     }
   }
+}
 
-  Future<void> loadTeachers() async {
+    Future<void> loadTeachers() async {
     try {
       List<dynamic> teachersList =
-          await APIHandler().loadTeachersByCourseId(widget.cid!);
+          await APIHandler().loadTeachersByCourseId(widget.cid);
       setState(() {
         teachers = teachersList;
       });
@@ -133,10 +135,14 @@ class _ManagePaperState extends State<ManagePaper> {
     }
   }
 
-  Future<void> loadQuestion(int pid) async {
+    Future<void> loadQuestionsWithUploadedStatus(int pid) async {
     try {
-      qlist = await APIHandler().loadQuestion(pid);
-      setState(() {});
+      qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
+      setState(() {
+        if(qlist.isNotEmpty){
+            counter=qlist.length;
+        }
+        });
     } catch (e) {
       if (mounted) {
         showDialog(
@@ -171,36 +177,13 @@ class _ManagePaperState extends State<ManagePaper> {
     }
   }
 
-  Future<void> updateStatus(int id, dynamic newStatus) async {
-    try {
-      dynamic code = await APIHandler().updateQuestionStatus(id, newStatus);
-      if (mounted) {
-        if (code == 200) {
-          loadQuestion(paperId);
-        } else {
-          throw Exception('Non-200 response code');
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error changing status of question'),
-              content: Text(e.toString()), // Optionally show the error message
-            );
-          },
-        );
-      }
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+   return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: customAppBar(context: context, title: 'Manage Paper'),
+      appBar: customAppBar(context: context, title: 'Paper Approval'),
       body: Stack(children: [
         Positioned.fill(
           child: Container(
@@ -235,7 +218,7 @@ class _ManagePaperState extends State<ManagePaper> {
                   ),
                 ),
                 Text(
-                  'Barani Institute of Information Technology\n       PMAS Arid Agriculture University,\n                 Rawalpindi,Pakistan\n      ${session ?? 'Session'} ${year ?? 0} : ${term ?? ''} Term Examination',
+                  'Barani Institute of Information Technology\n       PMAS Arid Agriculture University,\n                 Rawalpindi,Pakistan\n      ${session ?? 'Session'} ${year?? 'Loading...'} : ${term ?? ''} Term Examination',
                   style: const TextStyle(
                       fontSize: 11.5, fontWeight: FontWeight.bold),
                 ),
@@ -304,7 +287,7 @@ class _ManagePaperState extends State<ManagePaper> {
                         ),
                         Expanded(
                           child: Text(
-                            '${date?.day ?? ''}/${date?.month ?? ''}/${date?.year ?? ''}',
+                            '${date?.day ?? ''}/${date?.month ?? ''}/${date?.year ?? 'Loading...'}',
                             style: const TextStyle(fontSize: 12),
                           ),
                         ),
@@ -315,7 +298,7 @@ class _ManagePaperState extends State<ManagePaper> {
                         ),
                         Expanded(
                             child: Text(
-                          duration ?? '',
+                          duration ?? 'Loading...',
                           style: const TextStyle(fontSize: 12),
                         )),
                       ],
@@ -328,7 +311,7 @@ class _ManagePaperState extends State<ManagePaper> {
                               fontWeight: FontWeight.bold, fontSize: 12),
                         ),
                         Expanded(
-                            child: Text(degree ?? '',
+                            child: Text(degree ?? 'Loading...',
                                 style: const TextStyle(fontSize: 12))),
                         const Text(
                           'Total Marks: ',
@@ -336,8 +319,7 @@ class _ManagePaperState extends State<ManagePaper> {
                               fontWeight: FontWeight.bold, fontSize: 12),
                         ),
                         Expanded(
-                            child: Text(
-                          '$tMarks',
+                            child: Text(tMarks ??'Loading...',
                           style: const TextStyle(fontSize: 12),
                         )),
                       ],
@@ -370,7 +352,6 @@ class _ManagePaperState extends State<ManagePaper> {
             ),
           ),
 //////////////////////////////////////////////////////////////Questions Display///////////////////////////////////////////////////////////
-          Text('Marks Remaining: $counter'),
           Expanded(
             child: ListView.builder(
               itemCount: qlist.length,
@@ -385,8 +366,9 @@ class _ManagePaperState extends State<ManagePaper> {
                 }
 
                 final cloList = cloMap[fetchedTopicId] ?? [];
-
-                return Card(
+                return
+                counter==plist[0]['NoOfQuestions']?
+                 Card(
                   elevation: 5,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15.0),
@@ -395,35 +377,10 @@ class _ManagePaperState extends State<ManagePaper> {
                   child: GestureDetector(
                     child: ListTile(
                       tileColor: Colors.white,
-                      title: Row(
-                        children: [
-                          Text(
-                            'Question # ${index + 1}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 15),
-                          ),
-                          const SizedBox(
-                            width: 190,
-                          ),
-                          Checkbox(
-                              value: question['q_status'] == 'uploaded',
-                              onChanged: (bool? newValue) async {
-                                await updateStatus(question['q_id'], newValue);
-
-                                if (newValue == true) {
-                                  int qMarks = question['q_marks'];
-                                  setState(() {
-                                    counter = (counter! - qMarks);
-                                  });
-                                } else if (newValue == false) {
-                                  // If the checkbox is unchecked, add the qMarks back to tMarks
-                                  int qMarks = question['q_marks'];
-                                  setState(() {
-                                    counter = (counter! + qMarks);
-                                  });
-                                }
-                              }),
-                        ],
+                      title: Text(
+                        'Question # ${index + 1}',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 15),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,30 +413,11 @@ class _ManagePaperState extends State<ManagePaper> {
                       ),
                     ),
                   ),
-                );
+                ):const Text('');
               },
             ),
-          ),
-          Row(
-            children: [
-              const SizedBox(
-                width: 20,
-              ),
-              customElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  buttonText: 'Clo Grid'),
-              const SizedBox(
-                width: 170,
-              ),
-              customElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  buttonText: 'Submit'),
-            ],
           )
+         
         ]),
       ]),
     );

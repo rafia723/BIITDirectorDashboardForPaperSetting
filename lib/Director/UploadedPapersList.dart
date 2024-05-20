@@ -1,10 +1,11 @@
 
+import 'package:biit_directors_dashbooard/Director/paperHeaderScreen.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:biit_directors_dashbooard/API/api.dart';
 
 class DRTUploadedPapers extends StatefulWidget {
-  const DRTUploadedPapers({super.key});
+   const DRTUploadedPapers({Key? key}) : super(key: key);
 
   @override
   State<DRTUploadedPapers> createState() => _DRTUploadedPapersState();
@@ -121,28 +122,44 @@ TextEditingController search = TextEditingController();
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         color: Colors.white.withOpacity(0.8),
-                        child: ListTile(
-                           title: Text(
-                              uploadedPlist[index]['c_title'],
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
+                        child: GestureDetector(
+                          onTap: () => {
+                              Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PaperHeaderScreen(cid: uploadedPlist[index]['c_id'], 
+                                ccode: uploadedPlist[index]['c_code'], 
+                                coursename: uploadedPlist[index]['c_title'])))
+                          },
+                          child: ListTile(
+                             title: Text(
+                                uploadedPlist[index]['c_title'],
+                                style:
+                                    const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    uploadedPlist[index]['c_code'],
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                       Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PaperHeaderScreen(cid: uploadedPlist[index]['c_id'], 
+                                ccode: uploadedPlist[index]['c_code'], 
+                                coursename: uploadedPlist[index]['c_title'])));
+                                    },
+                                    icon: const Icon(Icons.remove_red_eye),
+                                  ),
+                                ],
+                              ),
                             ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  uploadedPlist[index]['c_code'],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                  },
-                                  icon: const Icon(Icons.remove_red_eye),
-                                ),
-                              ],
-                            ),
-                          ),
+                        ),
                       );
                     },
                   ),

@@ -594,7 +594,7 @@ Future<int> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdif
 
 
 
-//////////////////////////////////////////////////////////Director/////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////Director Module/////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////Paper////////////////////////////////////////////////////////////////////////
 
@@ -623,5 +623,48 @@ Future<List<dynamic>> loadUploadedPapers() async {
       return list;
   }
 
-}
 
+
+
+
+////////////////////////////////////////////////////////Question//////////////////////////////////////////////////////////////////////////
+
+ Future<List<dynamic>> loadQuestionsWithUploadedStatus(int pid) async {
+  List<dynamic> qlist=[];
+    try {
+      Uri uri = Uri.parse("${apiUrl}Question/getQuestionsWithUploadedStatus/$pid");
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+          qlist = jsonDecode(response.body);
+      } 
+      return qlist;
+    } catch (e) {
+     throw Exception('Error: $e');
+    }
+  }
+
+
+
+
+//////////////////////////////////////////////////////////Feedback///////////////////////////////////////////////////////////////////////
+
+
+Future<int> addFeedback(
+      String feedbackText, int pid , int? qid) async {
+    String url = "${apiUrl}Feedback/addFeedback";
+    var obj = {
+      'feedback_details': feedbackText,
+      'p_id': pid,
+      'q_id': qid,
+    };
+    var json = jsonEncode(obj);
+    Uri uri = Uri.parse(url);
+    var response = await http.post(uri,
+        body: json,
+        headers: {"Content-Type": "application/json; charset=UTF-8"});
+    return response.statusCode;
+  }
+
+
+}
