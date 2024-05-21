@@ -34,6 +34,7 @@ class _ManagePaperState extends State<ManagePaper> {
   bool isChecked = false;
   Map<int, List<dynamic>> cloMap = {};
   dynamic counter;
+  dynamic qNoCounter;
 
   @override
   void initState() {
@@ -55,6 +56,7 @@ class _ManagePaperState extends State<ManagePaper> {
           int qMarks = question['q_marks'];
           setState(() {
             counter = (counter! - qMarks);
+            qNoCounter--;
           });
         }
       }
@@ -74,6 +76,7 @@ class _ManagePaperState extends State<ManagePaper> {
         session = plist[0]['session'];
         term = plist[0]['term'];
         questions = plist[0]['NoOfQuestions'];
+        qNoCounter=questions;
         year = plist[0]['year'];
         date = DateTime.parse(plist[0]['exam_date']);
       }
@@ -370,7 +373,18 @@ class _ManagePaperState extends State<ManagePaper> {
             ),
           ),
 //////////////////////////////////////////////////////////////Questions Display///////////////////////////////////////////////////////////
-          Text('Marks Remaining: $counter'),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                 const SizedBox(width: 10,),
+                 Text('Questions Remaining: $qNoCounter'),
+                       const SizedBox(width: 40,),
+                  Text('Marks Remaining: $counter'),
+              ],
+              
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: qlist.length,
@@ -408,21 +422,34 @@ class _ManagePaperState extends State<ManagePaper> {
                           Checkbox(
                               value: question['q_status'] == 'uploaded',
                               onChanged: (bool? newValue) async {
+                                if(qNoCounter==0&&counter==0&&newValue==true){
+                                  if(mounted){
+                                    showErrorDialog(context, 'You cannot add more questions because the total marks and number of questions have reached their limit.');
+                                  }
+                                }else{
                                 await updateStatus(question['q_id'], newValue);
-
+                            
                                 if (newValue == true) {
                                   int qMarks = question['q_marks'];
                                   setState(() {
-                                    counter = (counter! - qMarks);
+                                    qNoCounter--;
+                                    counter = (counter - qMarks);
+                                
                                   });
                                 } else if (newValue == false) {
                                   // If the checkbox is unchecked, add the qMarks back to tMarks
                                   int qMarks = question['q_marks'];
                                   setState(() {
-                                    counter = (counter! + qMarks);
+                                    counter = (counter + qMarks);
+                                    qNoCounter++;
+                                    
                                   });
                                 }
-                              }),
+                                }
+                              
+                              }
+                              ),
+                              
                         ],
                       ),
                       subtitle: Column(
@@ -475,7 +502,13 @@ class _ManagePaperState extends State<ManagePaper> {
               ),
               customElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    if(counter==0&&qNoCounter==0){
+                          Navigator.pop(context);
+                    }
+                    else{
+                      showErrorDialog(context, 'Please ensure both counters are 0 before submitting.');
+                    }
+                  
                   },
                   buttonText: 'Submit'),
             ],

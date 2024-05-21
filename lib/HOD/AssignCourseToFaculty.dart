@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:convert';
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
@@ -39,7 +37,6 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
       }
     } catch (e) {
       showDialog(
-      
         context: context,
         builder: (context) {
           return AlertDialog(
@@ -87,14 +84,16 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
         throw Exception('Failed to load unassignedcourse');
       }
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading unassignedcourse'),
-          );
-        },
-      );
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return const AlertDialog(
+              title: Text('Error loading unassignedcourse'),
+            );
+          },
+        );
+      }
     }
   }
 
@@ -111,17 +110,10 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
         headers: {"Content-Type": "application/json; charset=UTF-8"});
     if (response.statusCode == 200) {
       loadUnAssignedCourses(fid);
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Course Assigned Successfully'),
-          );
-        },
-      );
-      Future.delayed(const Duration(seconds: 1), () {
-        Navigator.of(context).pop();
-      });
+      setState(() {});
+      if (mounted) {
+        showSuccesDialog(context, 'Course Assigned Successfully');
+      }
     }
   }
 
@@ -160,7 +152,7 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
       loadCourse();
     } else {
       loadUnAssignedCourses(
-          widget.fid ?? int.parse(selectedFacultyId ?? ''));
+          widget.fid ?? int.tryParse(selectedFacultyId ?? '') ?? 0);
     }
   }
 
@@ -186,9 +178,7 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                 const SizedBox(height: 10),
                 const Text(
                   'Teacher Name',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -197,10 +187,9 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                     Container(
                       constraints: const BoxConstraints(maxWidth: 350),
                       decoration: BoxDecoration(
-                        color:const Color.fromARGB(26, 112, 106, 106),
+                        color: const Color.fromARGB(26, 112, 106, 106),
                         borderRadius: BorderRadius.circular(
                             10), // Optional: Add border radius
-                         
                       ),
                       child: DropdownButton<String>(
                         hint: Text(widget.facultyname ?? ' Select Teacher '),
@@ -210,10 +199,14 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                         items: flist.map((e) {
                           return DropdownMenuItem<String>(
                             value: e['f_id'].toString(),
-                            onTap: () {
+                            onTap: () async {
                               setState(() {
+                                selectedFacultyId = e['f_id'].toString();
                                 selectedFacultyText = e['f_name'];
                               });
+                              await loadUnAssignedCourses(
+                                  int.tryParse(e['f_id'].toString()) ?? 0);
+                              setState(() {});
                             },
                             child: Text(
                               e['f_name'],
@@ -222,11 +215,9 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                             ),
                           );
                         }).toList(),
-                        onChanged: (String? newValue) {
+                        onChanged: (String? newValue) async {
                           setState(() {
                             selectedFacultyId = newValue!;
-                            loadUnAssignedCourses(
-                                int.tryParse(selectedFacultyId ?? ''));
                           });
                         },
                       ),
@@ -240,15 +231,12 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                         selectedFacultyText ??
                         "--------------", // Show selected faculty
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16),
+                        fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
                 const Text(
                   'Courses',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(15.0),
@@ -270,7 +258,7 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                   ),
                 ),
                 Expanded(
-                  child: widget.fid != null
+                  child: selectedFacultyId != null || widget.fid != null
                       ? ListView.builder(
                           shrinkWrap: true,
                           itemCount: unAssignedCoursesList.length,
@@ -282,34 +270,41 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                               ),
                               color: Colors.white.withOpacity(0.8),
                               child: ListTile(
-                                title: Text(
-                                  unAssignedCoursesList[index]['c_title'],
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                leading: Checkbox(
-                                    value: unAssignedCoursesList[index]['c_title'] == true,
-                                    checkColor: Colors.black,
+                                  title: Text(
+                                    unAssignedCoursesList[index]['c_title'],
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  leading: Checkbox(
+                                    value: checkedCourses.containsKey(
+                                            unAssignedCoursesList[index]['c_id']
+                                                .toString())
+                                        ? checkedCourses[
+                                            unAssignedCoursesList[index]['c_id']
+                                                .toString()]
+                                        : false,
                                     onChanged: (newValue) async {
-                                    setState(() {
-                                      checkedCourseId = unAssignedCoursesList[index]['c_id'].toString(); // Assuming c_id is a string
+                                      setState(() {
+                                        checkedCourses[
+                                            unAssignedCoursesList[index]['c_id']
+                                                .toString()] = newValue!;
                                       });
-                                    if (checkedCourseId != null &&
-                                        newValue != null && newValue) {
-                                      try {
-                                        await assignCourse(
-                                            int.parse(checkedCourseId ?? ''),
-                                            widget.fid ?? 0);
-                                        // Course assigned successfully, you can update UI or show a message
-                                      } catch (e) {
-                                        // Handle error if assignment fails
-                                        print('Error assigning course: $e');
-                                        // You might want to display an error message to the user here
+                                      if (newValue != null && newValue) {
+                                        try {
+                                          await assignCourse(
+                                              unAssignedCoursesList[index]
+                                                  ['c_id'],
+                                              widget.fid ??
+                                                  int.tryParse(
+                                                      selectedFacultyId ??
+                                                          '') ??
+                                                  0);
+                                        } catch (e) {
+                                          print('Error assigning course: $e');
+                                        }
                                       }
-                                    }
-                                  },
-                                ),
-                              ),
+                                    },
+                                  )),
                             );
                           },
                         )
@@ -333,26 +328,27 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                                   value: clist[index]['c_title'] == 'true',
                                   checkColor: Colors.black,
                                   onChanged: (newValue) async {
-                                    setState(() {
-                                      // Update the state of the checkbox based on the new value
-                                      // No need to assign value to clist[index]['c_title'] here
-                                      checkedCourseId = clist[index]['c_id']
-                                          .toString(); // Assuming c_id is a string
-                                          loadUnAssignedCourses(int.parse(selectedFacultyId??''));
-                                    });
-                                    // Assign the course if the checkbox is checked
-                                    if (checkedCourseId != null &&
-                                        newValue != null &&
-                                        newValue) {
-                                      try {
-                                        await assignCourse(
-                                            int.parse(checkedCourseId ?? ''),
+                                    if (selectedFacultyId == null) {
+                                      showErrorDialog(context,
+                                          'Select teacher name from dropdown');
+                                    } else {
+                                      setState(() {
+                                        checkedCourseId =
+                                            clist[index]['c_id'].toString();
+                                        loadUnAssignedCourses(
                                             int.parse(selectedFacultyId ?? ''));
-                                        // Course assigned successfully, you can update UI or show a message
-                                      } catch (e) {
-                                        // Handle error if assignment fails
-                                        print('Error assigning course: $e');
-                                        // You might want to display an error message to the user here
+                                      });
+                                      if (checkedCourseId != null &&
+                                          newValue != null &&
+                                          newValue) {
+                                        try {
+                                          await assignCourse(
+                                              int.parse(checkedCourseId ?? ''),
+                                              int.parse(
+                                                  selectedFacultyId ?? ''));
+                                        } catch (e) {
+                                          print('Error assigning course: $e');
+                                        }
                                       }
                                     }
                                   },

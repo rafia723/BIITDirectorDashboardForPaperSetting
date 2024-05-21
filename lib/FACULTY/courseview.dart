@@ -33,6 +33,7 @@ class CourseView extends StatefulWidget {
 class _CourseViewState extends State<CourseView> {
   dynamic sid;
   List<dynamic> list = [];
+  bool isLoading=true;
 
   @override
   void initState() {
@@ -45,6 +46,9 @@ class _CourseViewState extends State<CourseView> {
     if (sid != null) {
       await loadPaperHeader(widget.cid, sid);
     }
+    setState(() {
+      isLoading=false;
+    });
   }
 
   Future<void> loadSession() async {
@@ -145,7 +149,9 @@ class _CourseViewState extends State<CourseView> {
             ),
           ),
           Center(
-            child: SingleChildScrollView(
+            child: isLoading
+            ? const CircularProgressIndicator()
+            : SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -153,6 +159,9 @@ class _CourseViewState extends State<CourseView> {
                   customButton(
                       text: 'Paper Settings',
                       onPressed: () {
+                        setState(() {
+                          
+                        });
                         if (list.isEmpty&&widget.role == 'Senior') {
                       
                            Navigator.push(context, MaterialPageRoute(builder: (context)=>
