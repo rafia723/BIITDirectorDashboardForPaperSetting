@@ -28,10 +28,36 @@ class MyApp extends StatelessWidget {
           ),
           floatingLabelStyle: TextStyle(color: Colors.white)
         ),
-        switchTheme: const SwitchThemeData(
-          thumbColor: MaterialStatePropertyAll(Colors.white,),
-          trackColor: MaterialStatePropertyAll(Colors.green),
-          ),
+      //  switchTheme: SwitchThemeData(
+      //     overlayColor: MaterialStateProperty.all(Colors.grey),
+      //     thumbColor: MaterialStateProperty.resolveWith((states) {
+      //       if (states.contains(MaterialState.selected)) {
+      //         return Colors.white; // Color when the switch is ON
+      //       }
+      //       return Colors.grey; // Color when the switch is OFF
+      //     }),
+      //     trackColor: MaterialStateProperty.resolveWith((states) {
+      //       if (states.contains(MaterialState.selected)) {
+      //         return Colors.green; // Color when the switch is ON
+      //       }
+      //       return Colors.grey; // Color when the switch is OFF
+      //     }),
+      //   ),
+       switchTheme: SwitchThemeData(
+          overlayColor: MaterialStateProperty.all(Colors.grey),
+          thumbColor: MaterialStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.selected)) {
+              return Colors.white; // Color when the switch is ON
+            }
+            return null; // Default color when the switch is OFF
+          }),
+          trackColor: MaterialStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.selected)) {
+              return Colors.green; // Color when the switch is ON
+            }
+            return null; // Default color when the switch is OFF
+          }),
+        ),
           
         ),
       home:  const SplashScreen(),

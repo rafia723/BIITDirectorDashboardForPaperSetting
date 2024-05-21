@@ -149,7 +149,7 @@ class _AssignedCoursesState extends State<AssignedCourses> {
                             subtitle: Text(aclist[index]['c_code']),
                             trailing: IconButton(onPressed: (){
                             
-                            showConfirmationDialog(context, title: 'Confirmation', content: 'Are you sure you want to delete the selected courses from ${widget.facultyname}',
+                            showConfirmationDialog(context, title: 'Confirmation', content: 'Are you sure you want to unassign the selected course from ${widget.facultyname}',
                              onConfirm: (){
                               deleteAssignedCourses(aclist[index]['ac_id']);
                              });
