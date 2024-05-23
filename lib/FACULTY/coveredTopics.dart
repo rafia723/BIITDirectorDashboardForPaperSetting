@@ -1,22 +1,19 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:convert';
-
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class CoveredTopics extends StatefulWidget {
   final String coursename;
   final String ccode;
   final int cid;
+  final int fid;
 
   const CoveredTopics({
     Key? key,
     required this.coursename,
     required this.ccode,
     required this.cid,
+    required this.fid,
   }) : super(key: key);
 
   @override
@@ -28,60 +25,130 @@ class _CoveredTopicsState extends State<CoveredTopics> {
   bool isPressedCommon = false;
   bool isPressedProgress = false;
   List<dynamic> topiclist = [];
-  Map<int, bool> topicCheckboxState = {}; // Track the state of topic checkboxes
-  Map<int, bool> subtopicCheckboxState = {}; // Track the state of subtopic checkboxes
-  bool isLoading = true; // Track whether data is loading or not
+  Map<int, List<dynamic>> subTopicMap = {}; // Map to store subtopics by topic ID
+  Map<int, bool> topicCheckState = {}; // Map to store check state of topics
+  Map<int, Map<int, bool>> subTopicCheckState = {}; // Map to store check state of subtopics
+  Map<int, int?> topicTaughtidMap = {}; // Map to store ttid for topics
+  Map<int, Map<int, int?>> subTopicTaughtidMap = {}; // Map to store ttid for subtopics
 
   Future<void> loadTopics(int cid) async {
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Topic/getTopic/$cid');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        setState(() {
-          topiclist = jsonDecode(response.body);
-          isLoading = false; // Data loaded successfully, set isLoading to false
-        });
-      } else {
-        throw Exception('Failed to load Topics');
-      }
+      topiclist = await APIHandler().loadTopics(cid);
+      await loadTopicsTaught();
+      setState(() {});
     } catch (e) {
-      if(mounted){
- showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading topics'),
-          );
-        },
-      );
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return const AlertDialog(
+              title: Text('Error loading topics'),
+            );
+          },
+        );
       }
-     
     }
   }
 
-  Future<List<dynamic>> loadSubTopic(int tid) async {
+  Future<void> loadSubTopic(int tid) async {
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}SubTopic/getSubTopic/$tid');
-      var response = await http.get(uri);
+      subTopicMap[tid] = await APIHandler().loadSubTopic(tid);
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return const AlertDialog(
+              title: Text('Error loading sub-topics'),
+            );
+          },
+        );
+      }
+    }
+  }
 
-      if (response.statusCode == 200) {
-        List<dynamic> subtopics = jsonDecode(response.body);
+  Future<void> addTopicsTaught(int tid, int? stid, int fid) async {
+    try {
+      int ttid = await APIHandler().addTopicTaught(tid, stid, fid);
+      setState(() {
+        if (stid == null) {
+          topicTaughtidMap[tid] = ttid;
+        } else {
+          subTopicTaughtidMap[tid] ??= {};
+          subTopicTaughtidMap[tid]![stid] = ttid;
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
+    }
+  }
 
-        return subtopics;
+  Future<void> deleteTopicTaught(int ttid) async {
+    try {
+      int code = await APIHandler().deleteTopicTaught(ttid);
+      if (code == 200) {
+        setState(() {
+          // Update the UI after deletion
+        });
       } else {
-        throw Exception('Failed to load sub-topics');
+        throw Exception('Failed to delete topic');
       }
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading sub-topics'),
-          );
-        },
-      );
-      return [];
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> loadTopicsTaught() async {
+    try {
+      List<dynamic> topicsTaught = await APIHandler().getTopicTaught(widget.fid);
+      for (var topic in topicsTaught) {
+        int tid = topic['t_id'];
+        int? stid = topic['st_id'];
+        int ttId = topic['tt_id'];
+
+        if (stid == null) {
+          topicCheckState[tid] = true;
+          topicTaughtidMap[tid] = ttId;
+        } else {
+          subTopicCheckState[tid] ??= {};
+          subTopicCheckState[tid]![stid] = true;
+          subTopicTaughtidMap[tid] ??= {};
+          subTopicTaughtidMap[tid]![stid] = ttId;
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
     }
   }
 
@@ -179,122 +246,84 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if (isLoading) // Show loading indicator if data is still loading
-                  const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.black,
-                      ),
-                    ),
-                  ),
-                if (!isLoading) // Show list only if data has been loaded
-                  Expanded(
-                    child: isPressedCovered
-                        ? ListView.builder(
-                      padding: const EdgeInsets.only(top: 5),
-                      itemCount: topiclist.length,
-                      itemBuilder: (context, index) {
-                        // Initialize topic checkbox state
-                        topicCheckboxState.putIfAbsent(index, () => false);
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: topiclist.length,
+                    itemBuilder: (context, index) {
+                      return ExpansionTile(
+                        title: Row(
+                          children: [
+                            Checkbox(
+                              value: topicCheckState[topiclist[index]['t_id']] ?? false,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  int tid = topiclist[index]['t_id'];
+                                  topicCheckState[tid] = value ?? false;
 
-                        return FutureBuilder(
-                          future: loadSubTopic(topiclist[index]['t_id']),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const SizedBox(); // Return an empty container
-                            } else if (snapshot.hasError) {
-                              return Text('Error: ${snapshot.error}');
-                            } else {
-                              List<dynamic> subtopics =
-                                  snapshot.data as List<dynamic>;
-                              return Card(
-                                elevation: 5,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                color: Colors.white.withOpacity(0.8),
-                                child: ListTile(
-                                  title: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Row(
-                                      children: [
-                                       
-                                        Checkbox(
-                                          value: topicCheckboxState[index],
-                                          onChanged: (newValue) {
-                                            setState(() {
-                                              topicCheckboxState[index] =
-                                                  newValue!;
-                                              // When a topic checkbox is checked, update all subtopic checkboxes
-                                              for (var i = 0;
-                                                  i < subtopics.length;
-                                                  i++) {
-                                                subtopicCheckboxState[
-                                                        index * 1000 +
-                                                            i] =
-                                                    newValue;
-                                              }
-                                            });
-                                          },
-                                        ),
-                                        Text(
-                                          '${index + 1}. ${topiclist[index]['t_name']}',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      for (var i = 0;
-                                          i < subtopics.length;
-                                          i++)
-                                        SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Row(
-                                            children: [
-                                               const SizedBox(width: 10,),
-                                              Checkbox(
-                                                value:
-                                                    subtopicCheckboxState[index * 1000 + i] ??
-                                                        false,
-                                                onChanged: (newValue) {
-                                                  setState(() {
-                                                    subtopicCheckboxState[
-                                                            index * 1000 + i] =
-                                                        newValue!;
-                                                  });
-                                                },
-                                              ),
-                                              Text(
-                                                '  ${index + 1}.${i + 1} ',
-                                                style: const TextStyle(
-
-                                                ),
-                                              ),
-                                              Text(
-                                                '${subtopics[i]['st_name']}',
-                                                style: const TextStyle(
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                        );
-                      },
-                    ) : const SizedBox(),
+                                  // Check/uncheck all subtopics
+                                  if (value == true) {
+                                    addTopicsTaught(tid, null, widget.fid);
+                                    if (subTopicMap[tid] != null) {
+                                      for (var subTopic in subTopicMap[tid]!) {
+                                        subTopicCheckState[tid] ??= {};
+                                        subTopicCheckState[tid]![subTopic['st_id']] = true;
+                                        addTopicsTaught(tid, subTopic['st_id'], widget.fid);
+                                      }
+                                    }
+                                  } else {
+                                    if (topicTaughtidMap[tid] != null) {
+                                      deleteTopicTaught(topicTaughtidMap[tid]!);
+                                      topicTaughtidMap[tid] = null;
+                                    }
+                                    if (subTopicTaughtidMap[tid] != null) {
+                                      for (var ttid in subTopicTaughtidMap[tid]!.values) {
+                                        if (ttid != null) {
+                                          deleteTopicTaught(ttid);
+                                        }
+                                      }
+                                      subTopicTaughtidMap[tid] = {};
+                                    }
+                                    subTopicCheckState[tid]?.updateAll((key, value) => false);
+                                  }
+                                });
+                              },
+                            ),
+                            Text(topiclist[index]['t_name']),
+                          ],
+                        ),
+                        onExpansionChanged: (bool expanded) {
+                          if (expanded && subTopicMap[topiclist[index]['t_id']] == null) {
+                            loadSubTopic(topiclist[index]['t_id']);
+                          }
+                        },
+                        children: [
+                          if (subTopicMap[topiclist[index]['t_id']] != null)
+                            for (var subTopic in subTopicMap[topiclist[index]['t_id']]!)
+                              CheckboxListTile(
+                                title: Text(subTopic['st_name']),
+                                value: subTopicCheckState[topiclist[index]['t_id']]?[subTopic['st_id']] ?? false,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    int tid = topiclist[index]['t_id'];
+                                    int stid = subTopic['st_id'];
+                                    subTopicCheckState[tid] ??= {};
+                                    subTopicCheckState[tid]![stid] = value ?? false;
+                                    if (value == true) {
+                                      addTopicsTaught(tid, stid, widget.fid);
+                                    } else {
+                                      if (subTopicTaughtidMap[tid]?[stid] != null) {
+                                        deleteTopicTaught(subTopicTaughtidMap[tid]![stid]!);
+                                        subTopicTaughtidMap[tid]![stid] = null;
+                                      }
+                                    }
+                                  });
+                                },
+                              ),
+                        ],
+                      );
+                    },
                   ),
+                ),
               ],
             ),
           ),

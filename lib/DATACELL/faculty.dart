@@ -12,11 +12,9 @@ class FacultyForm extends StatefulWidget {
 }
 
 class _FacultyFormState extends State<FacultyForm> {
-  Future<void> addFacultyData(
-      String name, String username, String password, String status) async {
+  Future<void> addFacultyData(String name, String username, String password, String status) async {
     try {
-      dynamic code =
-          await APIHandler().addFaculty(name, username, password, status);
+      dynamic code =await APIHandler().addFaculty(name, username, password, status);
       if (mounted) {
         showDialog(
           context: context,

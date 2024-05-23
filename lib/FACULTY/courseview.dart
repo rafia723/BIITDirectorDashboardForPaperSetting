@@ -46,9 +46,12 @@ class _CourseViewState extends State<CourseView> {
     if (sid != null) {
       await loadPaperHeader(widget.cid, sid);
     }
-    setState(() {
+    if(mounted){
+setState(() {
       isLoading=false;
     });
+    }
+    
   }
 
   Future<void> loadSession() async {
@@ -180,14 +183,7 @@ class _CourseViewState extends State<CourseView> {
                                     )));
                       }
                       else{
-                        showDialog(context: context,
-                         builder: (context){
-                          return const AlertDialog(
-                              title: Text('Missing'),
-                              content: Text('The Paper header has not been created yet'),
-                          );
-                           
-                        });
+                    showErrorDialog(context, 'The paper header has not been created yet');
                       }}),
                   const SizedBox(height: 10),
                   customButton(
@@ -199,7 +195,8 @@ class _CourseViewState extends State<CourseView> {
                             builder: (context) => CoveredTopics(
                                 coursename: widget.coursename,
                                 ccode: widget.ccode,
-                                cid: widget.cid),
+                                cid: widget.cid,
+                                fid: widget.fid,),
                           ),
                         );
                       }),

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.5:3000/';
+  String apiUrl='http://192.168.10.3:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -288,6 +288,73 @@ String url="${apiUrl}Course/addCourse";
   }
  }
 //////////////////////////////////////////////////////////////////Topic////////////////////////////////////////////////////////////////////
+Future<int> addTopicTaught(int tid, int? stid, int fid) async {
+  String url = "${apiUrl}TopicTaught/addTopicTaught";
+  var obj = {
+    't_id': tid,
+    'st_id': stid,
+    'f_id': fid,
+  };
+  var json = jsonEncode(obj);
+  Uri uri = Uri.parse(url);
+  var response = await http.post(
+    uri,
+    body: json,
+    headers: {"Content-Type": "application/json; charset=UTF-8"},
+  );
+
+  if (response.statusCode == 200) {
+    Map<String, dynamic> responseData = jsonDecode(response.body);
+    int id = responseData['id'] as int;
+    return id;
+  } else {
+    throw Exception('Failed to add TopicTaught. Status code: ${response.statusCode}');
+  }
+}
+
+
+Future<int> deleteTopicTaught (int ttid) async {
+    String url = "${apiUrl}TopicTaught/deleteTopicTaught";
+    var obj = {
+      'tt_id': ttid,
+    };
+    var json = jsonEncode(obj);
+    Uri uri = Uri.parse(url);
+    var response = await http.delete(uri,
+        body: json,
+        headers: {"Content-Type": "application/json; charset=UTF-8"});
+    return response.statusCode;
+  }
+
+   Future<List<dynamic>> getTopicTaught(int fid) async {
+    final response = await http.get(
+      Uri.parse('${apiUrl}TopicTaught/getTopicTaught/$fid'),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load topics taught');
+    }
+  }
+
+ Future<List<dynamic>> loadTopics(int cid) async {
+    List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${APIHandler().apiUrl}Topic/getTopic/$cid');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+          list = jsonDecode(response.body);
+      }
+       else {
+        throw Exception('Failed to load Topics');
+      }
+     }catch (e) {
+     throw Exception('Error: $e');
+    }
+    return list;
+  }
 
 Future<int> addTopic(String tName, int cId) async {
   String url = "${apiUrl}Topic/addTopic";
@@ -309,6 +376,7 @@ Future<int> addTopic(String tName, int cId) async {
     return -1; 
   }
 }
+
 Future<int> addMappingsofCloAndTopic(int topicId, List<dynamic> selectedCloIds) async {
     final response = await http.post(
       Uri.parse("${apiUrl}Clo_Topic_Mapping/addMappingsofCloAndTopic"),
@@ -349,7 +417,6 @@ return response.statusCode;
   }
 }
 
-
 Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
   List<dynamic> list=[];
     try {
@@ -368,36 +435,29 @@ Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
     return list;
   }
 
-  //  Future<int> deleteCloTopicMapping(int topicId, int cloId) async {
-  //   try {
-  //     Uri url = Uri.parse('${apiUrl}Clo_Topic_Mapping/deleteMapping/$topicId/$cloId');
-  //     var response = await http.delete(
-  //       url,
-  //       headers: {"Content-Type": "application/json"},
-  //     );
-
-  //     return response.statusCode;
-  //   } catch (error) {
-  //     throw Exception('Error: $error');
-  //   }
-  // }
-
-  // Future<int> addSingleMapping(int cloId, int tid) async {
-  // String url = "${apiUrl}Clo_Topic_Mapping/addSingleMapping";
-  // var obj = {
-  //   'clo_id': cloId,
-  //   't_id': tid
-  // };
-  // var json = jsonEncode(obj);
-  // Uri uri = Uri.parse(url);
-  // var response = await http.post(uri,
-  //     body: json,
-  //     headers: {"Content-Type": "application/json; charset=UTF-8"});
-  //  return response.statusCode;
-  // }
-
-
   ///////////////////////////////////////////////////////////SubTopics/////////////////////////////////////////////////////////////////////////////
+ 
+ Future<List<dynamic>> loadSubTopic(int tid) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${APIHandler().apiUrl}SubTopic/getSubTopic/$tid');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+
+       // return subtopics;
+      } else {
+        throw Exception('Failed to load sub-topics');
+      }
+    } catch (e) {
+     throw Exception('Error: $e');
+    
+    }
+      return list;
+  }
+
+ 
   Future<int> addSubTopic(String stName, int tId) async {
   String url = "${apiUrl}SubTopic/addSubTopic";
   var subtopicobj = {

@@ -39,7 +39,6 @@ class _PaperApprovalState extends State<PaperApproval> {
   void initState() {
     super.initState();
     initializeData();
-   
   }
 
   Future<void> initializeData() async {
