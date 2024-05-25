@@ -139,7 +139,7 @@ TextEditingController search = TextEditingController();
                                   onPressed: () {
                                     
                                   },
-                                  icon: const Icon(Icons.remove_red_eye),
+                                  icon: const Icon(Icons.close,),
                                 ),
                               ],
                             ),
