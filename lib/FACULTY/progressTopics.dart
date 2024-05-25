@@ -1,16 +1,16 @@
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/commonTopics.dart';
-import 'package:biit_directors_dashbooard/FACULTY/progressTopics.dart';
+import 'package:biit_directors_dashbooard/FACULTY/coveredTopics.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
-class CoveredTopics extends StatefulWidget {
+class ProgressTopicScreen extends StatefulWidget {
   final String coursename;
   final String ccode;
   final int cid;
   final int fid;
 
-  const CoveredTopics({
+  const ProgressTopicScreen({
     Key? key,
     required this.coursename,
     required this.ccode,
@@ -19,22 +19,26 @@ class CoveredTopics extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<CoveredTopics> createState() => _CoveredTopicsState();
+  State<ProgressTopicScreen> createState() => _ProgressTopicScreenState();
 }
 
-class _CoveredTopicsState extends State<CoveredTopics> {
-  bool isPressedCovered = true;
+class _ProgressTopicScreenState extends State<ProgressTopicScreen> {
+  bool isPressedCovered = false;
   bool isPressedCommon = false;
-  bool isPressedProgress = false;
+  bool isPressedProgress = true;
   List<dynamic> topiclist = [];
-  Map<int, List<dynamic>> subTopicMap = {}; // Map to store subtopics by topic ID
+  Map<int, List<dynamic>> subTopicMap =
+      {}; // Map to store subtopics by topic ID
   Map<int, bool> topicCheckState = {}; // Map to store check state of topics
-  Map<int, Map<int, bool>> subTopicCheckState = {}; // Map to store check state of subtopics
+  Map<int, Map<int, bool>> subTopicCheckState =
+      {}; // Map to store check state of subtopics
   Map<int, int?> topicTaughtidMap = {}; // Map to store ttid for topics
-  Map<int, Map<int, int?>> subTopicTaughtidMap = {}; // Map to store ttid for subtopics
+  Map<int, Map<int, int?>> subTopicTaughtidMap =
+      {}; // Map to store ttid for subtopics
   List<dynamic> commonTopicList = [];
 
-  Map<int, bool> commonSubTopicCheckState = {}; // Map to store check state of common subtopics
+  Map<int, bool> commonSubTopicCheckState =
+      {}; // Map to store check state of common subtopics
   List<dynamic> atlist = [];
   String? selectedFaculty; // Nullable initially
 
@@ -155,6 +159,11 @@ class _CoveredTopicsState extends State<CoveredTopics> {
   Future<void> loadTopicsTaught(int fid) async {
     try {
       List<dynamic> topicsTaught = await APIHandler().getTopicTaught(fid);
+      topicCheckState.clear();
+      subTopicCheckState.clear();
+      topicTaughtidMap.clear();
+      subTopicTaughtidMap.clear();
+
       for (var topic in topicsTaught) {
         int tid = topic['t_id'];
         int? stid = topic['st_id'];
@@ -170,7 +179,7 @@ class _CoveredTopicsState extends State<CoveredTopics> {
           subTopicTaughtidMap[tid]![stid] = ttId;
         }
       }
-      setState(() {}); // Ensure the state is updated after loading topics taught
+      setState(() {});
     } catch (e) {
       if (mounted) {
         showDialog(
@@ -214,13 +223,12 @@ class _CoveredTopicsState extends State<CoveredTopics> {
     loadTopics(widget.cid);
     loadCommonSubTopicsTaught(widget.cid);
     loadCourseAssignedToFacultyNames(widget.cid);
-    loadTopicsTaught(widget.fid); // Load the topics taught when initializing
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: customAppBar(context: context, title: 'Covered Topics'),
+      appBar: customAppBar(context: context, title: 'Topics Progress'),
       body: Stack(
         children: [
           Positioned.fill(
@@ -262,6 +270,14 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                       customButton(
                         onPressed: () {
                          
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => CoveredTopics(
+                                      cid: widget.cid,
+                                      ccode: widget.ccode,
+                                      coursename: widget.coursename,
+                                      fid: widget.fid)));
                         },
                         buttonText: 'Covered',
                         isPressed: isPressedCovered,
@@ -271,16 +287,13 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                         onPressed: () {
                         
                           Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CommonTopicsScreen(
-                                cid: widget.cid,
-                                ccode: widget.ccode,
-                                coursename: widget.coursename,
-                                fid: widget.fid,
-                              ),
-                            ),
-                          );
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => CommonTopicsScreen(
+                                      cid: widget.cid,
+                                      ccode: widget.ccode,
+                                      coursename: widget.coursename,
+                                      fid: widget.fid)));
                         },
                         buttonText: 'Common',
                         isPressed: isPressedCommon,
@@ -288,18 +301,7 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                       const SizedBox(width: 10),
                       customButton(
                         onPressed: () {
-                      
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ProgressTopicScreen(
-                                cid: widget.cid,
-                                ccode: widget.ccode,
-                                coursename: widget.coursename,
-                                fid: widget.fid,
-                              ),
-                            ),
-                          );
+                          
                         },
                         buttonText: 'Progress',
                         isPressed: isPressedProgress,
@@ -315,83 +317,95 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: topiclist.length,
-                    itemBuilder: (context, index) {
-                      int tid = topiclist[index]['t_id'];
-                      loadSubTopic(tid); // Load subtopics for each topic
-                      return ExpansionTile(
-                        title: Row(
-                          children: [
-                            Checkbox(
-                              value: topicCheckState[tid] ?? false,
-                              onChanged: (bool? value) async {
-                                setState(() {
-                                  topicCheckState[tid] = value ?? false;
-                                });
-
-                                if (value == true) {
-                                  await addTopicsTaught(tid, null, widget.fid);
-                                  if (subTopicMap[tid] != null) {
-                                    for (var subTopic in subTopicMap[tid]!) {
-                                      subTopicCheckState[tid] ??= {};
-                                      subTopicCheckState[tid]![subTopic['st_id']] = true;
-                                      await addTopicsTaught(tid, subTopic['st_id'], widget.fid);
-                                    }
-                                  }
-                                } else {
-                                  if (topicTaughtidMap[tid] != null) {
-                                    await deleteTopicTaught(topicTaughtidMap[tid]!);
-                                    topicTaughtidMap[tid] = null;
-                                  }
-                                  if (subTopicTaughtidMap[tid] != null) {
-                                    for (var ttid in subTopicTaughtidMap[tid]!.values) {
-                                      if (ttid != null) {
-                                        await deleteTopicTaught(ttid);
-                                      }
-                                    }
-                                    subTopicTaughtidMap[tid] = {};
-                                  }
-                                  subTopicCheckState[tid]?.updateAll((key, value) => false);
-                                }
-                                setState(() {}); // Ensure the state is updated after async operations
-                              },
-                            ),
-                            Text(topiclist[index]['t_name']),
-                          ],
-                        ),
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          if (subTopicMap[topiclist[index]['t_id']] == null)
-                            const Center(child: CircularProgressIndicator()), // Loading indicator
-                          if (subTopicMap[topiclist[index]['t_id']] != null)
-                            for (var subTopic in subTopicMap[topiclist[index]['t_id']]!)
-                              CheckboxListTile(
-                                title: Text(subTopic['st_name']),
-                                value: subTopicCheckState[topiclist[index]['t_id']]?[subTopic['st_id']] ?? false,
-                                onChanged: (bool? value) async {
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                              constraints:
+                                  const BoxConstraints(maxWidth: 200),
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(26, 112, 106, 106),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: DropdownButton<String>(
+                                hint: const Text(' Select Teacher '),
+                                isExpanded: true,
+                                elevation: 9,
+                                value: selectedFaculty,
+                                items: atlist.map((e) {
+                                  return DropdownMenuItem<String>(
+                                    value: e['f_id'].toString(),
+                                    onTap: () {
+                                      setState(() {
+                                        selectedFaculty = e['f_id'].toString();
+                                      });
+                                      loadTopicsTaught(e['f_id']);
+                                    },
+                                    child: Text(
+                                      e['f_name'],
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
                                   setState(() {
-                                    int stid = subTopic['st_id'];
-                                    subTopicCheckState[topiclist[index]['t_id']] ??= {};
-                                    subTopicCheckState[topiclist[index]['t_id']]![stid] = value ?? false;
+                                    selectedFaculty = newValue;
                                   });
-
-                                  if (value == true) {
-                                    await addTopicsTaught(topiclist[index]['t_id'], subTopic['st_id'], widget.fid);
-                                  } else {
-                                    if (subTopicTaughtidMap[topiclist[index]['t_id']]?[subTopic['st_id']] != null) {
-                                      await deleteTopicTaught(subTopicTaughtidMap[topiclist[index]['t_id']]![subTopic['st_id']]!);
-                                      subTopicTaughtidMap[topiclist[index]['t_id']]![subTopic['st_id']] = null;
-                                    }
-                                  }
-                                  setState(() {}); // Ensure the state is updated after async operations
+                                  loadTopicsTaught(int.parse(selectedFaculty!));
                                 },
                               ),
+                            ),
+                          ),
                         ],
-                      );
-                    },
+                      ),
+                      Column(
+                        children: [
+                          for (var topic in topiclist)
+                            ExpansionTile(
+                              title: Row(
+                                children: [
+                                  Checkbox(
+                                    value: topicCheckState[topic['t_id']] ??
+                                        false,
+                                    onChanged: null,
+                                  ),
+                                  Text(topic['t_name']),
+                                ],
+                              ),
+                              initiallyExpanded: isPressedProgress,
+                              onExpansionChanged: (bool expanded) {
+                                if (expanded &&
+                                    subTopicMap[topic['t_id']] == null) {
+                                  loadSubTopic(topic['t_id']);
+                                }
+                              },
+                              children: [
+                                if (subTopicMap[topic['t_id']] != null)
+                                  for (var subTopic
+                                      in subTopicMap[topic['t_id']]!)
+                                    CheckboxListTile(
+                                      title: Text(subTopic['st_name']),
+                                      value: subTopicCheckState[topic['t_id']]
+                                              ?[subTopic['st_id']] ??
+                                          false,
+                                      onChanged: null,
+                                    ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ],
                   ),
-                ),
+                )
               ],
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:biit_directors_dashbooard/Director/ApprovedPapersList.dart';
+import 'package:biit_directors_dashbooard/Director/UnUploadedPapers.dart';
 import 'package:biit_directors_dashbooard/Director/UploadedPapersList.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
@@ -79,6 +80,27 @@ class _DirectorState extends State<Director> {
                             ),
                           ),
                           child: const Text('Uploaded \n   Papers',
+                              style: TextStyle(color: Colors.black)),
+                        ),
+                          const SizedBox(height: 30),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const UnUploadedPapersScreen(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: customButtonColor,
+                            minimumSize: const Size(160, 80),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              side: const BorderSide(color: Colors.black),
+                            ),
+                          ),
+                          child: const Text('Un-Uploaded \n      Papers',
                               style: TextStyle(color: Colors.black)),
                         ),
                       ],

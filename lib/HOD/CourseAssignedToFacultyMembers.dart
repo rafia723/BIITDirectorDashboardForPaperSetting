@@ -25,43 +25,26 @@ class AssignedtoDetails extends StatefulWidget {
 class _AssignedtoDetailsState extends State<AssignedtoDetails> {
   List<dynamic> atlist = [];
 
-  Future<void> loadAssignedToCourses(int id) async {
+  Future<void> loadCourseAssignedToFacultyNames(int cid) async {
     try {
-      Uri uri =
-          Uri.parse("${APIHandler().apiUrl}AssignedCourses/getAssignedTo/$id");
-      var response = await http.get(uri);
-      if (response.statusCode == 200) {
-        atlist = jsonDecode(response.body);
+     atlist=await APIHandler().loadCourseAssignedToFacultyNames(cid);
         setState(() {});
-      } else if (response.statusCode == 404) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Data not found for the given id'),
-            );
-          },
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text(
-                  'Failed to load assigned faculty. Please try again later.'),
-            );
-          },
-        );
-      }
+        if(atlist.isEmpty){
+          throw Exception('No data found for the given id');
+        }
     } catch (e) {
-      showDialog(
+      if(mounted){
+ showDialog(
         context: context,
         builder: (context) {
-          return const AlertDialog(
-            title: Text('An error occurred. Please try again later.'),
+          return  AlertDialog(
+            title: const Text('Error:'),
+            content: Text(e.toString()),
           );
         },
       );
+      }
+     
     }
   }
 
@@ -72,7 +55,7 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
       var response = await http.delete(url);
 
       if (response.statusCode == 200) {
-        loadAssignedToCourses(widget.cid);
+        loadCourseAssignedToFacultyNames(widget.cid);
         showDialog(
           context: context,
           builder: (context) {
@@ -108,7 +91,7 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
 
   @override
   void initState() {
-    loadAssignedToCourses(widget.cid);
+    loadCourseAssignedToFacultyNames(widget.cid);
     super.initState();
   }
 

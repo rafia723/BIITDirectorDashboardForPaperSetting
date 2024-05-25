@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.3:3000/';
+  String apiUrl='http://192.168.10.5:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -288,10 +288,10 @@ String url="${apiUrl}Course/addCourse";
   }
  }
 //////////////////////////////////////////////////////////////////Topic////////////////////////////////////////////////////////////////////
- Future<List<dynamic>> loadCommonTopics() async {
+ Future<List<dynamic>> loadCommonSubTopics(int cid) async {
     List<dynamic> list=[];
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}TopicTaught/getcommontopictaught');
+      Uri uri = Uri.parse('${APIHandler().apiUrl}TopicTaught/getcommonSubTopictaught/$cid');
       
       var response = await http.get(uri);
 
@@ -299,7 +299,7 @@ String url="${apiUrl}Course/addCourse";
           list = jsonDecode(response.body);
       }
        else {
-        throw Exception('Failed to load Topics');
+        throw Exception('Failed to load common subTopics');
       }
      }catch (e) {
      throw Exception('Error: $e');
@@ -702,6 +702,57 @@ Future<List<dynamic>> loadUploadedPapers() async {
   }
 
 
+Future<List<dynamic>> loadUnUploadedPapers() async {
+  List<dynamic> list=[];
+    Uri uri = Uri.parse('${apiUrl}Paper/getUnUploadedPapers');
+    var response = await http.get(uri);
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+     
+    } else {
+      throw Exception('Failed to load UnUploaded Papers');
+    }
+    return list;
+  }
+
+  Future<List<dynamic>> searchUnUploadedPapers(String courseTitle) async {
+    List<dynamic> list=[];
+      Uri uri = Uri.parse('${apiUrl}Paper/SearchUnUploadedPapers?courseTitle=$courseTitle');
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to load UnUploaded Papers');
+      }
+      return list;
+  }
+
+
+Future<List<dynamic>> loadApprovedAndPrintedPapers() async {
+  List<dynamic> list=[];
+    Uri uri = Uri.parse('${apiUrl}Paper/getApprovedAndPrintedPapers');
+    var response = await http.get(uri);
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+     
+    } else {
+      throw Exception('Failed to load Approved and Printed Papers');
+    }
+    return list;
+  }
+
+   Future<List<dynamic>> searchApprovedAndPrintedPapers(String courseTitle) async {
+    List<dynamic> list=[];
+      Uri uri = Uri.parse('${apiUrl}Paper/SearchApprovedAndPrintedPapers?courseTitle=$courseTitle');
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to load Approved and Printed Papers');
+      }
+      return list;
+  }
+
 
 
 
@@ -744,5 +795,26 @@ Future<int> addFeedback(
     return response.statusCode;
   }
 
+
+
+
+
+
+///////////////////////////////////////////////////////////////HOD/////////////////////////////////////////////////////////////////////////
+ Future< List<dynamic>> loadCourseAssignedToFacultyNames(int cid) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri =
+          Uri.parse("${APIHandler().apiUrl}AssignedCourses/getAssignedTo/$cid");
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+      
+      } 
+      return list;
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
 
 }

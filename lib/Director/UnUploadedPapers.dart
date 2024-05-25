@@ -1,17 +1,17 @@
 
-import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
+import 'package:biit_directors_dashbooard/API/api.dart';
 
-class DRTApprovedPapers extends StatefulWidget {
-  const DRTApprovedPapers({super.key});
+class UnUploadedPapersScreen extends StatefulWidget {
+   const UnUploadedPapersScreen({Key? key}) : super(key: key);
 
   @override
-  State<DRTApprovedPapers> createState() => _DRTApprovedPapersState();
+  State<UnUploadedPapersScreen> createState() => _UnUploadedPapersScreenState();
 }
 
-class _DRTApprovedPapersState extends State<DRTApprovedPapers> {
-  List<dynamic> list = [];
+class _UnUploadedPapersScreenState extends State<UnUploadedPapersScreen> {
+  List<dynamic> unUploadedPlist = [];
 TextEditingController search = TextEditingController();
 
   @override
@@ -22,13 +22,13 @@ TextEditingController search = TextEditingController();
 
 
   void initializeData() async{
-    await loadApprovedAndPrintedPapersData();
+    await loadUnUploadedPapersData();
   }
 
 
- Future<void> loadApprovedAndPrintedPapersData() async {
+ Future<void> loadUnUploadedPapersData() async {
    try {
-       list =await APIHandler().loadApprovedAndPrintedPapers();
+       unUploadedPlist =await APIHandler().loadUnUploadedPapers();
       setState(() {});
    } catch (e) {
     if(mounted){
@@ -47,13 +47,13 @@ TextEditingController search = TextEditingController();
     
   }
 
-  Future<void> searchApprovedAndPrintedPapersData(String courseTitle) async {
+  Future<void> searchUnUploadedPapersData(String courseTitle) async {
     try {
        if (courseTitle.isEmpty) {
-        loadApprovedAndPrintedPapersData();
+        loadUnUploadedPapersData();
          return;
        }
-        list = await APIHandler().searchApprovedAndPrintedPapers(courseTitle);
+        unUploadedPlist = await APIHandler().searchUnUploadedPapers(courseTitle);
         setState(() {});
     }catch (e) {
          if(mounted){
@@ -97,7 +97,7 @@ TextEditingController search = TextEditingController();
                     child: TextField(
                       controller: search,
                       onChanged: (value) async{
-                        await searchApprovedAndPrintedPapersData(value);
+                        await searchUnUploadedPapersData(value);
                       },
                       decoration: const InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -113,7 +113,7 @@ TextEditingController search = TextEditingController();
                 Expanded(
                   child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: list.length,
+                    itemCount: unUploadedPlist.length,
                     itemBuilder: (context, index) {
                       return Card(
                         elevation: 5,
@@ -123,7 +123,7 @@ TextEditingController search = TextEditingController();
                         color: Colors.white.withOpacity(0.8),
                         child: ListTile(
                            title: Text(
-                              list[index]['c_title'],
+                              unUploadedPlist[index]['c_title'],
                               style:
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
@@ -131,7 +131,7 @@ TextEditingController search = TextEditingController();
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  list[index]['c_code'],
+                                  unUploadedPlist[index]['c_code'],
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),
@@ -139,7 +139,7 @@ TextEditingController search = TextEditingController();
                                   onPressed: () {
                                     
                                   },
-                                  icon: const Icon(Icons.check),
+                                  icon: const Icon(Icons.remove_red_eye),
                                 ),
                               ],
                             ),
