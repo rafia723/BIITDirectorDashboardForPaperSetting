@@ -21,7 +21,7 @@ class CoveredTopics extends StatefulWidget {
 }
 
 class _CoveredTopicsState extends State<CoveredTopics> {
-  bool isPressedCovered = false;
+  bool isPressedCovered = true;
   bool isPressedCommon = false;
   bool isPressedProgress = false;
   List<dynamic> topiclist = [];
@@ -30,11 +30,15 @@ class _CoveredTopicsState extends State<CoveredTopics> {
   Map<int, Map<int, bool>> subTopicCheckState = {}; // Map to store check state of subtopics
   Map<int, int?> topicTaughtidMap = {}; // Map to store ttid for topics
   Map<int, Map<int, int?>> subTopicTaughtidMap = {}; // Map to store ttid for subtopics
+  List<dynamic> commonTopicList = [];
+
+  Map<int, Map<int, bool>> commonSubTopicCheckState = {}; // Map to store check state of common subtopics
 
   Future<void> loadTopics(int cid) async {
     try {
       topiclist = await APIHandler().loadTopics(cid);
       await loadTopicsTaught();
+      await loadCommonTopicsTaught();
       setState(() {});
     } catch (e) {
       if (mounted) {
@@ -61,6 +65,35 @@ class _CoveredTopicsState extends State<CoveredTopics> {
           builder: (context) {
             return const AlertDialog(
               title: Text('Error loading sub-topics'),
+            );
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> loadCommonTopicsTaught() async {
+    try {
+      commonTopicList = await APIHandler().loadCommonTopics();
+      // Update common check state
+      for (var topic in commonTopicList) {
+        int tid = topic['t_id'];
+        int? stid = topic['st_id'];
+
+        if (stid != null) {
+          
+          commonSubTopicCheckState[tid] ??= {};
+          commonSubTopicCheckState[tid]![stid] = true;
+        }
+      }
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return const AlertDialog(
+              title: Text('Error loading common-topics'),
             );
           },
         );
@@ -246,84 +279,211 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: topiclist.length,
-                    itemBuilder: (context, index) {
-                      return ExpansionTile(
-                        title: Row(
-                          children: [
-                            Checkbox(
-                              value: topicCheckState[topiclist[index]['t_id']] ?? false,
-                              onChanged: (bool? value) {
-                                setState(() {
-                                  int tid = topiclist[index]['t_id'];
-                                  topicCheckState[tid] = value ?? false;
-
-                                  // Check/uncheck all subtopics
-                                  if (value == true) {
-                                    addTopicsTaught(tid, null, widget.fid);
-                                    if (subTopicMap[tid] != null) {
-                                      for (var subTopic in subTopicMap[tid]!) {
-                                        subTopicCheckState[tid] ??= {};
-                                        subTopicCheckState[tid]![subTopic['st_id']] = true;
-                                        addTopicsTaught(tid, subTopic['st_id'], widget.fid);
-                                      }
-                                    }
-                                  } else {
-                                    if (topicTaughtidMap[tid] != null) {
-                                      deleteTopicTaught(topicTaughtidMap[tid]!);
-                                      topicTaughtidMap[tid] = null;
-                                    }
-                                    if (subTopicTaughtidMap[tid] != null) {
-                                      for (var ttid in subTopicTaughtidMap[tid]!.values) {
-                                        if (ttid != null) {
-                                          deleteTopicTaught(ttid);
-                                        }
-                                      }
-                                      subTopicTaughtidMap[tid] = {};
-                                    }
-                                    subTopicCheckState[tid]?.updateAll((key, value) => false);
-                                  }
-                                });
-                              },
-                            ),
-                            Text(topiclist[index]['t_name']),
-                          ],
-                        ),
-                        onExpansionChanged: (bool expanded) {
-                          if (expanded && subTopicMap[topiclist[index]['t_id']] == null) {
-                            loadSubTopic(topiclist[index]['t_id']);
-                          }
-                        },
-                        children: [
-                          if (subTopicMap[topiclist[index]['t_id']] != null)
-                            for (var subTopic in subTopicMap[topiclist[index]['t_id']]!)
-                              CheckboxListTile(
-                                title: Text(subTopic['st_name']),
-                                value: subTopicCheckState[topiclist[index]['t_id']]?[subTopic['st_id']] ?? false,
+                if (isPressedCovered)
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: topiclist.length,
+                      itemBuilder: (context, index) {
+                        return ExpansionTile(
+                          title: Row(
+                            children: [
+                              Checkbox(
+                                value: topicCheckState[topiclist[index]['t_id']] ?? false,
                                 onChanged: (bool? value) {
                                   setState(() {
                                     int tid = topiclist[index]['t_id'];
-                                    int stid = subTopic['st_id'];
-                                    subTopicCheckState[tid] ??= {};
-                                    subTopicCheckState[tid]![stid] = value ?? false;
+                                    topicCheckState[tid] = value ?? false;
+
+                                    // Check/uncheck all subtopics
                                     if (value == true) {
-                                      addTopicsTaught(tid, stid, widget.fid);
-                                    } else {
-                                      if (subTopicTaughtidMap[tid]?[stid] != null) {
-                                        deleteTopicTaught(subTopicTaughtidMap[tid]![stid]!);
-                                        subTopicTaughtidMap[tid]![stid] = null;
+                                      addTopicsTaught(tid, null, widget.fid);
+                                      if (subTopicMap[tid] != null) {
+                                        for (var subTopic in subTopicMap[tid]!) {
+                                          subTopicCheckState[tid] ??= {};
+                                          subTopicCheckState[tid]![subTopic['st_id']] = true;
+                                          addTopicsTaught(tid, subTopic['st_id'], widget.fid);
+                                        }
                                       }
+                                    } else {
+                                      if (topicTaughtidMap[tid] != null) {
+                                        deleteTopicTaught(topicTaughtidMap[tid]!);
+                                        topicTaughtidMap[tid] = null;
+                                      }
+                                      if (subTopicTaughtidMap[tid] != null) {
+                                        for (var ttid in subTopicTaughtidMap[tid]!.values) {
+                                          if (ttid != null) {
+                                            deleteTopicTaught(ttid);
+                                          }
+                                        }
+                                        subTopicTaughtidMap[tid] = {};
+                                      }
+                                      subTopicCheckState[tid]?.updateAll((key, value) => false);
                                     }
                                   });
                                 },
                               ),
-                        ],
-                      );
-                    },
-                  ),
+                              Text(topiclist[index]['t_name']),
+                            ],
+                          ),
+                          onExpansionChanged: (bool expanded) {
+                            if (expanded && subTopicMap[topiclist[index]['t_id']] == null) {
+                              loadSubTopic(topiclist[index]['t_id']);
+                            }
+                          },
+                          children: [
+                            if (subTopicMap[topiclist[index]['t_id']] != null)
+                              for (var subTopic in subTopicMap[topiclist[index]['t_id']]!)
+                                CheckboxListTile(
+                                  title: Text(subTopic['st_name']),
+                                  value: subTopicCheckState[topiclist[index]['t_id']]?[subTopic['st_id']] ?? false,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      int tid = topiclist[index]['t_id'];
+                                      int stid = subTopic['st_id'];
+                                      subTopicCheckState[tid] ??= {};
+                                      subTopicCheckState[tid]![stid] = value ?? false;
+                                      if (value == true) {
+                                        addTopicsTaught(tid, stid, widget.fid);
+                                      } else {
+                                        if (subTopicTaughtidMap[tid]?[stid] != null) {
+                                          deleteTopicTaught(subTopicTaughtidMap[tid]![stid]!);
+                                          subTopicTaughtidMap[tid]![stid] = null;
+                                        }
+                                      }
+                                    });
+                                  },
+                                ),
+                          ],
+                        );
+                      },
+                    ),
+                  )
+               else if (isPressedCommon)
+  Expanded(
+    child: ListView.builder(
+      itemCount: topiclist.length,
+      itemBuilder: (context, index) {
+        int tid = topiclist[index]['t_id'];
+        bool allSubtopicsChecked = true; // Flag to track if all subtopics are checked
+        if (subTopicMap[tid] != null) {
+          for (var subTopic in subTopicMap[tid]!) {
+            // If any subtopic is unchecked, set the flag to false
+            if (!(commonSubTopicCheckState[tid]?[subTopic['st_id']] ?? false)) {
+              allSubtopicsChecked = false;
+              break;
+            }
+          }
+        }
+        return ExpansionTile(
+          title: Row(
+            children: [
+              Checkbox(
+                value: allSubtopicsChecked,
+                onChanged: null, // Nullify the onChanged callback for common topics
+              ),
+              Text(topiclist[index]['t_name']),
+            ],
+          ),
+          initiallyExpanded: true,
+          onExpansionChanged: (bool expanded) {
+            if (expanded && subTopicMap[tid] == null) {
+              loadSubTopic(tid);
+            }
+          },
+          children: [
+            if (subTopicMap[tid] != null)
+              for (var subTopic in subTopicMap[tid]!)
+                CheckboxListTile(
+                  title: Text(subTopic['st_name']),
+                  value: commonSubTopicCheckState[tid]?[subTopic['st_id']] ?? false,
+                  onChanged: null
                 ),
+          ],
+        );
+      },
+    ),
+  )
+                else if (isPressedProgress)
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: topiclist.length,
+                      itemBuilder: (context, index) {
+                        return ExpansionTile(
+                          title: Row(
+                            children: [
+                              Checkbox(
+                                value: topicCheckState[topiclist[index]['t_id']] ?? false,
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    int tid = topiclist[index]['t_id'];
+                                    topicCheckState[tid] = value ?? false;
+
+                                    // Check/uncheck all subtopics
+                                    if (value == true) {
+                                      addTopicsTaught(tid, null, widget.fid);
+                                      if (subTopicMap[tid] != null) {
+                                        for (var subTopic in subTopicMap[tid]!) {
+                                          subTopicCheckState[tid] ??= {};
+                                          subTopicCheckState[tid]![subTopic['st_id']] = true;
+                                          addTopicsTaught(tid, subTopic['st_id'], widget.fid);
+                                        }
+                                      }
+                                    } else {
+                                      if (topicTaughtidMap[tid] != null) {
+                                        deleteTopicTaught(topicTaughtidMap[tid]!);
+                                        topicTaughtidMap[tid] = null;
+                                      }
+                                      if (subTopicTaughtidMap[tid] != null) {
+                                        for (var ttid in subTopicTaughtidMap[tid]!.values) {
+                                          if (ttid != null) {
+                                            deleteTopicTaught(ttid);
+                                          }
+                                        }
+                                        subTopicTaughtidMap[tid] = {};
+                                      }
+                                      subTopicCheckState[tid]?.updateAll((key, value) => false);
+                                    }
+                                  });
+                                },
+                              ),
+                              Text(topiclist[index]['t_name']),
+                            ],
+                          ),
+                          onExpansionChanged: (bool expanded) {
+                            if (expanded && subTopicMap[topiclist[index]['t_id']] == null) {
+                              loadSubTopic(topiclist[index]['t_id']);
+                            }
+                          },
+                          children: [
+                            if (subTopicMap[topiclist[index]['t_id']] != null)
+                              for (var subTopic in subTopicMap[topiclist[index]['t_id']]!)
+                                CheckboxListTile(
+                                  title: Text(subTopic['st_name']),
+                                  value: subTopicCheckState[topiclist[index]['t_id']]?[subTopic['st_id']] ?? false,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      int tid = topiclist[index]['t_id'];
+                                      int stid = subTopic['st_id'];
+                                      subTopicCheckState[tid] ??= {};
+                                      subTopicCheckState[tid]![stid] = value ?? false;
+                                      if (value == true) {
+                                        addTopicsTaught(tid, stid, widget.fid);
+                                      } else {
+                                        if (subTopicTaughtidMap[tid]?[stid] != null) {
+                                          deleteTopicTaught(subTopicTaughtidMap[tid]![stid]!);
+                                          subTopicTaughtidMap[tid]![stid] = null;
+                                        }
+                                      }
+                                    });
+                                  },
+                                ),
+                          ],
+                        );
+                      },
+                    ),
+                  )
+                else
+                  const Text('No topic to show'),
               ],
             ),
           ),

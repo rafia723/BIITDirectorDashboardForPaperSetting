@@ -78,7 +78,9 @@ class _PaperSettingState extends State<PaperSetting> {
     }
     if (paperId != null) {
       await loadQuestion(paperId);
-      setState(() {});
+      if(mounted){
+ setState(() {});
+      }
     }
     if (selectedTopicId != null) {
       cloMappedWithSelectedTopic =await APIHandler().loadClosMappedWithTopic(selectedTopicId!);

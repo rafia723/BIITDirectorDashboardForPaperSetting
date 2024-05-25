@@ -288,6 +288,25 @@ String url="${apiUrl}Course/addCourse";
   }
  }
 //////////////////////////////////////////////////////////////////Topic////////////////////////////////////////////////////////////////////
+ Future<List<dynamic>> loadCommonTopics() async {
+    List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${APIHandler().apiUrl}TopicTaught/getcommontopictaught');
+      
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+          list = jsonDecode(response.body);
+      }
+       else {
+        throw Exception('Failed to load Topics');
+      }
+     }catch (e) {
+     throw Exception('Error: $e');
+    }
+    return list;
+  }
+
 Future<int> addTopicTaught(int tid, int? stid, int fid) async {
   String url = "${apiUrl}TopicTaught/addTopicTaught";
   var obj = {
@@ -311,7 +330,6 @@ Future<int> addTopicTaught(int tid, int? stid, int fid) async {
     throw Exception('Failed to add TopicTaught. Status code: ${response.statusCode}');
   }
 }
-
 
 Future<int> deleteTopicTaught (int ttid) async {
     String url = "${apiUrl}TopicTaught/deleteTopicTaught";
