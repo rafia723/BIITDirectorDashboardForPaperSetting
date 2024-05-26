@@ -622,9 +622,9 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
     }
   }
 
-  Future<int> updateQuestionStatus(int id, bool newStatus) async {
+  Future<int> updateQuestionStatusFromPendingToUploaded(int id, bool newStatus) async {
   String status = newStatus ? 'pending' : 'uploaded';
-  Uri url = Uri.parse('${apiUrl}Question/editQuestionStatus/$id');
+  Uri url = Uri.parse('${apiUrl}Question/editQuestionStatusFromPendingToUploaded/$id');
   try {
     var response = await http.put(
       url,
@@ -635,8 +635,7 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
   }
    catch (e) {
    throw Exception('Error: $e');
-  }
-   
+  } 
 }
 
 
@@ -754,6 +753,21 @@ Future<List<dynamic>> loadApprovedAndPrintedPapers() async {
   }
 
 
+   Future<int> updatePaperStatusToApproved(int id) async {
+   
+    Uri url = Uri.parse('${apiUrl}Paper/editPaperStatusToApproved/$id');
+    try {
+      var response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+      );
+     return response.statusCode;
+      } catch (error) {
+    throw Exception('Error: $error');
+  }
+ }
+
+
 
 
 ////////////////////////////////////////////////////////Question//////////////////////////////////////////////////////////////////////////
@@ -774,6 +788,43 @@ Future<List<dynamic>> loadApprovedAndPrintedPapers() async {
   }
 
 
+ Future<List<dynamic>> loadQuestionsWithPendingStatus(int pid) async {
+  List<dynamic> qlist=[];
+    try {
+      Uri uri = Uri.parse("${apiUrl}Question/getQuestionsWithPendingStatus/$pid");
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+          qlist = jsonDecode(response.body);
+      } 
+      return qlist;
+    } catch (e) {
+     throw Exception('Error: $e');
+    }
+  }
+
+Future<int> updateQuestionStatusToApprovedOrRejected(int id, String newStatus) async {
+  String status = newStatus.toLowerCase(); // Convert newStatus to lowercase
+  if (status != 'approved' && status != 'rejected' && status != 'uploaded') {
+    throw Exception('Invalid status: $newStatus');
+  }
+  
+  Uri url = Uri.parse('${apiUrl}Question/editQuestionStatusToApprovedOrRejected/$id');
+  try {
+    var response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"newStatus": status}),
+    );
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.statusCode;
+    } else {
+      throw Exception('Failed to update question status: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Error: $e');
+  }
+}
 
 
 //////////////////////////////////////////////////////////Feedback///////////////////////////////////////////////////////////////////////

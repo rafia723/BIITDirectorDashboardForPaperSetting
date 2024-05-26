@@ -400,10 +400,11 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
                   ),
                   customElevatedButton(
                       onPressed: () {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => PaperApproval(
+                                  pid: paperId,
                                     cid: widget.cid,
                                     ccode: widget.ccode,
                                     coursename: widget.coursename)));

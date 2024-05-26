@@ -76,7 +76,7 @@ TextEditingController search = TextEditingController();
   Widget build(BuildContext context) {
     return Scaffold(
        resizeToAvoidBottomInset: false,
-      appBar: customAppBar(context: context, title: 'Incomplete Submissions'),
+      appBar: customAppBar(context: context, title: 'Approved Papers'),
         body: SizedBox(
         height: double.infinity,
         child: Stack(

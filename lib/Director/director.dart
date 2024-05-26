@@ -41,6 +41,27 @@ class _DirectorState extends State<Director> {
                   SingleChildScrollView(
                     child: Column(
                       children: [
+                          ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const DRTUploadedPapers(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: customButtonColor,
+                            minimumSize: const Size(160, 80),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              side: const BorderSide(color: Colors.black),
+                            ),
+                          ),
+                          child: const Text('Uploaded \n   Papers',
+                              style: TextStyle(color: Colors.black)),
+                        ),
+                          const SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
                            Navigator.push(
@@ -62,27 +83,7 @@ class _DirectorState extends State<Director> {
                               style: TextStyle(color: Colors.black)),
                         ),
                         const SizedBox(height: 30),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const DRTUploadedPapers(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: customButtonColor,
-                            minimumSize: const Size(160, 80),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              side: const BorderSide(color: Colors.black),
-                            ),
-                          ),
-                          child: const Text('Uploaded \n   Papers',
-                              style: TextStyle(color: Colors.black)),
-                        ),
-                          const SizedBox(height: 30),
+                      
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(

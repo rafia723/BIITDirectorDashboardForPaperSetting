@@ -33,7 +33,7 @@ class _PaperHeaderState extends State<PaperHeader> {
   String selectedDate = '';
   int _selectedYear = DateTime.now().year;
   List<dynamic> teachers = [];
-  dynamic status= 'pending';
+  dynamic status= 'uploaded';
   dynamic sid;
 
   @override

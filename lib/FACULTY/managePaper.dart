@@ -176,7 +176,7 @@ class _ManagePaperState extends State<ManagePaper> {
 
   Future<void> updateStatus(int id, dynamic newStatus) async {
     try {
-      dynamic code = await APIHandler().updateQuestionStatus(id, newStatus);
+      dynamic code = await APIHandler().updateQuestionStatusFromPendingToUploaded(id, newStatus);
       if (mounted) {
         if (code == 200) {
           loadQuestion(paperId);
