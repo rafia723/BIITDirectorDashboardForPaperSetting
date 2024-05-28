@@ -198,15 +198,13 @@ class _PaperApprovalState extends State<PaperApproval> {
 
   Future<void> updatePaperStatus(int pid) async {
     try {
-      dynamic code = await APIHandler()
-          .updatePaperStatusToApproved(pid);
-         
+      dynamic code = await APIHandler().updatePaperStatusToApproved(pid);
+
       if (mounted) {
         if (code == 200) {
-            setState(() {
-               showSuccesDialog(context, 'Paper Approved');
+          setState(() {
+            showSuccesDialog(context, 'Paper Approved');
           });
-      
         } else {
           throw Exception('Non-200 response code code=$code');
         }
@@ -217,11 +215,28 @@ class _PaperApprovalState extends State<PaperApproval> {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: const Text('Error changing status of question'),
+              title: const Text('Error changing status of paper'),
               content: Text(e.toString()), // Optionally show the error message
             );
           },
         );
+      }
+    }
+  }
+
+  Future<void> addFeedbackData(String feedbackText, int pid, int? qid) async {
+    try {
+      dynamic code = await APIHandler().addFeedback(feedbackText, pid, qid);
+      setState(() {});
+      if (code == 200) {
+        if (mounted) {
+          showSuccesDialog(context, 'Comment Posted....');
+          commentController.clear();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, 'Error posting Comment');
       }
     }
   }
@@ -574,7 +589,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                                       constraints: const BoxConstraints(
                                         minWidth: 100,
                                         maxWidth:
-                                            300, // Maximum width constraint
+                                            260, // Maximum width constraint
                                       ),
                                       child: TextFormField(
                                         controller: commentController,
@@ -591,14 +606,29 @@ class _PaperApprovalState extends State<PaperApproval> {
                                     ),
                                     IconButton(
                                       onPressed: () {
-                                        Navigator.push(
+                                        addFeedbackData(commentController.text,
+                                            widget.pid, qid);
+                                      },
+                                      icon: const Icon(Icons.send),
+                                    ),
+                                    IconButton(
+                                      onPressed: () async {
+                                        final result = await Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 AdditionlQuestions(
-                                                    pid: paperId),
+                                              pid: paperId,
+                                              ccode: widget.ccode,
+                                              cid: widget.cid,
+                                              coursename: widget.coursename,
+                                            ),
                                           ),
                                         );
+                                        if (result == true) {
+                                          await loadQuestionsWithUploadedStatus(
+                                              widget.pid);
+                                        }
                                       },
                                       icon:
                                           const Icon(Icons.find_replace_sharp),
@@ -617,11 +647,11 @@ class _PaperApprovalState extends State<PaperApproval> {
           acceptAllChecked
               ? customElevatedButton(
                   onPressed: () {
-                  updatePaperStatus(widget.pid);
+                    updatePaperStatus(widget.pid);
                     Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                        builder: (context) => const DRTApprovedPapers()));
+                            builder: (context) => const DRTApprovedPapers()));
                   },
                   buttonText: 'Approve')
               : const SizedBox(),

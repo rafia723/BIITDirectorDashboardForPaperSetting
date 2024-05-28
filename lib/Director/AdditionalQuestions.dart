@@ -1,11 +1,18 @@
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/Director/paperApproval.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
 class AdditionlQuestions extends StatefulWidget {
+   final int cid;
+  final String coursename;
+  final String ccode;
    final int pid;
   const AdditionlQuestions({
     Key? key,
+     required this.cid,
+    required this.ccode,
+    required this.coursename,
     required this.pid,
   
   }) : super(key: key);
@@ -75,6 +82,40 @@ loadQuestionsWithPendingStatus(widget.pid);
       }
     }
   }
+
+
+  Future<void> updateQuestionStatus(int qid) async {
+    try {
+      dynamic code = await APIHandler()
+          .updateQuestionStatusToUploaded(qid);
+        
+      if (mounted) {
+        if (code == 200) {
+            setState(() {
+               showSuccesDialog(context, 'Question Added');
+          });
+      
+        } else {
+          throw Exception('Non-200 response code code=$code');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error changing status of question'),
+              content: Text(e.toString()), // Optionally show the error message
+            );
+          },
+        );
+      }
+    }
+  }
+
+
+  
 
 
 
@@ -155,7 +196,12 @@ loadQuestionsWithPendingStatus(widget.pid);
                                 ),
                               ],
                             ),
-                            trailing: const Icon(Icons.check),
+                            trailing: IconButton(onPressed: (){
+                        
+                              updateQuestionStatus(question['q_id']);
+                                Navigator.pop(context,true);
+                     
+                            }, icon: const Icon(Icons.check)),
                           ),
                         ),
                       );

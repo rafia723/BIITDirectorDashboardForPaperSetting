@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.5:3000/';
+  String apiUrl='http://192.168.10.4:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -825,6 +825,22 @@ Future<int> updateQuestionStatusToApprovedOrRejected(int id, String newStatus) a
     throw Exception('Error: $e');
   }
 }
+
+
+Future<int> updateQuestionStatusToUploaded(int id) async {   //Additional Question Screen
+   
+    Uri url = Uri.parse('${apiUrl}Question/editQuestionStatusToUploaded/$id');
+    try {
+      var response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+      );
+     return response.statusCode;
+      } catch (error) {
+    throw Exception('Error: $error');
+  }
+ }
+
 
 
 //////////////////////////////////////////////////////////Feedback///////////////////////////////////////////////////////////////////////
