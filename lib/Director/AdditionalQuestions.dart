@@ -199,7 +199,14 @@ loadQuestionsWithPendingStatus(widget.pid);
                             trailing: IconButton(onPressed: (){
                         
                               updateQuestionStatus(question['q_id']);
-                                Navigator.pop(context,true);
+                                 Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => PaperApproval(
+                                            pid: widget.pid,
+                                            cid: widget.cid,
+                                            ccode: widget.ccode,
+                                            coursename: widget.coursename)));
                      
                             }, icon: const Icon(Icons.check)),
                           ),

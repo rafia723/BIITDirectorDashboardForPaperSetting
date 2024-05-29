@@ -613,7 +613,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                                     ),
                                     IconButton(
                                       onPressed: () async {
-                                        final result = await Navigator.push(
+                                        await Navigator.pushReplacement(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
@@ -625,10 +625,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                                             ),
                                           ),
                                         );
-                                        if (result == true) {
-                                          await loadQuestionsWithUploadedStatus(
-                                              widget.pid);
-                                        }
+                                       
                                       },
                                       icon:
                                           const Icon(Icons.find_replace_sharp),

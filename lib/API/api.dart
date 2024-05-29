@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.4:3000/';
+  String apiUrl='http://192.168.10.3:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -176,7 +176,7 @@ String url="${apiUrl}Course/addCourse";
   }
 
   ///////////////////////////////////////////////////////////////////Paper/////////////////////////////////////////////////////////////////////////
- Future<List<dynamic>> loadApprovedPapers() async {    //Faculty & Datacell
+ Future<List<dynamic>> loadApprovedPapers() async {    //Faculty & Datacell &Director
   List<dynamic>plist=[];
   try{
     Uri uri = Uri.parse('${apiUrl}Paper/getApprovedPapers');
@@ -192,7 +192,7 @@ String url="${apiUrl}Course/addCourse";
     }
   }
 
-  Future<List<dynamic>> searchApprovedPapers(String courseTitle) async {            //Faculty & Datacell
+  Future<List<dynamic>> searchApprovedPapers(String courseTitle) async {            //Faculty & Datacell &Director
       List<dynamic>plist=[];      
   try {
       Uri uri = Uri.parse('${apiUrl}Paper/SearchApprovedPapers?courseTitle=$courseTitle');
@@ -208,7 +208,7 @@ String url="${apiUrl}Course/addCourse";
   }
 }
 
- Future<List<dynamic>> loadPrintedPapers() async {
+ Future<List<dynamic>> loadPrintedPapers() async {             // Datacell &Director
   List<dynamic>plist=[];
   try{
     Uri uri = Uri.parse('${apiUrl}Paper/getPrintedPapers');
@@ -224,7 +224,7 @@ String url="${apiUrl}Course/addCourse";
     }
   }
 
-   Future<List<dynamic>> searchPrintedPapers(String courseTitle) async {
+   Future<List<dynamic>> searchPrintedPapers(String courseTitle) async {  //Datacell &Director
       List<dynamic>plist=[];
   try {
       Uri uri = Uri.parse('${apiUrl}Paper/SearchPrintedPapers?courseTitle=$courseTitle');
@@ -727,30 +727,30 @@ Future<List<dynamic>> loadUnUploadedPapers() async {
   }
 
 
-Future<List<dynamic>> loadApprovedAndPrintedPapers() async {
-  List<dynamic> list=[];
-    Uri uri = Uri.parse('${apiUrl}Paper/getApprovedAndPrintedPapers');
-    var response = await http.get(uri);
-    if (response.statusCode == 200) {
-      list = jsonDecode(response.body);
+// Future<List<dynamic>> loadApprovedAndPrintedPapers() async {
+//   List<dynamic> list=[];
+//     Uri uri = Uri.parse('${apiUrl}Paper/getApprovedAndPrintedPapers');
+//     var response = await http.get(uri);
+//     if (response.statusCode == 200) {
+//       list = jsonDecode(response.body);
      
-    } else {
-      throw Exception('Failed to load Approved and Printed Papers');
-    }
-    return list;
-  }
+//     } else {
+//       throw Exception('Failed to load Approved and Printed Papers');
+//     }
+//     return list;
+//   }
 
-   Future<List<dynamic>> searchApprovedAndPrintedPapers(String courseTitle) async {
-    List<dynamic> list=[];
-      Uri uri = Uri.parse('${apiUrl}Paper/SearchApprovedAndPrintedPapers?courseTitle=$courseTitle');
-      var response = await http.get(uri);
-      if (response.statusCode == 200) {
-        list = jsonDecode(response.body);
-      } else {
-        throw Exception('Failed to load Approved and Printed Papers');
-      }
-      return list;
-  }
+//    Future<List<dynamic>> searchApprovedAndPrintedPapers(String courseTitle) async {
+//     List<dynamic> list=[];
+//       Uri uri = Uri.parse('${apiUrl}Paper/SearchApprovedAndPrintedPapers?courseTitle=$courseTitle');
+//       var response = await http.get(uri);
+//       if (response.statusCode == 200) {
+//         list = jsonDecode(response.body);
+//       } else {
+//         throw Exception('Failed to load Approved and Printed Papers');
+//       }
+//       return list;
+//   }
 
 
    Future<int> updatePaperStatusToApproved(int id) async {
@@ -868,6 +868,7 @@ Future<int> addFeedback(
 
 
 ///////////////////////////////////////////////////////////////HOD/////////////////////////////////////////////////////////////////////////
+ ////////////////////////////////////////////////////////////Course////////////////////////////////////////////////////////////////////////
  Future< List<dynamic>> loadCourseAssignedToFacultyNames(int cid) async {
   List<dynamic> list=[];
     try {
@@ -882,6 +883,79 @@ Future<int> addFeedback(
     } catch (e) {
       throw Exception(e);
     }
+  }
+
+  Future<List<dynamic>> loadCourseWithEnabledStatus() async {
+    List<dynamic> list=[];
+    try {
+      Uri uri =
+          Uri.parse('${apiUrl}Course/getCourseWithEnabledStatus');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list =jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to load course');
+      }
+    return list;
+    } catch (e) {
+    throw Exception(e);
+    }
+  }
+
+///////////////////////////////////////////////////////////////CLO/////////////////////////////////////////////////////////////////////////
+  Future<List<dynamic>> loadClo(int cid) async {
+     List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${APIHandler().apiUrl}Clo/getClo/$cid');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+
+      } else {
+        throw Exception('Failed to load clos');
+      }
+   return list;
+    } catch (e) {
+       throw Exception(e);
+    }
+  }
+  //////////////////////////////////////////////////CLO Grid View Header//////////////////////////////////////////////////////////////////////
+  Future<List<dynamic>> loadCLOGridHeader() async {
+     List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${APIHandler().apiUrl}Gridview_Header/getGridViewHeader');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+
+      } else {
+        throw Exception('Failed to load clo grid header');
+      }
+   return list;
+    } catch (e) {
+       throw Exception(e);
+    }
+  }
+
+//////////////////////////////////////////////////////Grid view weightage///////////////////////////////////////////////////////////////
+
+Future<int> addCloGridWeightage(
+      int cloid, int headerId , int? weightage) async {
+    String url = "${apiUrl}GridView_Weightage/addGridViewWeightage";
+    var obj = {
+      'clo_id': cloid,
+      'header_id': headerId,
+      'weightage': weightage,
+    };
+    var json = jsonEncode(obj);
+    Uri uri = Uri.parse(url);
+    var response = await http.post(uri,
+        body: json,
+        headers: {"Content-Type": "application/json; charset=UTF-8"});
+    return response.statusCode;
   }
 
 }

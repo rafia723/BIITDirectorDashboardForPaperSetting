@@ -24,29 +24,25 @@ class CloCheckingScreen extends StatefulWidget {
 
 class _CloCheckingScreenState extends State<CloCheckingScreen> {
   List<dynamic> clolist = [];
-  Future<void> loadClo(int cid) async {
+   Future<void> loadClo(int cid) async {
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Clo/getClo/$cid');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        clolist = jsonDecode(response.body);
+        clolist = await APIHandler().loadClo(cid);
         setState(() {});
-      } else {
-        throw Exception('Failed to load clos');
-      }
+     
     } catch (e) {
-      showDialog(
+      if(mounted){
+     showDialog(
         context: context,
         builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading clos'),
+          return  AlertDialog(
+            title: const Text('Error:'),
+            content: Text(e.toString()),
           );
         },
       );
+      }
     }
   }
-
   @override
   void initState() {
     super.initState();

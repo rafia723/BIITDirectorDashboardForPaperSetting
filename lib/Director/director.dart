@@ -37,7 +37,7 @@ class _DirectorState extends State<Director> {
                     style:
                         TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 100),
                   SingleChildScrollView(
                     child: Column(
                       children: [
@@ -58,7 +58,7 @@ class _DirectorState extends State<Director> {
                               side: const BorderSide(color: Colors.black),
                             ),
                           ),
-                          child: const Text('Uploaded \n   Papers',
+                          child: const Text('       Uploaded        \n         Papers',
                               style: TextStyle(color: Colors.black)),
                         ),
                           const SizedBox(height: 30),
@@ -79,7 +79,7 @@ class _DirectorState extends State<Director> {
                               side: const BorderSide(color: Colors.black),
                             ),
                           ),
-                          child: const Text('Approved \n   Papers',
+                          child: const Text('Approved/Printed\n         Papers',
                               style: TextStyle(color: Colors.black)),
                         ),
                         const SizedBox(height: 30),
@@ -101,7 +101,7 @@ class _DirectorState extends State<Director> {
                               side: const BorderSide(color: Colors.black),
                             ),
                           ),
-                          child: const Text('Un-Uploaded \n      Papers',
+                          child: const Text('    Un-Uploaded     \n         Papers',
                               style: TextStyle(color: Colors.black)),
                         ),
                       ],
