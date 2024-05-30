@@ -26,41 +26,35 @@ class _GridViewScreenState extends State<GridViewScreen> {
   String selectedCLOText = ''; // Holds the text of the selected CLO button
   List<dynamic> cloWeightageofCourse = [];
   List<dynamic> cloWeightageofclo = [];
+  List<dynamic> data = [];
+  dynamic index;
 
-  int calculateTotalAssignmentWeightage() {
-    int totalAssignmentWeightage = 0;
-   
-    for (var cloWeightage in cloWeightageofCourse) {
-      totalAssignmentWeightage += (cloWeightage['weightage'] ?? 0) as int;
+  Future<int> calculateTotalWeightage(int headerId) async {
+    await loadCloWeightageofSpecificHeaderInCourse(selectedCourseId!, headerId);
+    int totalWeightage = 0;
+    for (var cloWeightage in data) {
+      if (cloWeightage['clo_id'] != selectedCloId ||
+          cloWeightage['header_id'] != headerId) {
+        totalWeightage += (cloWeightage['weightage'] ?? 0) as int;
+      }
     }
-    return totalAssignmentWeightage;
+    return totalWeightage;
   }
 
-  int calculateTotalQuizWeightage() {
-    int totalQuizWeightage = 0;
-
-    for (var cloWeightage in cloWeightageofCourse) {
-      totalQuizWeightage += (cloWeightage['weightage'] ?? 0) as int;
-    }
-    return totalQuizWeightage;
+  Future<int> calculateTotalAssignmentWeightage() async {
+    return await calculateTotalWeightage(1);
   }
 
-    int calculateTotalMidWeightage() {
-    int totalMidWeightage = 0;
- 
-    for (var cloWeightage in cloWeightageofCourse) {
-      totalMidWeightage += (cloWeightage['weightage'] ?? 0) as int;
-    }
-    return totalMidWeightage;
+  Future<int> calculateTotalQuizWeightage() async {
+    return await calculateTotalWeightage(2);
   }
 
-      int calculateTotalFinalWeightage() {
-    int totalFinalWeightage = 0;
- 
-    for (var cloWeightage in cloWeightageofCourse) {
-      totalFinalWeightage += (cloWeightage['weightage'] ?? 0) as int;
-    }
-    return totalFinalWeightage;
+  Future<int> calculateTotalMidWeightage() async {
+    return await calculateTotalWeightage(3);
+  }
+
+  Future<int> calculateTotalFinalWeightage() async {
+    return await calculateTotalWeightage(4);
   }
 
   Widget buildTextFormField({required TextEditingController controller}) {
@@ -85,15 +79,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
       setState(() {});
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error:'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -107,15 +93,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
       }
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error:'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -126,15 +104,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
       setState(() {});
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error:'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -168,15 +138,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
       }
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error inserting weightage'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -187,15 +149,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
       setState(() {});
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error:'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -207,15 +161,20 @@ class _GridViewScreenState extends State<GridViewScreen> {
       setState(() {});
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error:'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> loadCloWeightageofSpecificHeaderInCourse(
+      int cid, int hid) async {
+    try {
+      data = await APIHandler()
+          .loadCourseGridViewWeightageWithSpecificHeader(cid, hid);
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -291,14 +250,15 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                 course['c_code'] == newValue)['c_id'];
                             selectedCloIndex = null;
                             selectedCLOText = '';
+                             index=0;
                           });
 
                           // Load CLOs for the selected course
                           await loadClo(selectedCourseId!);
                           await loadCourseCloWeightage(selectedCourseId!);
+                            
                           setState(() {});
                         },
-                        
                       ),
                     ),
                   ],
@@ -322,14 +282,14 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                   foregroundColor:
                                       MaterialStateProperty.all(Colors.black),
                                 ),
-                                onPressed: () async{
+                                onPressed: () async {
                                   setState(() {
                                     selectedCloIndex = index;
                                     selectedCloId = entry.value['clo_id'];
                                     selectedCLOText = 'CLO ${index + 1}';
-                                    
                                   });
-                                  await loadCourseCloWeightage(selectedCourseId!);
+                                  await loadCourseCloWeightage(
+                                      selectedCourseId!);
                                 },
                                 child: Text('CLO ${index + 1}'),
                               ),
@@ -439,7 +399,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
                   Align(
                       alignment: Alignment.centerRight,
                       child: customElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           int? cloID = selectedCloId;
                           if (cloID != null) {
                             bool isValid = true;
@@ -447,6 +407,12 @@ class _GridViewScreenState extends State<GridViewScreen> {
 
                             // Validate Assignment weightage
                             if (asgController.text.isNotEmpty) {
+                              bool isUpdate = cloWeightageofclo.any(
+                                (weightageData) =>
+                                    weightageData['clo_id'] == cloID &&
+                                    weightageData['header_id'] ==
+                                        cloGridHeaderList[0]['header_id'],
+                              );
                               int asgWeightage = int.parse(asgController.text);
                               if (asgWeightage >
                                   cloGridHeaderList[0]['weightage']) {
@@ -454,77 +420,124 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                 errorMessage =
                                     'Weightage for Assignment exceeded.';
                               }
-
-                              int totalAssignmentWeightage =
-                                  calculateTotalAssignmentWeightage();
-                              int totalAsgHeaderWeightage =
-                                  cloGridHeaderList[0]['weightage'] as int;
-
-                              if (totalAssignmentWeightage >=
-                                  totalAsgHeaderWeightage) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: const Text('Error'),
-                                      content: Text(
-                                          'Total assignment weightage exceeds the limit of $totalAsgHeaderWeightage%.'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text('OK'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
+                              if (!isValid) {
+                                showErrorDialog(context, errorMessage);
                                 return; // Stop execution if validation failed
+                              } else if (isUpdate) {
+                                int totalAssignmentWeightage =
+                                    await calculateTotalAssignmentWeightage();
+                                setState(() {});
+
+                                int totalAsgHeaderWeightage =
+                                    cloGridHeaderList[0]['weightage'] as int;
+                                int asgAndTotalAsg = 0;
+                                asgAndTotalAsg =
+                                    asgWeightage + totalAssignmentWeightage;
+                                if (totalAssignmentWeightage >=
+                                        totalAsgHeaderWeightage ||
+                                    asgAndTotalAsg > totalAsgHeaderWeightage) {
+                                  if (mounted) {
+                                    showErrorDialog(context,
+                                        'Total assignment weightage exceeds the limit of $totalAsgHeaderWeightage%.');
+                                  }
+                                  return; // Stop execution if validation failed
+                                }
+                                addCloGridWeightageData(
+                                    cloID,
+                                    cloGridHeaderList[0]['header_id'],
+                                    asgWeightage);
+                              } else {
+                                int totalAssignmentWeightage =
+                                    await calculateTotalAssignmentWeightage();
+                                setState(() {});
+
+                                int totalAsgHeaderWeightage =
+                                    cloGridHeaderList[0]['weightage'] as int;
+                                int asgAndTotalAsg = 0;
+                                asgAndTotalAsg =
+                                    asgWeightage + totalAssignmentWeightage;
+                                if (totalAssignmentWeightage >=
+                                        totalAsgHeaderWeightage ||
+                                    asgAndTotalAsg > totalAsgHeaderWeightage) {
+                                  if (mounted) {
+                                    showErrorDialog(context,
+                                        'Total assignment weightage exceeds the limit of $totalAsgHeaderWeightage%.');
+                                  }
+                                  return; // Stop execution if validation failed
+                                }
                               }
                             }
 
                             // Validate Quiz weightage
                             if (quizController.text.isNotEmpty) {
+                              bool isUpdate = cloWeightageofclo.any(
+                                (weightageData) =>
+                                    weightageData['clo_id'] == cloID &&
+                                    weightageData['header_id'] ==
+                                        cloGridHeaderList[1]['header_id'],
+                              );
                               int quizWeightage =
                                   int.parse(quizController.text);
                               if (quizWeightage >
                                   cloGridHeaderList[1]['weightage']) {
                                 isValid = false;
-                                errorMessage = 'Weightage for Quiz exceeded.';
+                                errorMessage = 'Weightage for Qui exceeded.';
                               }
-                              int totalQuizWeightage =
-                                  calculateTotalAssignmentWeightage();
-                              int totalQuizHeaderWeightage =
-                                  cloGridHeaderList[1]['weightage'] as int;
-
-                              if (totalQuizWeightage >=
-                                  totalQuizHeaderWeightage) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: const Text('Error'),
-                                      content: Text(
-                                          'Total Quiz weightage exceeds the limit of $totalQuizHeaderWeightage%.'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text('OK'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
+                              if (!isValid) {
+                                showErrorDialog(context, errorMessage);
                                 return; // Stop execution if validation failed
+                              } else if (isUpdate) {
+                                int totalQuizWeightage =
+                                    await calculateTotalQuizWeightage();
+                                setState(() {});
+                                int totalQuizHeaderWeightage =
+                                    cloGridHeaderList[1]['weightage'] as int;
+                                int quizAndTotalQuiz = 0;
+                                quizAndTotalQuiz =
+                                    quizWeightage + totalQuizWeightage;
+                                if (totalQuizWeightage >=
+                                        totalQuizHeaderWeightage ||
+                                    quizAndTotalQuiz >
+                                        totalQuizHeaderWeightage) {
+                                  if (mounted) {
+                                    showErrorDialog(context,
+                                        'Total quiz weightage exceeds the limit of $totalQuizHeaderWeightage%.');
+                                  }
+                                  return; // Stop execution if validation failed
+                                }
+                                addCloGridWeightageData(
+                                    cloID,
+                                    cloGridHeaderList[0]['header_id'],
+                                    quizWeightage);
+                              } else {
+                                int totalQuizWeightage =
+                                    await calculateTotalQuizWeightage();
+                                setState(() {});
+                                int totalQuizHeaderWeightage =
+                                    cloGridHeaderList[1]['weightage'] as int;
+                                int quizAndTotalQuiz = 0;
+                                quizAndTotalQuiz =
+                                    quizWeightage + totalQuizWeightage;
+                                if (totalQuizWeightage >=
+                                        totalQuizHeaderWeightage ||
+                                    quizAndTotalQuiz >
+                                        totalQuizHeaderWeightage) {
+                                  if (mounted) {
+                                    showErrorDialog(context,
+                                        'Total quiz weightage exceeds the limit of $totalQuizHeaderWeightage%.');
+                                  }
+                                  return; // Stop execution if validation failed
+                                }
                               }
                             }
-                            
-
                             // Validate Midterm weightage
                             if (midController.text.isNotEmpty) {
+                              bool isUpdate = cloWeightageofclo.any(
+                                (weightageData) =>
+                                    weightageData['clo_id'] == cloID &&
+                                    weightageData['header_id'] ==
+                                        cloGridHeaderList[1]['header_id'],
+                              );
                               int midWeightage = int.parse(midController.text);
                               if (midWeightage >
                                   cloGridHeaderList[2]['weightage']) {
@@ -532,37 +545,60 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                 errorMessage =
                                     'Weightage for Midterm exceeded.';
                               }
-                               int totalMidWeightage =
-                                  calculateTotalAssignmentWeightage();
-                              int totalMidHeaderWeightage =
-                                  cloGridHeaderList[2]['weightage'] as int;
-
-                              if (totalMidWeightage >=
-                                  totalMidHeaderWeightage) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: const Text('Error'),
-                                      content: Text(
-                                          'Total Mid Term weightage exceeds the limit of $totalMidHeaderWeightage%.'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text('OK'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
+                              if (!isValid) {
+                                showErrorDialog(context, errorMessage);
                                 return; // Stop execution if validation failed
+                              } else if (isUpdate) {
+                                int totalMidWeightage =
+                                    await calculateTotalMidWeightage();
+                                setState(() {});
+                                int totalMidHeaderWeightage =
+                                    cloGridHeaderList[2]['weightage'] as int;
+                                int midAndTotalMid = 0;
+                                midAndTotalMid =
+                                    midWeightage + totalMidWeightage;
+                                if (totalMidWeightage >=
+                                        totalMidHeaderWeightage ||
+                                    midAndTotalMid > totalMidHeaderWeightage) {
+                                  if (mounted) {
+                                    showErrorDialog(context,
+                                        'Total Mid Term weightage exceeds the limit of $totalMidHeaderWeightage%.');
+                                  }
+                                  return; // Stop execution if validation failed
+                                }
+                                addCloGridWeightageData(
+                                    cloID,
+                                    cloGridHeaderList[0]['header_id'],
+                                    midWeightage);
+                              } else {
+                                int totalMidWeightage =
+                                    await calculateTotalMidWeightage();
+                                setState(() {});
+                                int totalMidHeaderWeightage =
+                                    cloGridHeaderList[2]['weightage'] as int;
+                                int midAndTotalMid = 0;
+                                midAndTotalMid =
+                                    midWeightage + totalMidWeightage;
+                                if (totalMidWeightage >=
+                                        totalMidHeaderWeightage ||
+                                    midAndTotalMid > totalMidHeaderWeightage) {
+                                  if (mounted) {
+                                    showErrorDialog(context,
+                                        'Total Mid Term weightage exceeds the limit of $totalMidHeaderWeightage%.');
+                                  }
+                                  return; // Stop execution if validation failed
+                                }
                               }
                             }
 
                             // Validate Final weightage
                             if (finalController.text.isNotEmpty) {
+                              bool isUpdate = cloWeightageofclo.any(
+                                (weightageData) =>
+                                    weightageData['clo_id'] == cloID &&
+                                    weightageData['header_id'] ==
+                                        cloGridHeaderList[1]['header_id'],
+                              );
                               int finalWeightage =
                                   int.parse(finalController.text);
                               if (finalWeightage >
@@ -570,60 +606,62 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                 isValid = false;
                                 errorMessage = 'Weightage for Final exceeded.';
                               }
-                               int totalFinalWeightage =
-                                  calculateTotalAssignmentWeightage();
-                              int totalFinalHeaderWeightage =
-                                  cloGridHeaderList[2]['weightage'] as int;
-
-                              if (totalFinalWeightage >=
-                                  totalFinalHeaderWeightage) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return AlertDialog(
-                                      title: const Text('Error'),
-                                      content: Text(
-                                          'Total Final Term weightage exceeds the limit of $totalFinalHeaderWeightage%.'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text('OK'),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
+                              if (!isValid) {
+                                showErrorDialog(context, errorMessage);
                                 return; // Stop execution if validation failed
+                              } else if (isUpdate) {
+                                int totalFinalWeightage =
+                                    await calculateTotalFinalWeightage();
+                                setState(() {});
+                                int totalFinalHeaderWeightage =
+                                    cloGridHeaderList[2]['weightage'] as int;
+                                int finalAndTotalFinal = 0;
+                                finalAndTotalFinal =
+                                    finalWeightage + totalFinalWeightage;
+                                if (totalFinalWeightage >=
+                                        totalFinalHeaderWeightage ||
+                                    finalAndTotalFinal > totalFinalWeightage) {
+                                  if (mounted) {
+                                    showErrorDialog(context,
+                                        'Total Final Term weightage exceeds the limit of $totalFinalHeaderWeightage%.');
+                                  }
+                                  return; // Stop execution if validation failed
+                                }
+                                addCloGridWeightageData(
+                                    cloID,
+                                    cloGridHeaderList[0]['header_id'],
+                                    finalWeightage);
+                              } else {
+                                int totalFinalWeightage =
+                                    await calculateTotalFinalWeightage();
+                                setState(() {});
+                                int totalFinalHeaderWeightage =
+                                    cloGridHeaderList[2]['weightage'] as int;
+                                int finalAndTotalFinal = 0;
+                                finalAndTotalFinal =
+                                    finalWeightage + totalFinalWeightage;
+                                if (totalFinalWeightage >=
+                                        totalFinalHeaderWeightage ||
+                                    finalAndTotalFinal > totalFinalWeightage) {
+                                  if (mounted) {
+                                    showErrorDialog(context,
+                                        'Total Final Term weightage exceeds the limit of $totalFinalHeaderWeightage%.');
+                                  }
+                                  return; // Stop execution if validation failed
+                                }
                               }
                             }
 
                             // Show error dialog if any validation failed
                             if (!isValid) {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: const Text('Error'),
-                                    content: Text(errorMessage),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text('OK'),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
+                              showErrorDialog(context, errorMessage);
                               return; // Stop execution if validation failed
                             }
 
                             // If all validations passed, update the fields
                             if (asgController.text.isNotEmpty) {
                               int asgWeightage = int.parse(asgController.text);
+
                               addCloGridWeightageData(
                                   cloID,
                                   cloGridHeaderList[0]['header_id'],
@@ -653,23 +691,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                   finalWeightage);
                             }
                           } else {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text('Error'),
-                                  content: const Text('Please select a CLO.'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
+                            showErrorDialog(context, 'Please Select CLO');
                           }
                         },
                         buttonText: 'Update',
@@ -756,15 +778,11 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                     int cloId = entry.value['clo_id'];
                                     String cloNumber =
                                         entry.value['clo_number'];
-                                    print(
-                                        'CLO ID: $cloId, CLO Weightage of CLO: $cloWeightageofclo');
                                     // Filter weightages for the current CLO
                                     var cloWeightages = cloWeightageofclo
                                         .where((weightage) =>
                                             weightage['clo_id'] == cloId)
                                         .toList();
-                                    print(
-                                        'Filtered CLO Weightages for CLO ID $cloId: $cloWeightages');
 
                                     // Create a list to hold weightages for all headers
                                     List<int> headerWeightages =
@@ -782,7 +800,6 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                             weightage['weightage'];
                                       }
                                     }
-
                                     return Row(
                                       children: [
                                         Text(
@@ -817,9 +834,6 @@ class _GridViewScreenState extends State<GridViewScreen> {
                     ),
                   ),
                 ),
-                // const SizedBox(
-                //   height: 80,
-                // ),
                 Center(
                     child: customElevatedButton(
                         onPressed: () {}, buttonText: 'View Clos'))

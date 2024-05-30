@@ -1,9 +1,7 @@
-// ignore_for_file: use_build_context_synchronously
 
-import 'dart:convert';
 import 'package:biit_directors_dashbooard/HOD/CourseAssignedToFacultyMembers.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
-import 'package:http/http.dart' as http;
+
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:flutter/material.dart';
 
@@ -25,56 +23,33 @@ class _CourseListState extends State<CourseList> {
 
   TextEditingController search = TextEditingController();
 
-  Future<void> searchCourses(String query) async {
+
+
+   Future<void> searchCourse(String query) async {
     try {
       if (query.isEmpty) {
         loadCourse();
         return;
       }
-      Uri url = Uri.parse(
-          '${APIHandler().apiUrl}Course/searchCourseWithEnabledStatus?search=$query');
-      var response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        clist = jsonDecode(response.body);
+        clist = await APIHandler().searchCourseWithEnabledStatus(query);
         setState(() {});
-      } else {
-        throw Exception('Failed to search courses');
-      }
+      
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error searching courses'),
-          );
-        },
-      );
+       if(mounted){
+        showErrorDialog(context, e.toString());
+      }
     }
   }
 
   Future<void> loadCourse() async {
     try {
-      Uri uri =
-          Uri.parse('${APIHandler().apiUrl}Course/getCourseWithEnabledStatus');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        clist = jsonDecode(response.body);
+     
+        clist = await APIHandler().loadCourseWithEnabledStatus();
         setState(() {});
-      } else {
-        throw Exception('Failed to load course');
-      }
+      
     } catch (e) {
       if(mounted){
- showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading course'),
-          );
-        },
-      );
+showErrorDialog(context, e.toString());
       }
      
     }
@@ -105,7 +80,7 @@ class _CourseListState extends State<CourseList> {
                     child: TextField(
                       controller: search,
                       onChanged: (value) {
-                        searchCourses(value);
+                        searchCourse(value);
                       },
                       decoration: const InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,

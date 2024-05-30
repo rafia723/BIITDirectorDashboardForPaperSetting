@@ -666,10 +666,53 @@ Future<int> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdif
   return response.statusCode;
 }
 
+///////////////////////////////////////////////////////////////Faculty////////////////////////////////////////////////////////////////
+Future<Map<String, dynamic>> loginFaculty(String username, String password) async {
+  try {
+    final response = await http.post(
+      Uri.parse("${apiUrl}Faculty/loginFaculty"),
+      body: {
+        'username': username,
+        'password': password,
+      },
+    );
+
+    if (response.statusCode == 200) {
+    
+     Map<String, dynamic> responseData = jsonDecode(response.body);
+      return {'success': true, 'message': 'Login successful', 'fid': responseData['fid'], 'fname': responseData['fname']};
+    } else if (response.statusCode == 401) {
+      
+      return {'success': false, 'error': 'Invalid username or password'};
+    } else {
+     
+      throw Exception('Failed to login: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Failed to login: $e');
+  }
+}
 
 
+//////////////////////////////////////////////////////AssignedCourses//////////////////////////////////////////////////////////////////
 
-
+ Future<List<dynamic> > loadAssignedCourses(int id) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse(
+          "${apiUrl}AssignedCourses/getAssignedCourses/$id");
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+       
+      } else if (response.statusCode == 404) {
+        throw ('Data not found for the given id');
+      }
+      return list;
+    } catch (e) {
+     throw (e.toString());
+    }
+  }
 
 //////////////////////////////////////////////////////////Director Module/////////////////////////////////////////////////////////////////////////
 
@@ -903,11 +946,47 @@ Future<int> addFeedback(
     }
   }
 
+  Future<List<dynamic>> loadCoursesWithSeniorRole() async {
+    List<dynamic> clist=[];
+    try {
+      Uri uri =
+          Uri.parse('${APIHandler().apiUrl}Course/getCoursesofSeniorTeacher');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        clist = jsonDecode(response.body);
+       
+      } else {
+        throw Exception('Failed to load courses with senior role');
+      }
+   return clist;
+    } catch (e) {
+     throw Exception(e.toString());
+    }
+  }
+
+  Future<List<dynamic>> searchCourseWithEnabledStatus(String query) async {
+    List<dynamic> list=[];
+    try {
+      Uri url = Uri.parse(
+          '${apiUrl}Course/searchCourseWithEnabledStatus?search=$query');
+      var response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+      } else {
+        throw ('Failed to search course');
+      }
+    } catch (e) {
+     throw ('Error: $e');
+    }
+    return list;
+  }
 ///////////////////////////////////////////////////////////////CLO/////////////////////////////////////////////////////////////////////////
   Future<List<dynamic>> loadClo(int cid) async {
      List<dynamic> list=[];
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Clo/getClo/$cid');
+      Uri uri = Uri.parse('${apiUrl}Clo/getClo/$cid');
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -919,6 +998,20 @@ Future<int> addFeedback(
    return list;
     } catch (e) {
        throw Exception(e);
+    }
+  }
+
+  Future<List<dynamic>> loadApprovedClos(int cid) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${apiUrl}Clo/getCloWithApprovedStatus/$cid');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+      } return list;
+    } catch (e) {
+     throw Exception(e.toString());
     }
   }
   //////////////////////////////////////////////////CLO Grid View Header//////////////////////////////////////////////////////////////////////
@@ -958,6 +1051,22 @@ Future<int> addCloGridWeightage(
     return response.statusCode;
   }
 
+//   Future<int> updateCloGridWeightage(
+//     int cloid, int headerId, int? weightage) async {
+//   String url = "${apiUrl}GridView_Weightage/updateGridViewWeightage";
+//   var obj = {
+//     'clo_id': cloid,
+//     'header_id': headerId,
+//     'weightage': weightage,
+//   };
+//   var json = jsonEncode(obj);
+//   Uri uri = Uri.parse(url);
+//   var response = await http.put(uri,
+//       body: json,
+//       headers: {"Content-Type": "application/json; charset=UTF-8"});
+//   return response.statusCode;
+// }
+
   Future<List<dynamic>> loadCourseCLOGridWeightage(int cid) async {
      List<dynamic> list=[];
     try {
@@ -994,5 +1103,59 @@ Future<int> addCloGridWeightage(
     }
   }
 
+Future<List<dynamic>> loadCourseGridViewWeightageWithSpecificHeader(int cid, int hid) async {
+  List<dynamic> list = [];
+  try {
+    Uri uri = Uri.parse('${apiUrl}GridView_Weightage/getCourseGridViewWeightageWithSpecificHeader/$cid/$hid');
+    var response = await http.get(uri);
+    print(response.statusCode);
+
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+      print('API Response Body: ${response.body}'); // Print the raw response
+      print('Parsed List: $list'); // Print the parsed list
+    } else {
+      throw Exception('Failed to load clo grid weightage');
+    }
+    return list;
+  } catch (e) {
+    throw Exception(e.toString());
+  }
+}
+
+////////////////////////////////////////////////////////Faculty////////////////////////////////////////////////////////////////////////
+Future<List<dynamic>>loadFacultyWithEnabledStatus() async {
+  List<dynamic> list = [];
+    try {
+      Uri uri = Uri.parse(
+          "${apiUrl}Faculty/getFacultyWithEnabledStatus");
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+      }
+      return list;
+    } catch (e) {
+      throw(e.toString());
+    }
+  }
+
+  Future<List<dynamic>> searchFacultyWithEnabledStatus(String query) async {
+    List<dynamic> flist=[];
+    try {
+      Uri url = Uri.parse(
+          '${apiUrl}Faculty/searchFacultyWithEnabledStatus?search=$query');
+      var response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        flist = jsonDecode(response.body);
+      } else {
+        throw ('Failed to search faculty');
+      }
+    } catch (e) {
+     throw ('Error: $e');
+    }
+    return flist;
+  }
 
 }

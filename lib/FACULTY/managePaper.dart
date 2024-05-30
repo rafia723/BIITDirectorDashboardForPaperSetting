@@ -1,4 +1,5 @@
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/FACULTY/clogrid.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
@@ -494,7 +495,12 @@ class _ManagePaperState extends State<ManagePaper> {
               ),
               customElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                      Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CLOGrid(cid: widget.cid!,ccode: widget.ccode,coursename: widget.coursename),
+      ),
+    );
                   },
                   buttonText: 'Clo Grid'),
               const SizedBox(

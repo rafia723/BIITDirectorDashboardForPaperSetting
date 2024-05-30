@@ -1,11 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 
 class ManageSubTopics extends StatefulWidget {
   final String coursename;
@@ -33,49 +30,28 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
   bool isUpdateMode = false;
   int? selectedSubTopicID; //in update mode
 
-  Future<void> loadTopic(int cid) async {
+ Future<void> loadTopicofCourse(int cid) async {
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Topic/getTopic/$cid');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        topiclist = jsonDecode(response.body);
+      topiclist=await APIHandler().loadTopics(cid);
         setState(() {});
-      } else {
-        throw Exception('Failed to load topics');
+      } 
+     catch (e) {
+      if(mounted){
+        showErrorDialog(context, e.toString());
       }
-    } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading topics'),
-          );
-        },
-      );
     }
   }
+ 
 
-  Future<void> loadSubTopic(int tid) async {
+   Future<void> loadSubTopicOfTopic(int tid) async {
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}SubTopic/getSubTopic/$tid');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        subtopiclist = jsonDecode(response.body);
+      subtopiclist=await APIHandler().loadSubTopic(tid);
         setState(() {});
-      } else {
-        throw Exception('Failed to load sub-topics');
+      } 
+     catch (e) {
+      if(mounted){
+        showErrorDialog(context, e.toString());
       }
-    } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading sub-topics'),
-          );
-        },
-      );
     }
   }
 
@@ -86,56 +62,34 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
 
       // Validate if topic text is not empty
       if (subTopicText.isEmpty) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Error'),
-              content: Text('Please enter a  sub-topic.'),
-            );
-          },
-        );
+        if(mounted){
+          showErrorDialog(context, 'Please enter a  sub-topic.');
+        }
         return;
       }
       int code = await APIHandler().addSubTopic(subTopicText, selectedtopicId!);
       if (code == 200) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Success'),
-              content: Text('Sub-Topic added successfully.'),
-            );
-          },
-        );
+
+         if(mounted){
+          showSuccesDialog(context, 'Sub-Topic added.');
+        }
         // Clear the text field
         subTopicController.clear();
           setState(() {
          
-          loadSubTopic(selectedtopicId!);
+          loadSubTopicOfTopic(selectedtopicId!);
         });
       } else {
-        showDialog(
-            context: context,
-            builder: (context) {
-              return const AlertDialog(
-                title: Text('Error'),
-                content:
-                    Text('Failed to add Sub-Topic. Please try again later.'),
-              );
-            });
+        if(mounted){
+          showErrorDialog(context, 'Failed to add Sub-Topic. Please try again later.');
+        }
+      
       }
     } catch (e) {
       // Handle errors
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to add Sub-topic.'),
-          );
-        },
-      );
+       if(mounted){
+          showErrorDialog(context, e.toString());
+        }
     }
   }
 
@@ -143,8 +97,8 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
   void initState() {
     super.initState();
     selectedtopicId = widget.tid;
-    loadTopic(widget.cid);
-    loadSubTopic(widget.tid);
+    loadTopicofCourse(widget.cid);
+    loadSubTopicOfTopic(widget.tid);
   }
 
   @override
@@ -221,7 +175,7 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
                           onChanged: (String? newValue) {
                             setState(() {
                               selectedtopicDD = newValue!;
-                              loadSubTopic(selectedtopicId!);
+                              loadSubTopicOfTopic(selectedtopicId!);
                             });
                           },
                         ),
@@ -270,28 +224,20 @@ class _ManageSubTopicsState extends State<ManageSubTopics> {
                               int code = await APIHandler()
                                   .updateSubTopic(stid, stData);
                               if (code == 200) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return const AlertDialog(
-                                      title: Text('Sub-topic updated'),
-                                    );
-                                  },
-                                );
+                                  if(mounted){
+                                  showSuccesDialog(context, 'Sub-topic updated');
+                                }
+                             
                                 subTopicController.clear();
                                 setState(() {
-                                  loadSubTopic(selectedtopicId!);
+                                  loadSubTopicOfTopic(selectedtopicId!);
                                   isUpdateMode = false;
                                 });
                               } else {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return const AlertDialog(
-                                      title: Text('Error updating Sub-topic'),
-                                    );
-                                  },
-                                );
+                                if(mounted){
+                                  showErrorDialog(context, 'Error updating Sub-topic');
+                                }
+                                
                               }
                             }
                           },

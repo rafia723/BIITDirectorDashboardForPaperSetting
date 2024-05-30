@@ -1,9 +1,6 @@
-// ignore_for_file: use_build_context_synchronously
 
-import 'dart:convert';
 import 'package:biit_directors_dashbooard/HOD/AssignedCoursesList.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
-import 'package:http/http.dart' as http;
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:flutter/material.dart';
 
@@ -18,61 +15,37 @@ List<dynamic> flist = [];
 TextEditingController search = TextEditingController();
 
 class _FacultyListState extends State<FacultyList> {
-  Future<void> loadFaculty(BuildContext context) async {
+  Future<void> loadFaculty() async {
     try {
-      Uri uri = Uri.parse(
-          "${APIHandler().apiUrl}Faculty/getFacultyWithEnabledStatus");
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        flist = jsonDecode(response.body);
+        flist = await APIHandler().loadFacultyWithEnabledStatus();
         setState(() {});
-      } else {
-        throw Exception('Failed to load Faculty');
+      } 
+     catch (e) {
+      if(mounted){
+        showErrorDialog(context, e.toString());
       }
-    } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading faculty'),
-          );
-        },
-      );
     }
   }
 
   @override
   void initState() {
     super.initState();
-    loadFaculty(context);
+    loadFaculty();
   }
 
   Future<void> searchFaculty(String query) async {
     try {
       if (query.isEmpty) {
-        loadFaculty(context);
+        loadFaculty();
         return;
       }
-      Uri url = Uri.parse(
-          '${APIHandler().apiUrl}Faculty/searchFacultyWithEnabledStatus?search=$query');
-      var response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        flist = jsonDecode(response.body);
+        flist = await APIHandler().searchFacultyWithEnabledStatus(query);
         setState(() {});
-      } else {
-        throw Exception('Failed to search faculty');
-      }
+      
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error searching faculty'),
-          );
-        },
-      );
+       if(mounted){
+        showErrorDialog(context, e.toString());
+      }
     }
   }
 

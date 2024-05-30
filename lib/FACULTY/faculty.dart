@@ -1,13 +1,10 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/courseview.dart';
 import 'package:biit_directors_dashbooard/FACULTY/notification.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 
 class Faculty extends StatefulWidget {
   final String facultyname;
@@ -27,41 +24,13 @@ class _FacultyState extends State<Faculty> {
   List<dynamic> aclist = [];
   Future<void> loadAssignedCourses(int id) async {
     try {
-      Uri uri = Uri.parse(
-          "${APIHandler().apiUrl}AssignedCourses/getAssignedCourses/$id");
-      var response = await http.get(uri);
-      if (response.statusCode == 200) {
-        aclist = jsonDecode(response.body);
+      aclist=await APIHandler().loadAssignedCourses(id);
         setState(() {});
-      } else if (response.statusCode == 404) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Data not found for the given id'),
-            );
-          },
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text(
-                  'Failed to load assigned courses. Please try again later.'),
-            );
-          },
-        );
-      }
+      
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('An error occurred. Please try again later.'),
-          );
-        },
-      );
+      if(mounted){
+  showErrorDialog(context, e.toString());
+      }
     }
   }
 

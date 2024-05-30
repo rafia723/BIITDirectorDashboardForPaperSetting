@@ -1,12 +1,9 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/faculty.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 
 class LoginFaculty extends StatefulWidget {
   const LoginFaculty({super.key});
@@ -21,40 +18,32 @@ TextEditingController password =TextEditingController();
 
 
 class _LoginFacultyState extends State<LoginFaculty> {
- 
-Future<void> loginFaculty(BuildContext context) async {
-  final response = await http.post(
-    Uri.parse("${APIHandler().apiUrl}Faculty/loginFaculty"),
-    headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-    body: jsonEncode(<String, String>{
-      'username': username.text.trim(),
-      'password': password.text.trim(),
-    }),
-  );
 
-  if (response.statusCode == 200) {
-     Map<String, dynamic> responseData = jsonDecode(response.body);
-      int fid = responseData['fid']; // Extract fid from response
-      String fname=responseData['fname'];
-    Navigator.pushReplacement(
+  Future<void> loginFaculty() async {
+  try {
+    final result = await APIHandler().loginFaculty(username.text.trim(), password.text.trim());
+    if (result['success']) {
+   
+      int fid = result['fid']; // Extract fid from response
+      String fname=result['fname'];
+      if(mounted){
+ Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => Faculty(facultyname: fname, fid: fid),
       ),
     );
-  } else {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return const AlertDialog(
-          title: Text('Login Failed'),
-        );
-      },
-    );
+      }
+   
+    } 
+  } catch (e) {
+    if(mounted){
+ showErrorDialog(context, e.toString());
+    }
   }
 }
+ 
+
 
 
   @override
@@ -128,7 +117,7 @@ Future<void> loginFaculty(BuildContext context) async {
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {
-                    loginFaculty(context);
+                    loginFaculty();
                   },
                   style:  ButtonStyle(backgroundColor:MaterialStatePropertyAll(customButtonColor)),
                   child: const Text('Login',style: TextStyle(color: Colors.white),),

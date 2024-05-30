@@ -1,11 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 
 class ManageClos extends StatefulWidget {
    final String coursename;
@@ -34,57 +31,36 @@ class _ManageClosState extends State<ManageClos> {
 
   
 
-  Future<void> loadCoursesWithSeniorRole() async {
+  Future<void> loadCoursesofSenior() async {
     try {
-      Uri uri =
-          Uri.parse('${APIHandler().apiUrl}Course/getCoursesofSeniorTeacher');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        clist = jsonDecode(response.body);
+      clist=await APIHandler().loadCoursesWithSeniorRole();
         setState(() {});
-      } else {
-        throw Exception('Failed to load courses with senior role');
+      } 
+     catch (e) {
+      if(mounted){
+        showErrorDialog(context, e.toString());
       }
-    } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading courses with senior role'),
-          );
-        },
-      );
     }
   }
 
-  Future<void> loadClo(int cid) async {
+   Future<void> loadClo(int cid) async {
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Clo/getClo/$cid');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        clolist = jsonDecode(response.body);
+      clolist=await APIHandler().loadClo(cid);
         setState(() {});
-      } else {
-        throw Exception('Failed to load clos');
+      } 
+     catch (e) {
+      if(mounted){
+        showErrorDialog(context, e.toString());
       }
-    } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading clos'),
-          );
-        },
-      );
     }
   }
+
+  
 
   @override
   void initState() {
     super.initState();
-    loadCoursesWithSeniorRole();
+    loadCoursesofSenior();
     selectedCourseId=widget.cid;
     loadClo(widget.cid!);
     
@@ -193,33 +169,23 @@ class _ManageClosState extends State<ManageClos> {
                                 int code = await APIHandler().addClo(
                                     desc.text, selectedCourseId!, 'disapproved');
                                 if (code == 200) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      Future.delayed(const Duration(seconds: 2),
+                                  if(mounted){
+                                    showSuccesDialog(context, 'Inserted');
+                                    Future.delayed(const Duration(seconds: 1),
                                           () {
                                         Navigator.of(context)
                                             .pop(); // Close the dialog after 1 second
                                       });
-                                      return const AlertDialog(
-                                        title: Text('Inserted'),
-                                      );
-                                    },
-                                  );
+                                  }
                                   desc.clear();
                                   setState(() {
                                     selectedCourse = null;
                                     loadClo(selectedCourseId!);
                                   });
                                 } else {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return const AlertDialog(
-                                        title: Text('Error....'),
-                                      );
-                                    },
-                                  );
+                                  if(mounted){
+                                   showErrorDialog(context, 'Error...');
+                                  }
                                 }
                               } else {
                                 int cloid =selectedCloID!; // Use the faculty ID provided in the widget
@@ -230,19 +196,15 @@ class _ManageClosState extends State<ManageClos> {
                                 int code = await APIHandler()
                                     .updateClo(cloid, cloData);
                                 if (code == 200) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      Future.delayed(const Duration(seconds: 2),
+                                  if(mounted){
+                                    showSuccesDialog(context, 'Updated');
+                                      Future.delayed(const Duration(seconds: 1),
                                           () {
                                         Navigator.of(context)
                                             .pop(); // Close the dialog after 1 second
                                       });
-                                      return const AlertDialog(
-                                        title: Text('updated'),
-                                      );
-                                    },
-                                  );
+                                  }
+                                 
                                   desc.clear();
                                   setState(() {
                                     selectedCourse = null;
@@ -250,14 +212,9 @@ class _ManageClosState extends State<ManageClos> {
                                      isUpdateMode = false;
                                   });
                                 } else {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return const AlertDialog(
-                                        title: Text('Error....'),
-                                      );
-                                    },
-                                  );
+                                   if(mounted){
+                                   showErrorDialog(context, 'Error...');
+                                  }
                                 }
                               }
                             },
@@ -277,33 +234,42 @@ class _ManageClosState extends State<ManageClos> {
                               child: ListTile(
                                   title: Text('Clo ${index+1}',),
                                   subtitle: Text(clolist[index]['clo_text'],),
-                                  trailing: IconButton(
-                                      onPressed: () {
-                                        // Find the index of the item with matching c_id
-                                        int indexx = clist.indexWhere((e) =>
-                                            e['c_id'] ==
-                                            clolist[index]['c_id']);
-                                        setState(() {
-                                          selectedCloID =
-                                              clolist[index]['clo_id'];
-                                        });
-                                        if (indexx != -1) {
-                                          // If item with matching c_id is found
-                                          setState(() {
-                                            // Set selectedCourseId
-                                            selectedCourseId =
-                                                clist[indexx]['c_id'];
-                                            // Set selectedCourse based on index
-                                            selectedCourse =
-                                                clist[indexx]['c_code'];
-                                            // Toggle the update mode
-                                            isUpdateMode = true;
-                                          });
-                                        }
-                                        // Set CLO text to desc TextFormField
-                                        desc.text = clolist[index]['clo_text'];
-                                      },
-                                      icon: const Icon(Icons.edit))));
+                                  trailing: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: [
+                                        IconButton(
+                                            onPressed: () {
+                                              // Find the index of the item with matching c_id
+                                              int indexx = clist.indexWhere((e) =>
+                                                  e['c_id'] ==
+                                                  clolist[index]['c_id']);
+                                              setState(() {
+                                                selectedCloID =
+                                                    clolist[index]['clo_id'];
+                                              });
+                                              if (indexx != -1) {
+                                                // If item with matching c_id is found
+                                                setState(() {
+                                                  // Set selectedCourseId
+                                                  selectedCourseId =
+                                                      clist[indexx]['c_id'];
+                                                  // Set selectedCourse based on index
+                                                  selectedCourse =
+                                                      clist[indexx]['c_code'];
+                                                  // Toggle the update mode
+                                                  isUpdateMode = true;
+                                                });
+                                              }
+                                              // Set CLO text to desc TextFormField
+                                              desc.text = clolist[index]['clo_text'];
+                                            },
+                                            icon: const Icon(Icons.edit)),
+                                            Text(clolist[index]['status'],style: TextStyle(color: 
+                                            clolist[index]['status']=='pending'?Colors.blue:clolist[index]['status']=='approved'?Colors.green:clolist[index]['status']=='disapproved'?Colors.red:Colors.black),),
+                                      ],
+                                    ),
+                                  )));
                         }),
                   ),
                 ],

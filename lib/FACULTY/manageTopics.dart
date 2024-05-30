@@ -1,10 +1,9 @@
-import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/manageSubTopics.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 
 
 
@@ -38,92 +37,50 @@ class _ManageTopicsState extends State<ManageTopics> {
   int? selectedTopicID; //in update mode
   String? selectedTopicName; //in update mode
 
-  Future<void> loadCoursesWithSeniorRole() async {
+   Future<void> loadCoursesofSenior() async {
     try {
-      Uri uri =
-          Uri.parse('${APIHandler().apiUrl}Course/getCoursesofSeniorTeacher');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        clist = jsonDecode(response.body);
+      clist=await APIHandler().loadCoursesWithSeniorRole();
         setState(() {});
-      } else {
-        throw Exception('Failed to load courses with senior role');
-      }
-    } catch (e) {
+      } 
+     catch (e) {
       if(mounted){
-  showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading courses with senior role'),
-          );
-        },
-      );
+        showErrorDialog(context, e.toString());
       }
-    
     }
   }
 
-  Future<void> loadClo(int cid) async {
+  Future<void> loadClosWithApprovedStatus(int cid) async {
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Clo/getCloWithApprovedStatus/$cid');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        clolist = jsonDecode(response.body);
-        // Initialize cloCheckBoxes with false values
-        cloCheckBoxes = List<bool>.filled(clolist.length, false);
+      clolist=await APIHandler().loadApprovedClos(cid);
         setState(() {});
-      } else {
-        throw Exception('Failed to load clos');
-      }
-    } catch (e) {
+      } 
+     catch (e) {
       if(mounted){
- showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading clos'),
-          );
-        },
-      );
+        showErrorDialog(context, e.toString());
       }
-     
     }
   }
-
-  Future<void> loadTopic(int cid) async {
+  Future<void> loadTopicofCourse(int cid) async {
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Topic/getTopic/$cid');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        topiclist = jsonDecode(response.body);
+      topiclist=await APIHandler().loadTopics(cid);
         setState(() {});
-      } else {
-        throw Exception('Failed to load topics');
+      } 
+     catch (e) {
+      if(mounted){
+        showErrorDialog(context, e.toString());
       }
-    } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading topics'),
-          );
-        },
-      );
     }
   }
+ 
 
   @override
   void initState() {
     super.initState();
-    loadCoursesWithSeniorRole();
+    loadCoursesofSenior();
     selectedCourseId = widget.cid;
     selectedCourseName=widget.coursename;
-    loadClo(widget.cid!);
-    loadTopic(widget.cid!);
+    loadClosWithApprovedStatus(widget.cid!);
+    loadTopicofCourse(widget.cid!);
   }
 
   Future<void> addTopicAndMapping() async {
@@ -136,15 +93,9 @@ class _ManageTopicsState extends State<ManageTopics> {
         }
       }
       if (selectedCloIds.isEmpty) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Error'),
-              content: Text('Please select at least one CLO.'),
-            );
-          },
-        );
+        if(mounted){
+          showErrorDialog(context, 'Please select at least one CLO.');
+        }
         return;
       }
       // Get the topic text from the text field
@@ -152,61 +103,39 @@ class _ManageTopicsState extends State<ManageTopics> {
 
       // Validate if topic text is not empty
       if (topicText.isEmpty) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Error'),
-              content: Text('Please enter a topic.'),
-            );
-          },
-        );
+          if(mounted){
+          showErrorDialog(context, 'Please enter a topic.');
+        }
         return;
       }
       int topicId = await APIHandler().addTopic(topicText, selectedCourseId!);
       int code =await APIHandler().addMappingsofCloAndTopic(topicId, selectedCloIds);
       if (code == 200) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Success'),
-              content: Text('Topic and clo mapping added successfully.'),
-            );
-          },
-        );
+         if(mounted){
+          showSuccesDialog(context, 'Topic and clo mapping added successfully.');
+        }
+       
         // Clear the text field
         topicController.clear();
 
         // Clear the checkbox selections
         setState(() {
           cloCheckBoxes = List<bool>.filled(clolist.length, false);
-          loadTopic(selectedCourseId!);
+          loadTopicofCourse(selectedCourseId!);
         });
       } else {
         // Mapping failed, revert addition of topic
         await APIHandler().deleteTopic(topicId);
-        showDialog(
-            context: context,
-            builder: (context) {
-              return const AlertDialog(
-                title: Text('Error'),
-                content: Text(
-                    'Failed to add topic mappings. Please try again later.'),
-              );
-            });
+          if(mounted){
+          showErrorDialog(context, 'Failed to add topic mappings. Please try again later.');
+        }
       }
     } catch (e) {
-      // Handle errors
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to add topic. Please try again later.'),
-          );
-        },
-      );
+      
+        if(mounted){
+          showErrorDialog(context, 'Failed to add topic. Please try again later.');
+        }
+     
     }
   }
 
@@ -265,7 +194,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                                   isUpdateMode = false;
                                   cloCheckBoxes =List<bool>.filled(clolist.length, false);
                                 });
-                                loadClo(selectedCourseId!);
+                                loadClosWithApprovedStatus(selectedCourseId!);
                               },
                               child: Text(
                                 e['c_title'],
@@ -277,8 +206,8 @@ class _ManageTopicsState extends State<ManageTopics> {
                           onChanged: (String? newValue) {
                             setState(() {
                               selectedCourseCode = newValue!;
-                              loadClo(selectedCourseId!);
-                              loadTopic(selectedCourseId!);
+                              loadClosWithApprovedStatus(selectedCourseId!);
+                              loadTopicofCourse(selectedCourseId!);
                             });
                           },
                         ),
@@ -423,33 +352,24 @@ class _ManageTopicsState extends State<ManageTopics> {
                               int code =
                                   await APIHandler().updateTopic(tid, tData);
                               if (code == 200) {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return const AlertDialog(
-                                      title:
-                                          Text('Clo mapping and topic updated'),
-                                    );
-                                  },
-                                );
+                                if(mounted){
+                                      showSuccesDialog(context, 'Clo mapping and topic updated');
+                                }
+                              
+                               
                                 topicController.clear();
                                 setState(() {
                                   selectedCourse = null;
-                                  loadTopic(selectedCourseId!);
+                                  loadTopicofCourse(selectedCourseId!);
                                   cloCheckBoxes =
                                       List<bool>.filled(clolist.length, false);
                                   isUpdateMode = false;
                                 });
                               } else {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return const AlertDialog(
-                                      title: Text(
-                                          'Error updating clo mapping and topic'),
-                                    );
-                                  },
-                                );
+                                  if(mounted){
+                                    showErrorDialog(context, 'Error updating clo mapping and topic');
+                                  }
+                               
                               }
                             }
                           },
@@ -496,7 +416,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                                             // Set CLO text to desc TextFormField
                                             topicController.text =
                                                 topiclist[index]['t_name'];
-                                            List<dynamic> CLOsMappedWithTopic =
+                                            List<dynamic> closMappedWithTopic =
                                                 await APIHandler()
                                                     .loadClosMappedWithTopic(
                                                         selectedTopicID!);
@@ -504,7 +424,7 @@ class _ManageTopicsState extends State<ManageTopics> {
                                               cloCheckBoxes =
                                                   clolist.map((clo) {
                                                 // Check if the current CLO is associated with the topic
-                                                return CLOsMappedWithTopic.any(
+                                                return closMappedWithTopic.any(
                                                     (topicClo) =>
                                                         topicClo['clo_id'] ==
                                                         clo['clo_id']);

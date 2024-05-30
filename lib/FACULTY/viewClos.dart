@@ -1,9 +1,8 @@
-import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 
 class ViewClos extends StatefulWidget {
   final int? cid;
@@ -22,40 +21,22 @@ class ViewClos extends StatefulWidget {
 
 class _ViewClosState extends State<ViewClos> {
   List<dynamic> clolist = [];
-  bool isLoading = true;
 
-  Future<void> loadClo(int cid) async {
-    BuildContext? contextt = context; // Store the context in a local variable
+    Future<void> loadClosWithApprovedStatus(int cid) async {
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Clo/getCloWithApprovedStatus/$cid');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        clolist = jsonDecode(response.body);
-         if (contextt.mounted) {
+      clolist=await APIHandler().loadApprovedClos(cid);
         setState(() {});
-         isLoading = false;
-         }
-      } else {
-        throw Exception('Failed to load clos');
+      } 
+     catch (e) {
+      if(mounted){
+        showErrorDialog(context, e.toString());
       }
-    } catch (e) {
-      showDialog(
-        // ignore: use_build_context_synchronously
-        context: contextt,
-        builder: (contextt) {
-          return const AlertDialog(
-            title: Text('Error loading clos'),
-          );
-        },
-      );
     }
   }
-
   @override
   void initState() {
     super.initState();
-    loadClo(widget.cid!);
+    loadClosWithApprovedStatus(widget.cid!);
   }
 
   @override
@@ -96,15 +77,7 @@ class _ViewClosState extends State<ViewClos> {
               ],
             ),
           ),
-            if (isLoading) // Show loading indicator if data is still loading
-                  const Center(
-                    child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.black,
-                      ),
-                    ),
-                  ),
-                   if (!isLoading)
+         
                 Positioned(
                 top: 100, // Adjust position as needed
                 left: 0,
