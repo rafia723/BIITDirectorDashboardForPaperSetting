@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.3:3000/';
+  String apiUrl='http://192.168.10.7:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -925,7 +925,7 @@ Future<int> addFeedback(
   Future<List<dynamic>> loadCLOGridHeader() async {
      List<dynamic> list=[];
     try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Gridview_Header/getGridViewHeader');
+      Uri uri = Uri.parse('${apiUrl}Gridview_Header/getGridViewHeader');
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -957,5 +957,42 @@ Future<int> addCloGridWeightage(
         headers: {"Content-Type": "application/json; charset=UTF-8"});
     return response.statusCode;
   }
+
+  Future<List<dynamic>> loadCourseCLOGridWeightage(int cid) async {
+     List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${apiUrl}GridView_Weightage/getCourseGridViewWeightage/$cid');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+
+      } else {
+        throw Exception('Failed to load clo grid weightage');
+      }
+   return list;
+    } catch (e) {
+       throw Exception(e);
+    }
+  }
+
+ Future<List<dynamic>> loadCLOGridWeightageofClo(int cloid) async {
+     List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${apiUrl}GridView_Weightage/getGridViewWeightage/$cloid');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+
+      } else {
+        throw Exception('Failed to load clo grid weightage');
+      }
+   return list;
+    } catch (e) {
+       throw Exception(e);
+    }
+  }
+
 
 }

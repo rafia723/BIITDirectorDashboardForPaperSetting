@@ -1,11 +1,8 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 
 class CloCheckingScreen extends StatefulWidget {
   final String courseTitle;
