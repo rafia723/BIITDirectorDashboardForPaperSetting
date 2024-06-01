@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/Model/DifficultyModel.dart';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.3.92:3000/';
+  String apiUrl='http://192.168.10.14:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -23,6 +23,26 @@ Future<List<dynamic>> loadFaculty() async {
     throw Exception('Error: $e');
     }
     return flist;
+}
+
+Future<String> loadFacultyName(int fid) async {
+  String facultyName = ''; // Variable to store the faculty name
+  try {
+    Uri uri = Uri.parse("${apiUrl}Faculty/getFacultyName/$fid"); // Assuming endpoint accepts f_id
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      // Decode the response body
+      dynamic decodedResponse = jsonDecode(response.body);
+      // Extract faculty name if found
+      facultyName = decodedResponse['f_name'] ?? ''; // Extract faculty name or assign empty string if not found
+    } else {
+      throw Exception('Failed to load Faculty');
+    }
+  } catch (e) {
+    throw Exception('Error: $e');
+  }
+  return facultyName;
 }
 
 Future<List<dynamic>> searchFaculty(String query) async {
@@ -545,16 +565,16 @@ Future<List<dynamic>> loadTeachersByCourseId(int cid) async {
   }
 
   Future<int> addPaperHeader (
-      String duration,String degree,int tMarks,String term,int year,DateTime date,String session,int NoOfQuestions, int cId,int sid,String status) async {
-    String url = "${apiUrl}Paper/addPaperHeaderMids";
+      String duration,String degree,String term,DateTime date,int NoOfQuestions, int cId,int sid,String status) async {
+    String url = "${apiUrl}Paper/addPaper";
     var headerobj = {
       'duration': duration,
       'degree': degree,
-      't_marks': tMarks,
+     // 't_marks': tMarks,
       'term': term,
-      'year': year,
+     // 'year': year,
       'exam_date': date.toString(),
-      'session': session,
+     // 'session': session,
       'NoOfQuestions': NoOfQuestions,
       'c_id': cId,
       's_id': sid,
@@ -584,12 +604,27 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
     }
   }
 
+  Future<List<dynamic>> loadPaperHeaderIfTermMidAndApproved(int cid, int sid) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri =
+          Uri.parse("${apiUrl}Paper/getPaperHeaderIfTermisMidAndApproved/$cid/$sid");
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+      list=jsonDecode(response.body);
+      
+    } return list;
+    }catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
   ///////////////////////////////////////////////////////Session///////////////////////////////////////////////////////////////////////////////
 
   Future<int> loadFirstSessionId() async {
     dynamic sid;
     try {
-      Uri uri = Uri.parse("${apiUrl}Session/getSession");
+      Uri uri = Uri.parse("${apiUrl}Session/getActiveSession");
       var response = await http.get(uri);
       if (response.statusCode == 200) {
         List<dynamic> responseData = jsonDecode(response.body);
@@ -802,6 +837,20 @@ Future<List<dynamic>> loadUnUploadedPapers() async {
    Future<int> updatePaperStatusToApproved(int id) async {
    
     Uri url = Uri.parse('${apiUrl}Paper/editPaperStatusToApproved/$id');
+    try {
+      var response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+      );
+     return response.statusCode;
+      } catch (error) {
+    throw Exception('Error: $error');
+  }
+ }
+
+ Future<int> updatePaperStatusToUploaded(int id) async {
+   
+    Uri url = Uri.parse('${apiUrl}Paper/editPaperStatusToUploaded/$id');
     try {
       var response = await http.put(
         url,
@@ -1221,7 +1270,7 @@ Future<List<dynamic>> loadSession() async {
     List<dynamic> list=[];
     try {
       Uri uri = Uri.parse(
-          '${APIHandler().apiUrl}Session/getSession');
+          '${apiUrl}Session/getSession');
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {

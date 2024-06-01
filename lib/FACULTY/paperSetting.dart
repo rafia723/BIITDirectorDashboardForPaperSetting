@@ -34,7 +34,7 @@ class _PaperSettingState extends State<PaperSetting> {
   DateTime? date;
   String? duration;
   String? degree;
-  String? tMarks;
+  int tMarks=0;
   String? session;
   String? term;
   int? questions;
@@ -78,6 +78,9 @@ class _PaperSettingState extends State<PaperSetting> {
     }
     if (paperId != null) {
       await loadQuestion(paperId);
+       for(var marks in qlist){
+         tMarks += (marks['q_marks'] as int);
+     }
       if(mounted){
  setState(() {});
       }
@@ -128,14 +131,14 @@ showDialog(
 
   Future<void> loadPaperHeader(int cid, int sid) async {
     try {
-      list=await APIHandler().loadPaperHeader(cid, sid);
+      list=await APIHandler().loadPaperHeaderIfTermMidAndApproved(cid, sid);
       setState(() {
       });
           if (list.isNotEmpty) {
             paperId = list[0]['p_id'];
             duration = list[0]['duration'];
             degree = list[0]['degree'];
-            tMarks = list[0]['t_marks'].toString();
+           // tMarks = list[0]['t_marks'].toString();
             session = list[0]['session'];
             term = list[0]['term'];
             questions = list[0]['NoOfQuestions'];
@@ -189,6 +192,7 @@ showDialog(
   Future<void> loadQuestion(int pid) async {
     try {
      qlist=await APIHandler().loadQuestion(pid);
+    
      setState(() {
        
      });
@@ -395,7 +399,7 @@ showDialog(
                             ),
                             Expanded(
                                 child: Text(
-                              tMarks ?? '',
+                              '${tMarks ?? 0}',
                               style: const TextStyle(fontSize: 12),
                             )),
                           ],
@@ -476,6 +480,7 @@ showDialog(
                             widget.fid,  //////////////////////////////////////////////
                           );
                           if (code == 200) {
+                            tMarks+=int.parse(marksController.text);
                             showDialog(
                               context: context,
                               builder: (context) {

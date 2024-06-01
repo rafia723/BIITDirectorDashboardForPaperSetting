@@ -28,7 +28,7 @@ class _PaperApprovalState extends State<PaperApproval> {
   dynamic paperId;
   String? duration;
   String? degree;
-  String? tMarks;
+  int tMarks=0;
   String? session;
   String? term;
   int? questions;
@@ -41,6 +41,8 @@ class _PaperApprovalState extends State<PaperApproval> {
   Map<int, List<dynamic>> cloMap = {};
   TextEditingController commentController = TextEditingController();
   Map<int, String> statusMap = {};
+  int acceptCount=0;
+  int rejectCount=0;
 
   @override
   void initState() {
@@ -67,7 +69,8 @@ class _PaperApprovalState extends State<PaperApproval> {
           paperId = plist[0]['p_id'];
           duration = plist[0]['duration'];
           degree = plist[0]['degree'];
-          tMarks = plist[0]['t_marks'].toString();
+        //  tMarks = plist[0]['t_marks'].toString();
+
           session = plist[0]['session'];
           term = plist[0]['term'];
           questions = plist[0]['NoOfQuestions'];
@@ -265,6 +268,8 @@ Future<void> loadApprovedPapersData() async {
     try {
       for (var question in qlist) {
         int qid = question['q_id'];
+        int qmarks=question['q_marks'];
+        tMarks+=qmarks;
         await updateQuestionStatus(qid, newStatus);
       }
       setState(() {
@@ -292,6 +297,8 @@ Future<void> loadApprovedPapersData() async {
     try {
       for (var question in qlist) {
         int qid = question['q_id'];
+         int qmarks=question['q_marks'];
+        tMarks-=qmarks;
         await updateQuestionStatus(qid, 'uploaded');
       }
       setState(() {
@@ -454,7 +461,7 @@ Future<void> loadApprovedPapersData() async {
                         ),
                         Expanded(
                             child: Text(
-                          tMarks ?? 'Loading...',
+                         '${tMarks ?? 0}',
                           style: const TextStyle(fontSize: 12),
                         )),
                       ],
@@ -514,6 +521,7 @@ Future<void> loadApprovedPapersData() async {
                 final fetchedTopicId = question['t_id'];
                 final qid = question['q_id'];
 
+
                 if (!cloMap.containsKey(fetchedTopicId)) {
                   loadClosMappedWithTopicData(fetchedTopicId);
                 }
@@ -570,6 +578,8 @@ Future<void> loadApprovedPapersData() async {
                                   onTap: () => {
                                         setState(() {
                                           statusMap[qid] = 'approved';
+                                          
+                                          tMarks+=question['q_marks'] as int;
                                         }),
                                         updateQuestionStatus(qid, 'approved')
                                       }),
@@ -579,6 +589,8 @@ Future<void> loadApprovedPapersData() async {
                                 onChanged: (value) {
                                   setState(() {
                                     statusMap[qid] = value!;
+                                    
+                                 tMarks+=question['q_marks'] as int;
                                   });
                                   updateQuestionStatus(qid, value!);
                                 },
@@ -588,6 +600,7 @@ Future<void> loadApprovedPapersData() async {
                                   onTap: () => {
                                         setState(() {
                                           statusMap[qid] = 'rejected';
+                                              tMarks-=question['q_marks'] as int;
                                         }),
                                         updateQuestionStatus(qid, 'rejected')
                                       }),
@@ -597,6 +610,7 @@ Future<void> loadApprovedPapersData() async {
                                   onChanged: (value) {
                                     setState(() {
                                       statusMap[qid] = value!;
+                                          tMarks-=question['q_marks'] as int;
                                     });
                                     updateQuestionStatus(qid, value!);
                                   }),

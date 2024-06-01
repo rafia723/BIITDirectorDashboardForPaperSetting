@@ -24,7 +24,8 @@ class _ManagePaperState extends State<ManagePaper> {
   dynamic paperId;
   String? duration;
   String? degree;
-  int? tMarks;
+  int tMarks = 0;
+  //int? tMarks;
   String? session;
   String? term;
   int? questions;
@@ -36,6 +37,9 @@ class _ManagePaperState extends State<ManagePaper> {
   Map<int, List<dynamic>> cloMap = {};
   dynamic counter;
   dynamic qNoCounter;
+  dynamic fname;
+  dynamic fid;
+  Map<int, String> facultyNames = {}; // Store faculty names here
 
   @override
   void initState() {
@@ -55,8 +59,10 @@ class _ManagePaperState extends State<ManagePaper> {
       for (var question in qlist) {
         if (question['q_status'] == 'uploaded') {
           int qMarks = question['q_marks'];
+
           setState(() {
-            counter = (counter! - qMarks);
+            //  counter = (counter! - qMarks);
+            tMarks += qMarks;
             qNoCounter--;
           });
         }
@@ -72,12 +78,12 @@ class _ManagePaperState extends State<ManagePaper> {
         paperId = plist[0]['p_id'];
         duration = plist[0]['duration'];
         degree = plist[0]['degree'];
-        tMarks = plist[0]['t_marks'];
-        counter = tMarks;
+        // tMarks = plist[0]['t_marks'];
+        // counter = tMarks;
         session = plist[0]['session'];
         term = plist[0]['term'];
         questions = plist[0]['NoOfQuestions'];
-        qNoCounter=questions;
+        qNoCounter = questions;
         year = plist[0]['year'];
         date = DateTime.parse(plist[0]['exam_date']);
       }
@@ -137,9 +143,36 @@ class _ManagePaperState extends State<ManagePaper> {
     }
   }
 
+  Future<void> loadFacultyName(int fid) async {
+    try {
+      fname = await APIHandler().loadFacultyName(fid);
+      setState(() {
+        facultyNames[fid] = fname;
+      });
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
+    }
+  }
+
   Future<void> loadQuestion(int pid) async {
     try {
       qlist = await APIHandler().loadQuestion(pid);
+      for (var question in qlist) {
+        fid = question['f_id'];
+        if (fid != null) {
+          await loadFacultyName(fid);
+        }
+      }
       setState(() {});
     } catch (e) {
       if (mounted) {
@@ -160,7 +193,7 @@ class _ManagePaperState extends State<ManagePaper> {
     try {
       List<dynamic> list = await APIHandler().loadClosMappedWithTopic(tid);
       cloMap[tid] = list;
-          setState(() {});
+      setState(() {});
     } catch (e) {
       if (mounted) {
         showDialog(
@@ -177,7 +210,8 @@ class _ManagePaperState extends State<ManagePaper> {
 
   Future<void> updateStatus(int id, dynamic newStatus) async {
     try {
-      dynamic code = await APIHandler().updateQuestionStatusFromPendingToUploaded(id, newStatus);
+      dynamic code = await APIHandler()
+          .updateQuestionStatusFromPendingToUploaded(id, newStatus);
       if (mounted) {
         if (code == 200) {
           loadQuestion(paperId);
@@ -341,7 +375,7 @@ class _ManagePaperState extends State<ManagePaper> {
                         ),
                         Expanded(
                             child: Text(
-                          '$tMarks',
+                          '${tMarks ?? 0}',
                           style: const TextStyle(fontSize: 12),
                         )),
                       ],
@@ -378,12 +412,15 @@ class _ManagePaperState extends State<ManagePaper> {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                 const SizedBox(width: 10,),
-                 Text('Questions Remaining: $qNoCounter'),
-                       const SizedBox(width: 40,),
-                  Text('Marks Remaining: $counter'),
+                const SizedBox(
+                  width: 10,
+                ),
+                Text('Questions Remaining: $qNoCounter'),
+                const SizedBox(
+                  width: 40,
+                ),
+                //   Text('Marks Remaining: $counter'),
               ],
-              
             ),
           ),
           Expanded(
@@ -393,12 +430,13 @@ class _ManagePaperState extends State<ManagePaper> {
                 final question = qlist[index];
                 final imageUrl = question['q_image'];
                 final fetchedTopicId = question['t_id'];
+                fid = question['f_id'];
+                final facultyName = facultyNames[fid] ?? 'Loading...';
 
                 // Fetch CLOs for the current topic if not already fetched
                 if (!cloMap.containsKey(fetchedTopicId)) {
                   loadClosMappedWithTopicData(fetchedTopicId);
                 }
-
                 final cloList = cloMap[fetchedTopicId] ?? [];
 
                 return Card(
@@ -423,34 +461,34 @@ class _ManagePaperState extends State<ManagePaper> {
                           Checkbox(
                               value: question['q_status'] == 'uploaded',
                               onChanged: (bool? newValue) async {
-                                if(qNoCounter==0&&counter==0&&newValue==true){
-                                  if(mounted){
-                                    showErrorDialog(context, 'You cannot add more questions because the total marks and number of questions have reached their limit.');
+                                //   if(qNoCounter==0&&counter==0&&newValue==true){
+                                if (qNoCounter == 0 && newValue == true) {
+                                  if (mounted) {
+                                    showErrorDialog(context,
+                                        'You cannot add more questions because the total number of questions have reached their limit.');
                                   }
-                                }else{
-                                await updateStatus(question['q_id'], newValue);
-                            
-                                if (newValue == true) {
-                                  int qMarks = question['q_marks'];
-                                  setState(() {
-                                    qNoCounter--;
-                                    counter = (counter - qMarks);
-                                
-                                  });
-                                } else if (newValue == false) {
-                                  // If the checkbox is unchecked, add the qMarks back to tMarks
-                                  int qMarks = question['q_marks'];
-                                  setState(() {
-                                    counter = (counter + qMarks);
-                                    qNoCounter++;
-                                    
-                                  });
+                                } else {
+                                  await updateStatus(
+                                      question['q_id'], newValue);
+
+                                  if (newValue == true) {
+                                    //   int qMarks = question['q_marks'];
+                                    setState(() {
+                                      tMarks += question['q_marks'] as int;
+                                      qNoCounter--;
+                                      //   counter = (counter - qMarks);
+                                    });
+                                  } else if (newValue == false) {
+                                    // If the checkbox is unchecked, add the qMarks back to tMarks
+                                    //  int qMarks = question['q_marks'];
+                                    setState(() {
+                                      //   counter = (counter + qMarks);
+                                      tMarks -= question['q_marks'] as int;
+                                      qNoCounter++;
+                                    });
+                                  }
                                 }
-                                }
-                              
-                              }
-                              ),
-                              
+                              }),
                         ],
                       ),
                       subtitle: Column(
@@ -476,6 +514,7 @@ class _ManagePaperState extends State<ManagePaper> {
                             children: [
                               Text('${question['q_difficulty']},'),
                               Text('${question['q_marks']},'),
+                              Text('$facultyName,'),
                               Text(
                                   'CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
                             ],
@@ -495,26 +534,38 @@ class _ManagePaperState extends State<ManagePaper> {
               ),
               customElevatedButton(
                   onPressed: () {
-                      Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CLOGrid(cid: widget.cid!,ccode: widget.ccode,coursename: widget.coursename),
-      ),
-    );
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CLOGrid(
+                            cid: widget.cid!,
+                            ccode: widget.ccode,
+                            coursename: widget.coursename),
+                      ),
+                    );
                   },
                   buttonText: 'Clo Grid'),
               const SizedBox(
                 width: 170,
               ),
               customElevatedButton(
-                  onPressed: () {
-                    if(counter==0&&qNoCounter==0){
+                  onPressed: ()async {
+                    //   if(counter==0&&qNoCounter==0){
+                    if (qNoCounter == 0) {
+                      int code=await APIHandler().updatePaperStatusToUploaded(paperId);
+                      if(code==200){
+                        if(mounted){
                           Navigator.pop(context);
+                showSuccesDialog(context, 'Submitted');
+                        }
+                       
+                      }
+                      
+                    } 
+                    else {
+                      showErrorDialog(context,
+                          'Please ensure question counter is 0 before submitting.');
                     }
-                    else{
-                      showErrorDialog(context, 'Please ensure both counters are 0 before submitting.');
-                    }
-                  
                   },
                   buttonText: 'Submit'),
             ],

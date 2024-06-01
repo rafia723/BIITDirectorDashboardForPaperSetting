@@ -5,6 +5,7 @@ import 'package:biit_directors_dashbooard/FACULTY/managePaper.dart';
 import 'package:biit_directors_dashbooard/FACULTY/manageTopics.dart';
 import 'package:biit_directors_dashbooard/FACULTY/paperHeader.dart';
 import 'package:biit_directors_dashbooard/FACULTY/paperSetting.dart';
+
 import 'package:biit_directors_dashbooard/FACULTY/viewClos.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +35,7 @@ class _CourseViewState extends State<CourseView> {
   dynamic sid;
   List<dynamic> list = [];
   bool isLoading=true;
+
 
   @override
   void initState() {
@@ -165,14 +167,26 @@ setState(() {
                         setState(() {
                           
                         });
-                        if (list.isEmpty&&widget.role == 'Senior') {
+                        if (list.isEmpty&&widget.role == 'Senior'||list.isNotEmpty&&widget.role == 'Senior') {
                       
                            Navigator.push(context, MaterialPageRoute(builder: (context)=>
                            PaperHeader(cid: widget.cid, ccode: widget.ccode, 
                            coursename: widget.coursename, fid: widget.fid)));
                          
-                        } else if(list.isNotEmpty) {
-                        Navigator.push(
+                        } 
+                      //   else if(list.isNotEmpty) {
+                      //   Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //           builder: (context) => PaperSetting(
+                      //                 ccode: widget.ccode,
+                      //                 coursename: widget.coursename,
+                      //                 cid: widget.cid,
+                      //                 fid: widget.fid,
+                      //               )));
+                      // }
+                      else if (list.isNotEmpty) {
+                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => PaperSetting(
@@ -182,9 +196,10 @@ setState(() {
                                       fid: widget.fid,
                                     )));
                       }
-                      else{
-                    showErrorDialog(context, 'The paper header has not been created yet');
-                      }}),
+                 else{
+                   showErrorDialog(context, 'The paper header has not been created yet');
+                      }
+                      }),
                   const SizedBox(height: 10),
                   customButton(
                       text: 'View Topics',

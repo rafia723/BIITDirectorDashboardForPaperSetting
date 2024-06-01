@@ -25,16 +25,38 @@ class PaperHeader extends StatefulWidget {
 class _PaperHeaderState extends State<PaperHeader> {
   TextEditingController durationController = TextEditingController();
   TextEditingController degreeController = TextEditingController();
-  TextEditingController totalMarksController = TextEditingController();
+ // TextEditingController totalMarksController = TextEditingController();
   TextEditingController noOfQuestionsController = TextEditingController();
-  String selectedSessionValue = '';
+ // String selectedSessionValue = '';
   String selectedtermValue = '';
   DateTime _dateTime = DateTime.now();
   String selectedDate = '';
-  int _selectedYear = DateTime.now().year;
+ // int _selectedYear = DateTime.now().year;
   List<dynamic> teachers = [];
-  dynamic status= 'uploaded';
+  dynamic p_status= 'pending';
   dynamic sid;
+   List<dynamic> list=[];
+   bool midTerm=false;
+   bool midAndApproved=false;
+   bool finalTerm=false;
+   dynamic status;
+
+
+   Widget customElevatedButtonForThisScreen({
+  required VoidCallback onPressed,
+  required String buttonText,
+  bool isEnabled = true, // New parameter to determine if the button should be enabled
+  Color customColor = const Color.fromARGB(255, 78, 223, 180),
+}) {
+  return ElevatedButton(
+    style: ButtonStyle(
+      backgroundColor: MaterialStateProperty.all(customColor),
+      foregroundColor: MaterialStateProperty.all(Colors.white),
+    ),
+    onPressed: isEnabled ? onPressed : null, // Disable the button if isEnabled is false
+    child: Text(buttonText),
+  );
+}
 
   @override
   void initState() {
@@ -48,13 +70,54 @@ class _PaperHeaderState extends State<PaperHeader> {
       // Making loadSession and loadTeachers calls in parallel
       await Future.wait([loadSession(), loadTeachers()]);
       if (sid != null) {
-        status = await APIHandler().loadPaperStatus(widget.cid, sid);
+        loadPaperHeader(widget.cid, sid);
+     //   status = await APIHandler().loadPaperStatus(widget.cid, sid);
         setState(() {}); // Update the UI after loading the status
       }
     } catch (e) {
-      print('Error initializing data: $e');
+      if(mounted){
+        showErrorDialog(context, e.toString());
+      }
     }
   }
+
+
+   Future<void> loadPaperHeader(int cid, int sid) async {
+    try {
+      list = await APIHandler().loadPaperHeader(cid, sid);
+     for (var item in list) {
+    String term = item['term']!.toLowerCase();
+     status = item['status']!.toLowerCase();
+    if (term == 'mid'&&(status=='approved'||status=='printed')) {
+      midAndApproved=true;
+    }
+     if (term == 'mid') {
+      midTerm = true;
+    }
+    if (term == 'final') {
+      finalTerm = true;
+    }
+    // If both are true, we can exit the loop early
+    if (midTerm && finalTerm) {
+      break;
+    }
+  }
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error..'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
+    }
+  }
+
 
   Future<void> loadTeachers() async {
     try {
@@ -63,26 +126,21 @@ class _PaperHeaderState extends State<PaperHeader> {
         teachers = teachersList; // Correctly update the state with the loaded teachers
       });
     } catch (e) {
-      print('Error loading teachers: $e');
+       if(mounted){
+        showErrorDialog(context, e.toString());
+      }
     }
   }
 
  Future<void> loadSession() async {
     try {
-      sid=await APIHandler().loadSession();
+      sid=await APIHandler().loadFirstSessionId();
+      
       setState(() {
       });
     } catch (e) {
       if(mounted){
- showDialog(
-        context: context,
-        builder: (context) {
-          return  AlertDialog(
-            title: const Text('Error'),
-            content: Text(e.toString()),
-          );
-        },
-      );
+        showErrorDialog(context, e.toString());
       }
      
     }
@@ -142,29 +200,29 @@ class _PaperHeaderState extends State<PaperHeader> {
               ),
 
               //      const SizedBox(height: 30,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const Text(
-                    '  Status: ',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  Text(
-                    status == null ? 'Loading...' : '$status    ',
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: status == "approved" || status == "printed"
-                            ? Colors.green
-                            : status == "rejected"
-                                ? Colors.red
-                                : Colors.black,
-                        fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.end,
+              //   children: [
+              //     const Text(
+              //       '  Status: ',
+              //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              //     ),
+              //     Text(
+              //       p_status == null ? 'Loading...' : '$p_status    ',
+              //       style: TextStyle(
+              //           fontSize: 16,
+              //           color: p_status == "approved" || p_status == "printed"
+              //               ? Colors.green
+              //               : p_status == "rejected"
+              //                   ? Colors.red
+              //                   : Colors.black,
+              //           fontWeight: FontWeight.w500),
+              //     ),
+              //   ],
+              // ),
 
               const SizedBox(
-                height: 10,
+                height: 30,
               ),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
@@ -257,78 +315,78 @@ class _PaperHeaderState extends State<PaperHeader> {
               const SizedBox(
                 height: 10,
               ),
-              Row(
-                children: [
-                  const Text(
-                    '  Total Marks: ',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  SizedBox(
-                    height: 35,
-                    width: 200,
-                    child: TextFormField(
-                        keyboardType: TextInputType.number,
-                        maxLines: 1,
-                        controller: totalMarksController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(8.0)),
-                          ),
-                        )),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              const Text(
-                '  Session:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              Row(
-                children: [
-                  const SizedBox(
-                    width: 40,
-                  ),
-                  Radio(
-                      value: 'Fall',
-                      groupValue: selectedSessionValue,
-                      onChanged: (val) {
-                        setState(() {
-                          selectedSessionValue = val.toString();
-                        });
-                      }),
-                  const Text('Fall'),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Radio(
-                      value: 'Spring',
-                      groupValue: selectedSessionValue,
-                      onChanged: (val) {
-                        setState(() {
-                          selectedSessionValue = val.toString();
-                        });
-                      }),
-                  const Text('Spring'),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Radio(
-                      value: 'Summer',
-                      groupValue: selectedSessionValue,
-                      onChanged: (val) {
-                        setState(() {
-                          selectedSessionValue = val.toString();
-                        });
-                      }),
-                  const Text('Summer'),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     const Text(
+              //       '  Total Marks: ',
+              //       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              //     ),
+              //     const SizedBox(
+              //       width: 20,
+              //     ),
+              //     SizedBox(
+              //       height: 35,
+              //       width: 200,
+              //       child: TextFormField(
+              //           keyboardType: TextInputType.number,
+              //           maxLines: 1,
+              //           controller: totalMarksController,
+              //           decoration: const InputDecoration(
+              //             border: OutlineInputBorder(
+              //               borderRadius:
+              //                   BorderRadius.all(Radius.circular(8.0)),
+              //             ),
+              //           )),
+              //     ),
+              //   ],
+              // ),
+              // const SizedBox(
+              //   height: 10,
+              // ),
+              // const Text(
+              //   '  Session:',
+              //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              // ),
+              // Row(
+              //   children: [
+              //     const SizedBox(
+              //       width: 40,
+              //     ),
+              //     Radio(
+              //         value: 'Fall',
+              //         groupValue: selectedSessionValue,
+              //         onChanged: (val) {
+              //           setState(() {
+              //             selectedSessionValue = val.toString();
+              //           });
+              //         }),
+              //     const Text('Fall'),
+              //     const SizedBox(
+              //       width: 10,
+              //     ),
+              //     Radio(
+              //         value: 'Spring',
+              //         groupValue: selectedSessionValue,
+              //         onChanged: (val) {
+              //           setState(() {
+              //             selectedSessionValue = val.toString();
+              //           });
+              //         }),
+              //     const Text('Spring'),
+              //     const SizedBox(
+              //       width: 10,
+              //     ),
+              //     Radio(
+              //         value: 'Summer',
+              //         groupValue: selectedSessionValue,
+              //         onChanged: (val) {
+              //           setState(() {
+              //             selectedSessionValue = val.toString();
+              //           });
+              //         }),
+              //     const Text('Summer'),
+              //   ],
+              // ),
               const Text(
                 '  Term:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
@@ -353,11 +411,11 @@ class _PaperHeaderState extends State<PaperHeader> {
                   Radio(
                       value: 'Final',
                       groupValue: selectedtermValue,
-                      onChanged: (val) {
+                      onChanged: midAndApproved?(val) {
                         setState(() {
                           selectedtermValue = val.toString();
                         });
-                      }),
+                      }:null),
                   const Text('Final'),
                 ],
               ),
@@ -384,31 +442,6 @@ class _PaperHeaderState extends State<PaperHeader> {
                           ),
                         )),
                   ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  const Text(
-                    '  Year: ',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  DropdownButton<int>(
-                    value: _selectedYear,
-                    onChanged: (int? newValue) {
-                      setState(() {
-                        _selectedYear = newValue!;
-                      });
-                    },
-                    items: List.generate(
-                      2101 - 2000,
-                      (index) => DropdownMenuItem<int>(
-                        value: 2000 + index,
-                        child: Text((2000 + index).toString()),
-                      ),
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(
@@ -421,15 +454,15 @@ class _PaperHeaderState extends State<PaperHeader> {
                             .addPaperHeader(
                           durationController.text,
                           degreeController.text,
-                          int.parse(totalMarksController.text),
+                       //   int.parse(totalMarksController.text),
                           selectedtermValue,
-                          _selectedYear,
+                         // _selectedYear,
                           _dateTime,
-                          selectedSessionValue,
+                        //  selectedSessionValue,
                           int.parse(noOfQuestionsController.text),
                           widget.cid,
                           sid,
-                          status,
+                          p_status,
                         )
                             .then((code) {
                           if (code == 200) {
@@ -444,72 +477,169 @@ class _PaperHeaderState extends State<PaperHeader> {
                                   title: Text('Added'),
                                 );
                               },
-                            ).then((value) {
-                                Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PaperSetting(
-                                fid: widget.fid,
-                                  cid: widget.cid,
-                                  ccode: widget.ccode,
-                                  coursename: widget.coursename,
-                            )));
+                            // ).then((value) {
+                            //     Navigator.push(
+                            // context,
+                            // MaterialPageRoute(
+                            //   builder: (context) => PaperSetting(
+                            //     fid: widget.fid,
+                            //       cid: widget.cid,
+                            //       ccode: widget.ccode,
+                            //       coursename: widget.coursename,
+                            // )));
                             
-                            });
-
+                           // });
+                            );
                            durationController.clear();
                            degreeController.clear();
-                           totalMarksController.clear();
+                         //  totalMarksController.clear();
                            noOfQuestionsController.clear();
-
-                        } else if (code == 409) {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                Future.delayed(const Duration(seconds: 4), () {
-                                  Navigator.of(context)
-                                      .pop(); // Close the dialog after 2 seconds
-                                });
-                                return  AlertDialog(
-                                  title: Text(
-                                      'Paper term $selectedtermValue and session $selectedSessionValue added for the course and session'),
-                                );
-                              },
-                            );
+                           loadPaperHeader(widget.cid, sid);
+                          setState(() {
+                            
+                          });
+                          }
+                        // } else if (code == 409) {
+                        //     showDialog(
+                        //       context: context,
+                        //       builder: (context) {
+                        //         Future.delayed(const Duration(seconds: 4), () {
+                        //           Navigator.of(context)
+                        //               .pop(); // Close the dialog after 2 seconds
+                        //         });
+                        //         return  AlertDialog(
+                        //           title: Text(
+                        //               'Paper term $selectedtermValue and session $selectedSessionValue added for the course and session'),
+                        //         );
+                        //       },
+                        //     );
 
                           
-                          } else if (code == 400) {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                Future.delayed(const Duration(seconds: 2), () {
-                                  Navigator.of(context)
-                                      .pop(); // Close the dialog after 2 seconds
-                                });
-                                return const AlertDialog(
-                                  title: Text(
-                                      'You can only create Spring Mid term exams right now'),
-                                );
-                              },
-                            );
-                          } else {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                Future.delayed(const Duration(seconds: 2), () {
-                                  Navigator.of(context)
-                                      .pop(); // Close the dialog after 2 seconds
-                                });
-                                return AlertDialog(
-                                  title: Text('Error....$code'),
-                                );
-                              },
-                            );
+                           else if (code == 400) {
+                            if(mounted){
+                              showErrorDialog(context, '$selectedtermValue already exists for this course');
+                            }
+                            //  Navigator.pushReplacement(
+                            // context,
+                            // MaterialPageRoute(
+                            //   builder: (context) => PaperSetting(
+                            //     fid: widget.fid,
+                            //       cid: widget.cid,
+                            //       ccode: widget.ccode,
+                            //       coursename: widget.coursename,
+                            // )));
+                           
+                          } 
+                        else {
+                          if(mounted){
+                            showErrorDialog(context, 'Error return with status code $code');
+                          }
+                            
                           }
                         });
                       
                       },
-                      buttonText: 'Save'))
+                      buttonText: 'Save')),
+                        const SizedBox(height: 30,),
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text('   These terms headers already created'),
+                      ),
+                      const SizedBox(height: 10,),
+                      if (midTerm && finalTerm) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 100,
+                      child: customElevatedButtonForThisScreen(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaperSetting(
+          fid: widget.fid,
+          cid: widget.cid,
+          ccode: widget.ccode,
+          coursename: widget.coursename,
+        ),
+      ),
+    );
+  },
+  buttonText: 'Mid',
+  isEnabled: !midAndApproved, // Disable the button if midAndApproved is true
+),
+                    ),
+                    const SizedBox(width: 24),
+                    SizedBox(
+                      width: 100,
+                      child: customElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PaperSetting(
+                                fid: widget.fid,
+                                cid: widget.cid,
+                                ccode: widget.ccode,
+                                coursename: widget.coursename,
+                              ),
+                            ),
+                          );
+                        },
+                        buttonText: 'Final',
+                      ),
+                    ),
+                  ],
+                ),
+              ] else if (midTerm) ...[
+                Center(
+                  child: SizedBox(
+                    width: 100,
+                    child: customElevatedButtonForThisScreen(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaperSetting(
+          fid: widget.fid,
+          cid: widget.cid,
+          ccode: widget.ccode,
+          coursename: widget.coursename,
+        ),
+      ),
+    );
+  },
+  buttonText: 'Mid',
+  isEnabled: !midAndApproved, // Disable the button if midAndApproved is true
+),
+                  ),
+                ),
+              ] else if (finalTerm) ...[
+                Center(
+                  child: SizedBox(
+                    width: 100,
+                    child: customElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PaperSetting(
+                              fid: widget.fid,
+                              cid: widget.cid,
+                              ccode: widget.ccode,
+                              coursename: widget.coursename,
+                            ),
+                          ),
+                        );
+                      },
+                      buttonText: 'Final',
+                    ),
+                  ),
+                ),
+              ] else ...[
+                const SizedBox(),
+              ],
             ],
           ),
         ]));

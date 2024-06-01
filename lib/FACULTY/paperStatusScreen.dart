@@ -10,7 +10,7 @@ class PaperStatusScreen extends StatefulWidget {
 class _PaperStatusScreenState extends State<PaperStatusScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       
     );
   }
