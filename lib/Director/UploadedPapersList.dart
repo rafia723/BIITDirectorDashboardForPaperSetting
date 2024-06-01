@@ -124,7 +124,7 @@ TextEditingController search = TextEditingController();
                         color: Colors.white.withOpacity(0.8),
                         child: GestureDetector(
                           onTap: () => {
-                              Navigator.push(
+                              Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => PaperHeaderScreen(cid: uploadedPlist[index]['c_id'], 

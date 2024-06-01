@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:biit_directors_dashbooard/Model/DifficultyModel.dart';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.7:3000/';
+  String apiUrl='http://192.168.3.92:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -585,7 +586,7 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
 
   ///////////////////////////////////////////////////////Session///////////////////////////////////////////////////////////////////////////////
 
-  Future<int> loadSession() async {
+  Future<int> loadFirstSessionId() async {
     dynamic sid;
     try {
       Uri uri = Uri.parse("${apiUrl}Session/getSession");
@@ -604,6 +605,8 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
       throw Exception('Error: $e');
     }
   }
+
+  
 
 /////////////////////////////////////////////////////////////Question/////////////////////////////////////////////////////////////////////
 
@@ -1108,12 +1111,11 @@ Future<List<dynamic>> loadCourseGridViewWeightageWithSpecificHeader(int cid, int
   try {
     Uri uri = Uri.parse('${apiUrl}GridView_Weightage/getCourseGridViewWeightageWithSpecificHeader/$cid/$hid');
     var response = await http.get(uri);
-    print(response.statusCode);
+  
 
     if (response.statusCode == 200) {
       list = jsonDecode(response.body);
-      print('API Response Body: ${response.body}'); // Print the raw response
-      print('Parsed List: $list'); // Print the parsed list
+    
     } else {
       throw Exception('Failed to load clo grid weightage');
     }
@@ -1157,5 +1159,126 @@ Future<List<dynamic>>loadFacultyWithEnabledStatus() async {
     }
     return flist;
   }
+
+  ////////////////////////////////////////////////////////Assign & UnAssign Courses///////////////////////////////////////////////////////
+  
+  Future<List<dynamic>> loadUnAssignedCourses(int? id) async {
+    List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse(
+          '${APIHandler().apiUrl}AssignedCourses/getUnAssignedCourses/$id');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+       
+      }
+      return list;
+    } 
+    catch (e) {
+     throw(e.toString());
+      }
+    }
+
+    Future<List<dynamic>> searchUnAssignedCourses(String query, int fid) async {
+  List<dynamic> list = [];
+  try {
+    Uri url = Uri.parse('${apiUrl}AssignedCourses/searchUnAssignedCourses/$fid?search=$query');
+    var response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+    } else {
+      throw ('Failed to search unAssigned Courses');
+    }
+  } catch (e) {
+    throw ('Error: $e');
+  }
+  return list;
+}
+
+//////////////////////////////////////////////////////////////Difficulty////////////////////////////////////////////////////////////////
+
+Future<int> updateDifficulty(Difficulty difficulty) async {
+  Uri url = Uri.parse('${apiUrl}Difficulty/postDifficulty');
+
+  try {
+    final http.Response response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(difficulty.toJson()),
+    );
+    return response.statusCode;
+  } catch (e) {
+    throw (e.toString());
+  }
+}
+
+//////////////////////////////////////////////////////Session HOD////////////////////////////////////////////////////////////////////////
+Future<List<dynamic>> loadSession() async {
+    List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse(
+          '${APIHandler().apiUrl}Session/getSession');
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+       
+      }
+      return list;
+    } 
+    catch (e) {
+     throw(e.toString());
+      }
+    }
+
+Future<int> addSession(
+      String sname, int year, String status) async {
+    String url = "${apiUrl}Session/addSession";
+    var obj = {
+      's_name': sname,
+      'year': year,
+      'status': status
+    };
+    var json = jsonEncode(obj);
+    Uri uri = Uri.parse(url);
+    var response = await http.post(uri,
+        body: json,
+        headers: {"Content-Type": "application/json; charset=UTF-8"});
+    return response.statusCode;
+  }
+
+ Future<int> updateSession(int sid, String sname, int year) async {
+    Uri url = Uri.parse('${apiUrl}Session/editSession/$sid');
+    try {
+      var response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          's_name': sname,
+          'year': year,
+        }),
+      );
+      return response.statusCode;
+    } catch (error) {
+      throw Exception('Error: $error');
+    }
+  }
+
+Future<int> updateSessionStatus(int sid) async {
+  Uri url = Uri.parse('${apiUrl}Session/updateStatusOfSession/$sid');
+  try {
+    var response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+    );
+    return response.statusCode;
+  } catch (error) {
+    throw Exception('Error: $error');
+  }
+}
 
 }

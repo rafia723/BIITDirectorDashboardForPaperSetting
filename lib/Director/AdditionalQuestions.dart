@@ -8,8 +8,10 @@ class AdditionlQuestions extends StatefulWidget {
   final String coursename;
   final String ccode;
    final int pid;
-  const AdditionlQuestions({
+  
+   const AdditionlQuestions({
     Key? key,
+ 
      required this.cid,
     required this.ccode,
     required this.coursename,
@@ -49,6 +51,25 @@ loadQuestionsWithPendingStatus(widget.pid);
       qlist = await APIHandler().loadQuestionsWithPendingStatus(pid);
       setState(() {
       });
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> loadQuestionsWithUploadedStatus(int pid) async {
+    try {
+      qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
+      setState(() {});
     } catch (e) {
       if (mounted) {
         showDialog(
@@ -206,7 +227,12 @@ loadQuestionsWithPendingStatus(widget.pid);
                                             pid: widget.pid,
                                             cid: widget.cid,
                                             ccode: widget.ccode,
-                                            coursename: widget.coursename)));
+                                            coursename: widget.coursename))
+                                            );
+                                              setState(() {
+                                          loadQuestionsWithUploadedStatus(widget.pid);
+                                        });
+                                            
                      
                             }, icon: const Icon(Icons.check)),
                           ),

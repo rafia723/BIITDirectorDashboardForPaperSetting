@@ -23,6 +23,7 @@ class PaperApproval extends StatefulWidget {
 
 class _PaperApprovalState extends State<PaperApproval> {
   List<dynamic> plist = [];
+   List<dynamic> aplist = [];
   List<dynamic> qlist = [];
   dynamic paperId;
   String? duration;
@@ -113,7 +114,7 @@ class _PaperApprovalState extends State<PaperApproval> {
 
   Future<void> loadSession() async {
     try {
-      sid = await APIHandler().loadSession();
+      sid = await APIHandler().loadFirstSessionId();
       setState(() {});
     } catch (e) {
       if (mounted) {
@@ -237,6 +238,25 @@ class _PaperApprovalState extends State<PaperApproval> {
     } catch (e) {
       if (mounted) {
         showErrorDialog(context, 'Error posting Comment');
+      }
+    }
+  }
+
+Future<void> loadApprovedPapersData() async {
+    try {
+      aplist = await APIHandler().loadApprovedPapers();
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error loading approved papers'),
+              content: Text(e.toString()),
+            );
+          },
+        );
       }
     }
   }
@@ -606,18 +626,23 @@ class _PaperApprovalState extends State<PaperApproval> {
                                     ),
                                     IconButton(
                                       onPressed: () {
-                                        addFeedbackData(commentController.text,
+                                         if(mounted){
+                                  showErrorDialog(context, 'Enter comment first');
+                                }else{
+                                         addFeedbackData(commentController.text,
                                             widget.pid, qid);
+                                }
                                       },
                                       icon: const Icon(Icons.send),
                                     ),
                                     IconButton(
                                       onPressed: () async {
-                                        await Navigator.pushReplacement(
+                                        await Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 AdditionlQuestions(
+                                                
                                               pid: paperId,
                                               ccode: widget.ccode,
                                               cid: widget.cid,
@@ -625,6 +650,9 @@ class _PaperApprovalState extends State<PaperApproval> {
                                             ),
                                           ),
                                         );
+                                        setState(() {
+                                          loadQuestionsWithUploadedStatus(widget.pid);
+                                        });
                                        
                                       },
                                       icon:
@@ -649,7 +677,11 @@ class _PaperApprovalState extends State<PaperApproval> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => const DRTApprovedPapers()));
+                            setState(() {
+                              loadApprovedPapersData();
+                            });
                   },
+
                   buttonText: 'Approve')
               : const SizedBox(),
         ]),

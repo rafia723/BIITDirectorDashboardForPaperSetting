@@ -120,7 +120,7 @@ class _ManagePaperState extends State<ManagePaper> {
 
   Future<void> loadSession() async {
     try {
-      sid = await APIHandler().loadSession();
+      sid = await APIHandler().loadFirstSessionId();
       setState(() {});
     } catch (e) {
       if (mounted) {

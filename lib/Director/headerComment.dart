@@ -120,7 +120,14 @@ class _HeaderCommentState extends State<HeaderComment> {
                       children: [
                         IconButton(
                             onPressed: () {
-                              addFeedbackData(commentController.text, widget.pid, widget.qid);
+                              if(commentController.text==''){
+                                if(mounted){
+                                  showErrorDialog(context, 'Enter comment first');
+                                }
+                              }else{
+                                   addFeedbackData(commentController.text, widget.pid, widget.qid);
+                              }
+                             
                             }, icon: const Icon(Icons.send))
                       ],
                     )

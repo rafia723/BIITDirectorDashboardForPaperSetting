@@ -37,7 +37,8 @@ class _ManageTopicsState extends State<ManageTopics> {
   int? selectedTopicID; //in update mode
   String? selectedTopicName; //in update mode
 
-   Future<void> loadCoursesofSenior() async {
+
+ Future<void> loadCoursesofSenior() async {
     try {
       clist=await APIHandler().loadCoursesWithSeniorRole();
         setState(() {});
@@ -49,9 +50,11 @@ class _ManageTopicsState extends State<ManageTopics> {
     }
   }
 
-  Future<void> loadClosWithApprovedStatus(int cid) async {
+Future<void> loadClosWithApprovedStatus(int cid) async {
     try {
       clolist=await APIHandler().loadApprovedClos(cid);
+      // Initialize cloCheckBoxes with false values
+        cloCheckBoxes = List<bool>.filled(clolist.length, false);
         setState(() {});
       } 
      catch (e) {
@@ -60,7 +63,9 @@ class _ManageTopicsState extends State<ManageTopics> {
       }
     }
   }
-  Future<void> loadTopicofCourse(int cid) async {
+
+  
+   Future<void> loadTopicofCourse(int cid) async {
     try {
       topiclist=await APIHandler().loadTopics(cid);
         setState(() {});

@@ -87,7 +87,7 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
 
   Future<void> loadSession() async {
     try {
-      sid = await APIHandler().loadSession();
+      sid = await APIHandler().loadFirstSessionId();
       setState(() {});
     } catch (e) {
       if (mounted) {
@@ -186,7 +186,7 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
                     children: [
                       IconButton(
                         onPressed: () {
-                          Navigator.push(
+                          Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
                                   builder: (context) => HeaderComment(

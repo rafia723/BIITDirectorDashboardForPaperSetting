@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+
 
 import 'dart:convert';
 import 'package:biit_directors_dashbooard/HOD/AssignCourseToFaculty.dart';
@@ -28,33 +28,14 @@ class _AssignedCoursesState extends State<AssignedCourses> {
         aclist = jsonDecode(response.body);
         setState(() {});
       } else if(response.statusCode == 404){
-         showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Data not found for the given id'),
-          );
-        },
-      );
-      }else{
-         showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Failed to load assigned courses. Please try again later.'),
-          );
-        },
-      );
+          if(mounted){
+        showErrorDialog(context, 'Data not found for the given id');
+      }
       }
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('An error occurred. Please try again later.'),
-          );
-        },
-      );
+      if(mounted){
+        showErrorDialog(context, e.toString());
+      }
     }
   }
 
@@ -103,8 +84,9 @@ class _AssignedCoursesState extends State<AssignedCourses> {
 
 
    void add() {
-    Navigator.of(context).push(
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) =>  AssignCoursetoFaculty(facultyname: widget.facultyname,fid:widget.fid)),
+      
     );
   }
   @override

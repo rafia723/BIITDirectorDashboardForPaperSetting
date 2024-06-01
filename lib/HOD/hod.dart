@@ -1,3 +1,5 @@
+import 'package:biit_directors_dashbooard/HOD/SessionScreen.dart';
+import 'package:biit_directors_dashbooard/HOD/manageDifficulty.dart';
 import 'package:flutter/material.dart';
 import 'package:biit_directors_dashbooard/HOD/AssignRole.dart';
 import 'package:biit_directors_dashbooard/HOD/AssignCourseToFaculty.dart';
@@ -17,6 +19,7 @@ class _HODState extends State<HOD> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: customAppBar(context: context, title: 'HOD Dashboard'),
       body: Stack(
         children: [
@@ -33,7 +36,7 @@ class _HODState extends State<HOD> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(height: 10),
+                  Container(height: 20),
                   const Text(
                     'Welcome, Dr. Munir!', // Replace with the actual user's name
                     style:
@@ -41,111 +44,191 @@ class _HODState extends State<HOD> {
                   ),
                   const SizedBox(height: 80),
                   SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
                     child: Column(
                       children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const GridViewScreen(),
+                        Row(
+                          children: [
+                            SizedBox(
+                              height: 80,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const GridViewScreen(),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: customButtonColor,
+                                  minimumSize: const Size(160, 80),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    side: const BorderSide(color: Colors.black),
+                                  ),
+                                ),
+                                child: const Text(" Manage \nClo's Grid",
+                                    style: TextStyle(color: Colors.black)),
                               ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: customButtonColor,
-                            minimumSize: const Size(160, 80),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              side: const BorderSide(color: Colors.black),
                             ),
+                              const SizedBox(width: 20),
+                        SizedBox(
+                           height: 80,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const AssignCoursetoFaculty(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: customButtonColor,
+                              minimumSize: const Size(160, 80),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                side: const BorderSide(color: Colors.black),
+                              ),
+                            ),
+                            child: const Text('Assign \nCourses',
+                                style: TextStyle(color: Colors.black)),
                           ),
-                          child: const Text(" Manage \nClo's Grid",
-                              style: TextStyle(color: Colors.black)),
                         ),
-                        const SizedBox(height: 30),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const AssignCoursetoFaculty(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: customButtonColor,
-                            minimumSize: const Size(160, 80),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              side: const BorderSide(color: Colors.black),
-                            ),
-                          ),
-                          child: const Text('Assign \nCourses',
-                              style: TextStyle(color: Colors.black)),
+                          ],
                         ),
-                        const SizedBox(height: 30),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const FacultyList(),
+                      
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            SizedBox(
+                               height: 80,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const FacultyList(),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: customButtonColor,
+                                  minimumSize: const Size(160, 80),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    side: const BorderSide(color: Colors.black),
+                                  ),
+                                ),
+                                child: const Text('Faculty \nDetails',
+                                    style: TextStyle(color: Colors.black)),
                               ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: customButtonColor,
-                            minimumSize: const Size(160, 80),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              side: const BorderSide(color: Colors.black),
                             ),
+                             const SizedBox(width: 20),
+                        SizedBox(
+                           height: 80,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const CourseList(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: customButtonColor,
+                              minimumSize: const Size(160, 80),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                side: const BorderSide(color: Colors.black),
+                              ),
+                            ),
+                            child: const Text('Course \nDetails',
+                                style: TextStyle(color: Colors.black)),
                           ),
-                          child: const Text('Faculty \nDetails',
-                              style: TextStyle(color: Colors.black)),
                         ),
-                        const SizedBox(height: 30),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const CourseList(),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: customButtonColor,
-                            minimumSize: const Size(160, 80),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              side: const BorderSide(color: Colors.black),
-                            ),
-                          ),
-                          child: const Text('Course \nDetails',
-                              style: TextStyle(color: Colors.black)),
+                          ],
                         ),
-                        const SizedBox(height: 30),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const AssignRole(),
+                       
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            SizedBox(
+                               height: 80,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const AssignRole(),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: customButtonColor,
+                                  minimumSize: const Size(160, 80),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    side: const BorderSide(color: Colors.black),
+                                  ),
+                                ),
+                                child: const Text('Assign Role',
+                                    style: TextStyle(color: Colors.black)),
                               ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: customButtonColor,
-                            minimumSize: const Size(160, 80),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              side: const BorderSide(color: Colors.black),
                             ),
+                             const SizedBox(width: 20),
+                        SizedBox(
+                           height: 80,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ManageDifficulty(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: customButtonColor,
+                              minimumSize: const Size(160, 80),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                side: const BorderSide(color: Colors.black),
+                              ),
+                            ),
+                            child: const Text('Manage \nDifficulty',
+                                style: TextStyle(color: Colors.black)),
                           ),
-                          child: const Text('Assign Role',
-                              style: TextStyle(color: Colors.black)),
+                        ),
+                          ],
+                        ),
+
+                         
+                         const SizedBox(height: 20),
+                        SizedBox(
+                           height: 80,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SessionScreen(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: customButtonColor,
+                              minimumSize: const Size(160, 80),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                side: const BorderSide(color: Colors.black),
+                              ),
+                            ),
+                            child: const Text('Manage \nSessions',
+                                style: TextStyle(color: Colors.black)),
+                          ),
                         ),
                       ],
                     ),

@@ -24,78 +24,45 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
   Map<String, bool> checkedCourses = {};
   String? checkedCourseId;
 
+ 
   Future<void> loadFaculty() async {
     try {
-      Uri uri = Uri.parse(
-          "${APIHandler().apiUrl}Faculty/getFacultyWithEnabledStatus");
-      var response = await http.get(uri);
-      if (response.statusCode == 200) {
-        flist = jsonDecode(response.body);
+        flist = await APIHandler().loadFacultyWithEnabledStatus();
         setState(() {});
-      } else {
-        throw Exception('Failed to load Faculty');
+      } 
+     catch (e) {
+      if(mounted){
+        showErrorDialog(context, e.toString());
       }
-    } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Error loading faculty: $e'), // Show error details
-          );
-        },
-      );
     }
   }
-
-  Future<void> loadCourse() async {
+   Future<void> loadCourse() async {
     try {
-      Uri uri =
-          Uri.parse('${APIHandler().apiUrl}Course/getCourseWithEnabledStatus');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        clist = jsonDecode(response.body);
+     
+        clist = await APIHandler().loadCourseWithEnabledStatus();
         setState(() {});
-      } else {
-        throw Exception('Failed to load course');
-      }
+      
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading course'),
-          );
-        },
-      );
+      if(mounted){
+   showErrorDialog(context, e.toString());
+      }
+     
     }
   }
+ 
 
   Future<void> loadUnAssignedCourses(int? id) async {
     try {
-      Uri uri = Uri.parse(
-          '${APIHandler().apiUrl}AssignedCourses/getUnAssignedCourses/$id');
-      var response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        unAssignedCoursesList = jsonDecode(response.body);
+        unAssignedCoursesList = await APIHandler().loadUnAssignedCourses(id);
         setState(() {});
-      } else {
-        throw Exception('Failed to load unassignedcourse');
       }
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Error loading unassignedcourse'),
-            );
-          },
-        );
+     catch (e) {
+     if(mounted){
+        showErrorDialog(context, e.toString());
       }
     }
   }
+
 
   Future<void> assignCourse(int cid, int fid) async {
     String url = "${APIHandler().apiUrl}AssignedCourses/assignCourse/$cid/$fid";
@@ -117,32 +84,37 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
     }
   }
 
-  Future<void> searchCourses(String query) async {
+  
+   Future<void> searchCourses(String query) async {
     try {
       if (query.isEmpty) {
         loadCourse();
         return;
       }
-      Uri url = Uri.parse(
-          '${APIHandler().apiUrl}Course/searchCourseWithEnabledStatus?search=$query');
-      var response = await http.get(url);
-      if (response.statusCode == 200) {
-        clist = jsonDecode(response.body);
+        clist = await APIHandler().searchCourseWithEnabledStatus(query);
         setState(() {});
-      } else {
-        throw Exception('Failed to search courses');
-      }
+      
     } catch (e) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error searching courses'),
-          );
-        },
-      );
+       if(mounted){
+        showErrorDialog(context, e.toString());
+      }
     }
   }
+Future<void> searchUnAssignedCourses(String query) async {
+  try {
+    if (query.isEmpty) {
+      loadUnAssignedCourses(widget.fid ?? int.tryParse(selectedFacultyId ?? '') ?? 0);
+      return;
+    }
+
+    unAssignedCoursesList = await APIHandler().searchUnAssignedCourses(query, widget.fid ?? int.tryParse(selectedFacultyId ?? '') ?? 0);
+    setState(() {});
+  } catch (e) {
+    if (mounted) {
+      showErrorDialog(context, e.toString());
+    }
+  }
+}
 
   @override
   void initState() {
@@ -243,7 +215,15 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                   child: TextField(
                     controller: search,
                     onChanged: (value) async {
-                      await searchCourses(value);
+                      if(selectedFacultyId == null && widget.fid == null){
+                            await searchCourses(value);
+                      }
+                      else if(selectedFacultyId != null || widget.fid != null){
+                        await searchUnAssignedCourses(value);
+                        setState(() {
+                          
+                        });
+                      }
                     },
                     decoration: const InputDecoration(
                       floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -300,7 +280,9 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                                                           '') ??
                                                   0);
                                         } catch (e) {
-                                          print('Error assigning course: $e');
+                                          if(mounted){
+                                            showErrorDialog(context, e.toString());
+                                          }
                                         }
                                       }
                                     },
@@ -347,7 +329,9 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
                                               int.parse(
                                                   selectedFacultyId ?? ''));
                                         } catch (e) {
-                                          print('Error assigning course: $e');
+                                          if(mounted){
+                                            showErrorDialog(context, e.toString());
+                                          }
                                         }
                                       }
                                     }
@@ -366,3 +350,5 @@ class _AssignCoursetoFacultyState extends State<AssignCoursetoFaculty> {
     );
   }
 }
+
+
