@@ -25,7 +25,6 @@ class _ManagePaperState extends State<ManagePaper> {
   String? duration;
   String? degree;
   int tMarks = 0;
-  //int? tMarks;
   String? session;
   String? term;
   int? noOfQuestions;
@@ -45,13 +44,56 @@ class _ManagePaperState extends State<ManagePaper> {
   int hardCount = 0;
   dynamic difficulty;
   List<dynamic> difficultyList = [];
-  List<dynamic> paperGridWeightage=[];
+  List<dynamic> paperGridWeightageOfTerm = [];
+  List<int> cloIdsShouldbeAddedList = [];
+  List<int> cloIdzInQuestions = []; // Updated to List<int>
+  Set<int> missingCLOs = {};
+  Set<int> missingCLOsOnCheckOrUnchecked = {};
+  Map<int, Set<int>> selectedCLOs = {};
 
   @override
   void initState() {
     super.initState();
     loadTeachers();
     initializeData();
+  }
+// // When a question is selected (checkbox checked), add its CLO ID(s) to the list
+// void addToSelectedCLOs(int questionId, int topicId) async {
+//   try {
+//     // Fetch CLOs mapped with the associated topic
+//     List<dynamic> cloList = await APIHandler().loadClosMappedWithTopic(topicId);
+//     if (cloList.isNotEmpty) {
+//       selectedCLOs[questionId] = (selectedCLOs[questionId] ?? {})..addAll(cloList.map((clo) => clo['clo_id']));
+//     }
+//   } catch (e) {
+//     print('Error fetching CLOs: $e');
+//   }
+// }
+
+// // When a question is deselected (checkbox unchecked), remove its CLO ID(s) from the list
+// void removeFromSelectedCLOs(int questionId) {
+//   selectedCLOs.remove(questionId);
+// }
+
+  void addToSelectedCLOs(int questionId, int topicId) async {
+    try {
+      // Fetch CLOs mapped with the associated topic
+      List<dynamic> cloList =
+          await APIHandler().loadClosMappedWithTopic(topicId);
+      if (cloList.isNotEmpty) {
+        selectedCLOs[questionId] = (selectedCLOs[questionId] ?? {})
+          ..addAll(cloList.map((clo) => clo['clo_id']));
+        // Update missing CLOs after adding to selected CLOs
+      }
+    } catch (e) {
+      print('Error fetching CLOs: $e');
+    }
+  }
+
+// When a question is deselected (checkbox unchecked), remove its CLO ID(s) from the list
+  void removeFromSelectedCLOs(int questionId) {
+    selectedCLOs.remove(questionId);
+    // Update missing CLOs after removing from selected CLOs
   }
 
   Future<void> initializeData() async {
@@ -60,6 +102,7 @@ class _ManagePaperState extends State<ManagePaper> {
       await loadPaperHeaderData(widget.cid!, sid!);
     }
     if (paperId != null) {
+      //  await loadClosDataForQuestions();
       await loadQuestion(paperId);
 
       // Deduct marks for questions already marked as uploaded
@@ -68,9 +111,11 @@ class _ManagePaperState extends State<ManagePaper> {
           int qMarks = question['q_marks'];
           if (mounted) {
             setState(() {
-              //  counter = (counter! - qMarks);
               tMarks += qMarks;
-              qNoCounter--;
+              if (qNoCounter != null) {
+                qNoCounter--;
+              }
+
               if (question['q_difficulty'] == 'Easy') {
                 easyCount--;
               }
@@ -84,7 +129,75 @@ class _ManagePaperState extends State<ManagePaper> {
           }
         }
       }
-      await loadClosWeightageofSpecificCourseAndHeaderName(widget.cid!, session!);
+      cloIdsShouldbeAddedList.clear();
+      for (var item in paperGridWeightageOfTerm) {
+        cloIdsShouldbeAddedList.add(item['clo_id']);
+      }
+      print('clo idx should be included$cloIdsShouldbeAddedList');
+
+      // Initialize cloIdzInQuestions for each selected question
+      for (var question in qlist) {
+        if (question['q_status'] == 'uploaded') {
+          question['cloIdzInQuestions'] = [];
+        }
+      }
+
+      // Collect CLO IDs only for selected questions
+      for (var question in qlist) {
+        if (question['q_status'] == 'uploaded') {
+          final fetchedTopicId = question['t_id'];
+          if (cloMap.containsKey(fetchedTopicId)) {
+            for (var clo in cloMap[fetchedTopicId]!) {
+              question['cloIdzInQuestions'].add(clo['clo_id']);
+            }
+          }
+        }
+      }
+      cloIdzInQuestions.clear();
+      // Collect all unique CLO IDs in selected questions
+      for (var question in qlist) {
+        if (question['q_status'] == 'uploaded') {
+          cloIdzInQuestions.addAll(
+              (question['cloIdzInQuestions'] as List<dynamic>).cast<int>());
+        }
+      }
+
+      // Remove duplicates from cloIdzInQuestions
+      cloIdzInQuestions = cloIdzInQuestions.toSet().toList();
+      print('cloidzod selected questions $cloIdzInQuestions');
+
+      missingCLOs.clear();
+      // Check for missing CLOs
+      missingCLOs =
+          cloIdsShouldbeAddedList.toSet().difference(cloIdzInQuestions.toSet());
+    }
+  }
+
+  Future<void> loadClosDataForQuestions() async {
+    if (paperId != null) {
+      for (var question in qlist) {
+        final fetchedTopicId = question['t_id'];
+        await loadClosMappedWithTopicData(fetchedTopicId);
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> updateStatus(int id, dynamic newStatus) async {
+    try {
+      dynamic code = await APIHandler()
+          .updateQuestionStatusFromPendingToUploaded(id, newStatus);
+      if (mounted) {
+        if (code == 200) {
+          loadQuestion(paperId);
+        } else {
+          throw Exception('Non-200 response code');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
     }
   }
 
@@ -96,15 +209,20 @@ class _ManagePaperState extends State<ManagePaper> {
         paperId = plist[0]['p_id'];
         duration = plist[0]['duration'];
         degree = plist[0]['degree'];
-        // tMarks = plist[0]['t_marks'];
-        // counter = tMarks;
         session = plist[0]['session'];
         term = plist[0]['term'];
+        await loadClosWeightageofSpecificCourseAndHeaderName(
+            widget.cid!, term!);
+        if (mounted) {
+          setState(() {
+            //  print(paperGridWeightageOfTerm);
+          });
+        }
         noOfQuestions = plist[0]['NoOfQuestions'];
 
         await loadDifficulty(noOfQuestions!);
         setState(() {
-          print(difficultyList);
+          //print(difficultyList);
         });
         qNoCounter = noOfQuestions;
         year = plist[0]['year'];
@@ -112,15 +230,7 @@ class _ManagePaperState extends State<ManagePaper> {
       }
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error..'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -153,15 +263,7 @@ class _ManagePaperState extends State<ManagePaper> {
       setState(() {});
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -178,15 +280,7 @@ class _ManagePaperState extends State<ManagePaper> {
       });
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -199,15 +293,7 @@ class _ManagePaperState extends State<ManagePaper> {
       });
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -224,15 +310,7 @@ class _ManagePaperState extends State<ManagePaper> {
       setState(() {});
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -240,54 +318,25 @@ class _ManagePaperState extends State<ManagePaper> {
   Future<void> loadClosMappedWithTopicData(int tid) async {
     try {
       List<dynamic> list = await APIHandler().loadClosMappedWithTopic(tid);
-      cloMap[tid] = list;
+      if (list.isNotEmpty) {
+        cloMap[tid] = list;
+      }
       setState(() {});
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text('Error loading CLOs mapped with topic: $e'),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
 
-  Future<void> updateStatus(int id, dynamic newStatus) async {
+  Future<void> loadClosWeightageofSpecificCourseAndHeaderName(
+      int cid, String term) async {
     try {
-      dynamic code = await APIHandler()
-          .updateQuestionStatusFromPendingToUploaded(id, newStatus);
-      if (mounted) {
-        if (code == 200) {
-          loadQuestion(paperId);
-        } else {
-          throw Exception('Non-200 response code');
-        }
+      List<dynamic> list = await APIHandler()
+          .loadClosWeightageofSpecificCourseAndHeaderName(cid, term);
+      if (list.isNotEmpty) {
+        paperGridWeightageOfTerm = list;
       }
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error changing status of question'),
-              content: Text(e.toString()), // Optionally show the error message
-            );
-          },
-        );
-      }
-    }
-  }
-
-
-   Future<void> loadClosWeightageofSpecificCourseAndHeaderName(
-      int cid, String name) async {
-    try {
-      paperGridWeightage = await APIHandler()
-          .loadClosWeightageofSpecificCourseAndHeaderName(cid, name);
       setState(() {});
     } catch (e) {
       if (mounted) {
@@ -483,12 +532,25 @@ class _ManagePaperState extends State<ManagePaper> {
                 ),
                 Row(
                   children: [
-                    const Text('Easy: ',style: TextStyle(fontWeight: FontWeight.bold),),
-                     Text('$easyCount'),
-                    const Text('  Medium: ',style: TextStyle(fontWeight: FontWeight.bold),),
-                      Text('$mediumCount',),
-                    const Text('  Hard: ',style: TextStyle(fontWeight: FontWeight.bold),),
-                    Text('$hardCount',),
+                    const Text(
+                      'Easy: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text('$easyCount'),
+                    const Text(
+                      '  Medium: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '$mediumCount',
+                    ),
+                    const Text(
+                      '  Hard: ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '$hardCount',
+                    ),
                   ],
                 ),
 
@@ -511,7 +573,6 @@ class _ManagePaperState extends State<ManagePaper> {
                   loadClosMappedWithTopicData(fetchedTopicId);
                 }
                 final cloList = cloMap[fetchedTopicId] ?? [];
-
                 return Card(
                   elevation: 5,
                   shape: RoundedRectangleBorder(
@@ -534,29 +595,7 @@ class _ManagePaperState extends State<ManagePaper> {
                           Checkbox(
                               value: question['q_status'] == 'uploaded',
                               onChanged: (bool? newValue) async {
-                                //   if(qNoCounter==0&&counter==0&&newValue==true){
-                                // if (difficultyList.isNotEmpty &&
-                                //     ((easyCount >
-                                //                 (difficultyList[0]['Easy'] ??
-                                //                     0) ||
-                                //             easyCount < 0) ||
-                                //         (mediumCount >
-                                //                 (difficultyList[0]['Medium'] ??
-                                //                     0) ||
-                                //             mediumCount < 0) ||
-                                //         (hardCount >
-                                //                 (difficultyList[0]['Hard'] ??
-                                //                     0) ||
-                                //             hardCount < 0)) ||
-                                //     (newValue == true)) {
-                                //   if (mounted) {
-                                //     showErrorDialog(context,
-                                //         'Easy should be ${difficultyList[0]['Easy']},Medium should be ${difficultyList[0]['Medium']},Hard should be ${difficultyList[0]['Hard']}');
-                                //   }
-                                // }
-
-                                if (qNoCounter == 0 &&
-                                    newValue == true) {
+                                if (qNoCounter == 0 && newValue == true) {
                                   if (mounted) {
                                     showErrorDialog(context,
                                         'You cannot add more questions because the total number of questions have reached their limit.');
@@ -584,7 +623,13 @@ class _ManagePaperState extends State<ManagePaper> {
                                         hardCount--;
                                         print('hard $hardCount');
                                       }
-
+//  addToSelectedCLOs(
+//               question['q_id'],
+//               question['t_id']
+//           );
+                                      setState(() {
+                                        initializeData();
+                                      });
                                       //   counter = (counter - qMarks);
                                     });
                                   } else if (newValue == false) {
@@ -608,6 +653,12 @@ class _ManagePaperState extends State<ManagePaper> {
                                         hardCount++;
                                         print('hard $hardCount');
                                       }
+                                      //                               removeFromSelectedCLOs(
+                                      //     question['q_id']
+                                      // );
+                                      setState(() {
+                                        initializeData();
+                                      });
                                     });
                                   }
                                 }
@@ -638,8 +689,25 @@ class _ManagePaperState extends State<ManagePaper> {
                               Text('${question['q_difficulty']},'),
                               Text('${question['q_marks']},'),
                               Text('$facultyName,'),
-                              Text(
-                                  'CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
+                              FutureBuilder<List<int>>(
+                                future: APIHandler()
+                                    .loadCloNumberOfSpecificCloids(cloList
+                                        .map((clo) => clo['clo_id'])
+                                        .toList()),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const CircularProgressIndicator();
+                                  } else if (snapshot.hasError) {
+                                    return const Text(
+                                        'Error loading CLO numbers');
+                                  } else {
+                                    final cloNumbers = snapshot.data ?? [];
+                                    return Text(
+                                        'CLOs: ${cloNumbers.join(', ')}');
+                                  }
+                                },
+                              ),
                             ],
                           ),
                         ],
@@ -678,12 +746,39 @@ class _ManagePaperState extends State<ManagePaper> {
                         easyCount == 0 &&
                         mediumCount == 0 &&
                         hardCount == 0) {
-                      int code = await APIHandler()
-                          .updatePaperStatusToUploaded(paperId);
-                      if (code == 200) {
-                        if (mounted) {
-                          Navigator.pop(context);
-                          showSuccesDialog(context, 'Submitted');
+                      initializeData();
+                      if (missingCLOs.isNotEmpty) {
+                        // print('Missing $missingCLOs');
+                        //   print('Missing /hhjj $missingCLOsOnCheckOrUnchecked');
+                        //Display missing clo
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text('Missing CLOs'),
+                              content:
+                                  // Text(
+                                  //     'Some CLOs are missing $missingCLOs'),
+                                  const Text('Some CLOs are missing'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      } else {
+                        int code = await APIHandler()
+                            .updatePaperStatusToUploaded(paperId);
+                        if (code == 200) {
+                          if (mounted) {
+                            Navigator.pop(context);
+                            showSuccesDialog(context, 'Submitted');
+                          }
                         }
                       }
                     } else {

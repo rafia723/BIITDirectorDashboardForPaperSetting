@@ -450,6 +450,12 @@ class _PaperHeaderState extends State<PaperHeader> {
               Center(
                   child: customElevatedButton(
                       onPressed: () {
+                        if(noOfQuestionsController.text==''|| durationController.text==''|| degreeController.text==''
+                        ||selectedtermValue==''||_dateTime==null){
+                          showErrorDialog(context, 'Please provide all necessary information');
+                        }else{
+
+                        
                          APIHandler()
                             .addPaperHeader(
                           durationController.text,
@@ -537,7 +543,7 @@ class _PaperHeaderState extends State<PaperHeader> {
                             
                           }
                         });
-                      
+                        }
                       },
                       buttonText: 'Save')),
                         const SizedBox(height: 30,),

@@ -35,6 +35,8 @@ class _PaperSettingState extends State<PaperSetting> {
   String? duration;
   String? degree;
   int tMarks=0;
+   Map<int, String> facultyNames = {}; 
+   dynamic fname;
   String? session;
   String? term;
   int? questions;
@@ -49,7 +51,7 @@ class _PaperSettingState extends State<PaperSetting> {
   String? qstatus;
   int? tid;
   int? pid;
-  int? fid;
+  dynamic facultyId;
   Uint8List? selectedImage;
   List<dynamic> topicList = [];
   List<bool> isCheckedList = [];
@@ -88,9 +90,38 @@ class _PaperSettingState extends State<PaperSetting> {
     if (selectedTopicId != null) {
       cloMappedWithSelectedTopic =await APIHandler().loadClosMappedWithTopic(selectedTopicId!);
     }
+
+      showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Add Questions'),
+        content: const Text('Please make sure to add at least one question of each difficulty level (Easy, Medium, Hard) for each topic.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
   }
 
- 
+  Future<void> loadFacultyName(int facultyid) async {
+    try {
+      fname = await APIHandler().loadFacultyName(facultyid);
+      setState(() {
+        facultyNames[facultyid] = fname;
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
+    }
+  }
 
 
 
@@ -188,11 +219,16 @@ showDialog(
       
     }
   }
-
+ 
   Future<void> loadQuestion(int pid) async {
     try {
      qlist=await APIHandler().loadQuestion(pid);
-    
+        for (var question in qlist) {
+        facultyId = question['f_id'];
+        if (facultyId != null) {
+          await loadFacultyName(facultyId!);
+        }
+      }
      setState(() {
        
      });
@@ -660,6 +696,8 @@ showDialog(
       final question = qlist[index];
       final imageUrl = question['q_image']; 
       final fetchedTopicId = question['t_id'];
+       facultyId = question['f_id'];
+ final facultyName = facultyNames[facultyId] ?? 'Loading...';
 
       // Fetch CLOs for the current topic if not already fetched
       if (!cloMap.containsKey(fetchedTopicId)) {
@@ -702,7 +740,27 @@ showDialog(
                 children: [
                   Text('${question['q_difficulty']},'),
                   Text('${question['q_marks']},'),
-                   Text('CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
+                   Text('$facultyName,'),
+                    FutureBuilder<List<int>>(
+                                future: APIHandler()
+                                    .loadCloNumberOfSpecificCloids(cloList
+                                        .map((clo) => clo['clo_id'])
+                                        .toList()),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const CircularProgressIndicator();
+                                  } else if (snapshot.hasError) {
+                                    return const Text(
+                                        'Error loading CLO numbers');
+                                  } else {
+                                    final cloNumbers = snapshot.data ?? [];
+                                    return Text(
+                                        'CLOs: ${cloNumbers.join(', ')}');
+                                  }
+                                },
+                              ),
+                  // Text('CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
                 ],
               ),
             ],

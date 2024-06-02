@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/Model/DifficultyModel.dart';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.231.92:3000/';
+  String apiUrl='http://192.168.202.92:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -263,6 +263,33 @@ String url="${apiUrl}Course/addCourse";
 
 /////////////////////////////////////////////////////////////Faculty Module//////////////////////////////////////////////////////////////
  ////////////////////////////////////////////////////////////CLO//////////////////////////////////////////////////////////////////////////
+ 
+Future<List<int>> loadCloNumberOfSpecificCloids(List<dynamic> cloIds) async {
+  List<int> list = [];
+  try {
+    // Convert the list of cloIds to a comma-separated string
+    String cloIdsString = cloIds.join(',');
+
+    // Construct the URL with the query parameter
+    Uri uri = Uri.parse('${apiUrl}Clo/getCloNumberofSpecificCloIds?clo_ids=$cloIdsString');
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      // Decode the JSON response
+      List<dynamic> decoded = jsonDecode(response.body);
+      
+      // Extract the clo_number field from each object and add it to the list
+      list = decoded.map((item) => item['clo_number'] as int).toList();
+    } else {
+      throw Exception('Failed to load clos');
+    }
+    return list;
+  } catch (e) {
+    throw Exception(e.toString());
+  }
+}
+  
+  
   Future<int> addClo(
       String cloText, int cId,String status) async {
     String url = "${apiUrl}Clo/addClo";
@@ -468,10 +495,12 @@ Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
       } else {
         throw Exception('Error....');
       }
-    } catch (e) {
+       return list;
+    } 
+    catch (e) {
       throw Exception('Failed to load clos mapped with topic');
     }
-    return list;
+   
   }
 
   ///////////////////////////////////////////////////////////SubTopics/////////////////////////////////////////////////////////////////////////////
