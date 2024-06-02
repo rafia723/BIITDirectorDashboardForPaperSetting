@@ -85,7 +85,7 @@ class _CLOGridState extends State<CLOGrid> {
 
   Future<void> loadClo(int cid) async {
     try {
-      clolist = await APIHandler().loadClo(cid);
+      clolist = await APIHandler().loadApprovedClos(cid);
       setState(() {});
       for (var clo in clolist) {
         await loadCloWeightage(clo['clo_id']);
@@ -101,7 +101,7 @@ class _CLOGridState extends State<CLOGrid> {
   Widget build(BuildContext context) {
     return Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: customAppBar(context: context, title: 'Settings'),
+        appBar: customAppBar(context: context, title: 'Clo Grid'),
         body: Stack(children: [
           Positioned.fill(
             child: Container(

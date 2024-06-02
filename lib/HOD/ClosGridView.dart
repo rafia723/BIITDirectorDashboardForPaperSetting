@@ -1,4 +1,5 @@
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/HOD/CloCheck.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
@@ -12,8 +13,9 @@ class GridViewScreen extends StatefulWidget {
 class _GridViewScreenState extends State<GridViewScreen> {
   Color customColor = const Color.fromARGB(255, 72, 238, 188);
   List<dynamic> clist = [];
-  String? selectedCourse; // Nullable initially
+  String? selectedCourseCode; // Nullable initially
   int? selectedCourseId;
+    String? selectedCourseText;
   List<dynamic> clolist = [];
   List<dynamic> cloGridHeaderList = [];
   int? selectedCloIndex; // Track the index of the selected CLO button
@@ -23,7 +25,8 @@ class _GridViewScreenState extends State<GridViewScreen> {
   TextEditingController quizController = TextEditingController();
   TextEditingController midController = TextEditingController();
   TextEditingController finalController = TextEditingController();
-  String selectedCLOText = ''; // Holds the text of the selected CLO button
+  String selectedCLONumber = ''; // Holds the number of the selected CLO button
+  String selectedCLOText='';
   List<dynamic> cloWeightageofCourse = [];
   List<dynamic> cloWeightageofclo = [];
   List<dynamic> data = [];
@@ -86,7 +89,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
 
   Future<void> loadClo(int cid) async {
     try {
-      clolist = await APIHandler().loadClo(cid);
+      clolist = await APIHandler().loadApprovedClos(cid);
       setState(() {});
       for (var clo in clolist) {
         await loadCloWeightage(clo['clo_id']);
@@ -117,23 +120,12 @@ class _GridViewScreenState extends State<GridViewScreen> {
       setState(() {});
       if (code == 200) {
         if (mounted) {
-          showDialog(
-            context: context,
-            builder: (context) {
-              Future.delayed(const Duration(seconds: 1), () {
-                Navigator.of(context).pop();
-              });
-              return const AlertDialog(
-                title: Text('updated...'),
-              );
-            },
-          );
+         showSuccesDialog(context, 'Updated..');
           asgController.clear();
           quizController.clear();
           midController.clear();
           finalController.clear();
           await loadCloWeightage(selectedCloId!);
-          setState(() {});
         }
       }
     } catch (e) {
@@ -226,14 +218,16 @@ class _GridViewScreenState extends State<GridViewScreen> {
                         hint: const Text(' Select Course '),
                         isExpanded: true,
                         elevation: 9,
-                        value: selectedCourse,
+                        value: selectedCourseCode,
                         items: clist.map((e) {
                           return DropdownMenuItem<String>(
                             value: e['c_code'],
                             onTap: () {
                               setState(() {
-                                selectedCourse = e['c_title'];
+                                selectedCourseCode = e['c_code'];
                                 selectedCourseId = e['c_id'];
+                                selectedCourseText=e['c_title'];
+
                               });
                             },
                             child: Text(
@@ -245,11 +239,11 @@ class _GridViewScreenState extends State<GridViewScreen> {
                         }).toList(),
                         onChanged: (String? newValue) async {
                           setState(() {
-                            selectedCourse = newValue!;
+                            selectedCourseCode = newValue!;
                             selectedCourseId = clist.firstWhere((course) =>
                                 course['c_code'] == newValue)['c_id'];
                             selectedCloIndex = null;
-                            selectedCLOText = '';
+                            selectedCLONumber = '';
                              index=0;
                           });
 
@@ -286,7 +280,24 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                   setState(() {
                                     selectedCloIndex = index;
                                     selectedCloId = entry.value['clo_id'];
-                                    selectedCLOText = 'CLO ${index + 1}';
+                                    selectedCLOText = entry.value['clo_text'];
+                                    selectedCLONumber = '${index + 1}';
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          title: Text('CLO $selectedCLONumber'),
+                                          content: Text(selectedCLOText),
+                                          actions: [
+                                            IconButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                icon: const Icon(Icons.check))
+                                          ],
+                                        );
+                                      },
+                                    );
                                   });
                                   await loadCourseCloWeightage(
                                       selectedCourseId!);
@@ -367,7 +378,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
                   width: double.infinity,
                   color: Colors.black,
                 ),
-                if (selectedCLOText.isNotEmpty && clolist.isNotEmpty)
+                if (selectedCLONumber.isNotEmpty && clolist.isNotEmpty)
                   SizedBox(
                     width: double.infinity,
                     height: 40,
@@ -375,7 +386,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          Text(selectedCLOText),
+                          Text('CLO -$selectedCLONumber',style: const TextStyle(fontWeight: FontWeight.bold),),
                           const SizedBox(width: 55),
                           buildTextFormField(controller: asgController),
                           const Text('%'),
@@ -395,7 +406,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
                 const SizedBox(
                   height: 10,
                 ),
-                if (selectedCLOText.isNotEmpty && clolist.isNotEmpty)
+               if (selectedCLONumber.isNotEmpty && clolist.isNotEmpty)
                   Align(
                       alignment: Alignment.centerRight,
                       child: customElevatedButton(
@@ -442,10 +453,10 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                   }
                                   return; // Stop execution if validation failed
                                 }
-                                addCloGridWeightageData(
-                                    cloID,
-                                    cloGridHeaderList[0]['header_id'],
-                                    asgWeightage);
+                                // addCloGridWeightageData(
+                                //     cloID,
+                                //     cloGridHeaderList[0]['header_id'],
+                                //     asgWeightage);
                               } else {
                                 int totalAssignmentWeightage =
                                     await calculateTotalAssignmentWeightage();
@@ -505,10 +516,10 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                   }
                                   return; // Stop execution if validation failed
                                 }
-                                addCloGridWeightageData(
-                                    cloID,
-                                    cloGridHeaderList[0]['header_id'],
-                                    quizWeightage);
+                                // addCloGridWeightageData(
+                                //     cloID,
+                                //     cloGridHeaderList[1]['header_id'],
+                                //     quizWeightage);
                               } else {
                                 int totalQuizWeightage =
                                     await calculateTotalQuizWeightage();
@@ -536,7 +547,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                 (weightageData) =>
                                     weightageData['clo_id'] == cloID &&
                                     weightageData['header_id'] ==
-                                        cloGridHeaderList[1]['header_id'],
+                                        cloGridHeaderList[2]['header_id'],
                               );
                               int midWeightage = int.parse(midController.text);
                               if (midWeightage >
@@ -566,10 +577,10 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                   }
                                   return; // Stop execution if validation failed
                                 }
-                                addCloGridWeightageData(
-                                    cloID,
-                                    cloGridHeaderList[0]['header_id'],
-                                    midWeightage);
+                                // addCloGridWeightageData(
+                                //     cloID,
+                                //     cloGridHeaderList[2]['header_id'],
+                                //     midWeightage);
                               } else {
                                 int totalMidWeightage =
                                     await calculateTotalMidWeightage();
@@ -597,7 +608,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                 (weightageData) =>
                                     weightageData['clo_id'] == cloID &&
                                     weightageData['header_id'] ==
-                                        cloGridHeaderList[1]['header_id'],
+                                        cloGridHeaderList[3]['header_id'],
                               );
                               int finalWeightage =
                                   int.parse(finalController.text);
@@ -614,38 +625,39 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                     await calculateTotalFinalWeightage();
                                 setState(() {});
                                 int totalFinalHeaderWeightage =
-                                    cloGridHeaderList[2]['weightage'] as int;
+                                    cloGridHeaderList[3]['weightage'] as int;
                                 int finalAndTotalFinal = 0;
                                 finalAndTotalFinal =
                                     finalWeightage + totalFinalWeightage;
                                 if (totalFinalWeightage >=
                                         totalFinalHeaderWeightage ||
-                                    finalAndTotalFinal > totalFinalWeightage) {
+                                    finalAndTotalFinal > totalFinalHeaderWeightage) {
                                   if (mounted) {
                                     showErrorDialog(context,
                                         'Total Final Term weightage exceeds the limit of $totalFinalHeaderWeightage%.');
                                   }
                                   return; // Stop execution if validation failed
                                 }
-                                addCloGridWeightageData(
-                                    cloID,
-                                    cloGridHeaderList[0]['header_id'],
-                                    finalWeightage);
-                              } else {
+                                // addCloGridWeightageData(
+                                //     cloID,
+                                //     cloGridHeaderList[3]['header_id'],
+                                //     finalWeightage);
+                              }
+                              else {
                                 int totalFinalWeightage =
                                     await calculateTotalFinalWeightage();
                                 setState(() {});
                                 int totalFinalHeaderWeightage =
-                                    cloGridHeaderList[2]['weightage'] as int;
-                                int finalAndTotalFinal = 0;
-                                finalAndTotalFinal =
+                                    cloGridHeaderList[3]['weightage'] as int;
+                                int FinalAndTotalFinal = 0;
+                                FinalAndTotalFinal =
                                     finalWeightage + totalFinalWeightage;
                                 if (totalFinalWeightage >=
                                         totalFinalHeaderWeightage ||
-                                    finalAndTotalFinal > totalFinalWeightage) {
+                                    FinalAndTotalFinal > totalFinalHeaderWeightage) {
                                   if (mounted) {
                                     showErrorDialog(context,
-                                        'Total Final Term weightage exceeds the limit of $totalFinalHeaderWeightage%.');
+                                        'Total Final** Term weightage exceeds the limit of $totalFinalHeaderWeightage%.');
                                   }
                                   return; // Stop execution if validation failed
                                 }
@@ -835,8 +847,13 @@ class _GridViewScreenState extends State<GridViewScreen> {
                   ),
                 ),
                 Center(
-                    child: customElevatedButton(
-                        onPressed: () {}, buttonText: 'View Clos'))
+                    child:clist.isNotEmpty&&selectedCourseId!=null?  customElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) =>  CloCheckingScreen(courseTitle: selectedCourseText!, ccode: selectedCourseCode!, cid: selectedCourseId!)),
+    );
+
+                        }, buttonText: 'View Clos'):const SizedBox())
               ],
             ),
           ),

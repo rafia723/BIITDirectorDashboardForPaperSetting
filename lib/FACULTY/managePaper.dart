@@ -28,7 +28,7 @@ class _ManagePaperState extends State<ManagePaper> {
   //int? tMarks;
   String? session;
   String? term;
-  int? questions;
+  int? noOfQuestions;
   int? year;
   DateTime? date;
   List<dynamic> teachers = [];
@@ -40,6 +40,11 @@ class _ManagePaperState extends State<ManagePaper> {
   dynamic fname;
   dynamic fid;
   Map<int, String> facultyNames = {}; // Store faculty names here
+  int easyCount = 0;
+  int mediumCount = 0;
+  int hardCount = 0;
+  dynamic difficulty;
+  List<dynamic> difficultyList = [];
 
   @override
   void initState() {
@@ -55,16 +60,27 @@ class _ManagePaperState extends State<ManagePaper> {
     }
     if (paperId != null) {
       await loadQuestion(paperId);
+
       // Deduct marks for questions already marked as uploaded
       for (var question in qlist) {
         if (question['q_status'] == 'uploaded') {
           int qMarks = question['q_marks'];
-
-          setState(() {
-            //  counter = (counter! - qMarks);
-            tMarks += qMarks;
-            qNoCounter--;
-          });
+          if (mounted) {
+            setState(() {
+              //  counter = (counter! - qMarks);
+              tMarks += qMarks;
+              qNoCounter--;
+              if (question['q_difficulty'] == 'Easy') {
+                easyCount--;
+              }
+              if (question['q_difficulty'] == 'Medium') {
+                mediumCount--;
+              }
+              if (question['q_difficulty'] == 'Hard') {
+                hardCount--;
+              }
+            });
+          }
         }
       }
     }
@@ -82,8 +98,13 @@ class _ManagePaperState extends State<ManagePaper> {
         // counter = tMarks;
         session = plist[0]['session'];
         term = plist[0]['term'];
-        questions = plist[0]['NoOfQuestions'];
-        qNoCounter = questions;
+        noOfQuestions = plist[0]['NoOfQuestions'];
+
+        await loadDifficulty(noOfQuestions!);
+        setState(() {
+          print(difficultyList);
+        });
+        qNoCounter = noOfQuestions;
         year = plist[0]['year'];
         date = DateTime.parse(plist[0]['exam_date']);
       }
@@ -128,6 +149,31 @@ class _ManagePaperState extends State<ManagePaper> {
     try {
       sid = await APIHandler().loadFirstSessionId();
       setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> loadDifficulty(int noOfQuest) async {
+    try {
+      difficultyList = await APIHandler().loadDifficulty(noOfQuest);
+      setState(() {
+        if (difficultyList.isNotEmpty) {
+          easyCount = difficultyList[0]['Easy'];
+          mediumCount = difficultyList[0]['Medium'];
+          hardCount = difficultyList[0]['Hard'];
+        }
+      });
     } catch (e) {
       if (mounted) {
         showDialog(
@@ -375,7 +421,7 @@ class _ManagePaperState extends State<ManagePaper> {
                         ),
                         Expanded(
                             child: Text(
-                          '${tMarks ?? 0}',
+                          '$tMarks',
                           style: const TextStyle(fontSize: 12),
                         )),
                       ],
@@ -412,13 +458,24 @@ class _ManagePaperState extends State<ManagePaper> {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
+                // const SizedBox(
+                //   width: 10,
+                // ),
+                Text('Questions Remaining: $qNoCounter'),
                 const SizedBox(
                   width: 10,
                 ),
-                Text('Questions Remaining: $qNoCounter'),
-                const SizedBox(
-                  width: 40,
+                Row(
+                  children: [
+                    const Text('Easy: ',style: TextStyle(fontWeight: FontWeight.bold),),
+                     Text('$easyCount'),
+                    const Text('  Medium: ',style: TextStyle(fontWeight: FontWeight.bold),),
+                      Text('$mediumCount',),
+                    const Text('  Hard: ',style: TextStyle(fontWeight: FontWeight.bold),),
+                    Text('$hardCount',),
+                  ],
                 ),
+
                 //   Text('Marks Remaining: $counter'),
               ],
             ),
@@ -462,7 +519,28 @@ class _ManagePaperState extends State<ManagePaper> {
                               value: question['q_status'] == 'uploaded',
                               onChanged: (bool? newValue) async {
                                 //   if(qNoCounter==0&&counter==0&&newValue==true){
-                                if (qNoCounter == 0 && newValue == true) {
+                                // if (difficultyList.isNotEmpty &&
+                                //     ((easyCount >
+                                //                 (difficultyList[0]['Easy'] ??
+                                //                     0) ||
+                                //             easyCount < 0) ||
+                                //         (mediumCount >
+                                //                 (difficultyList[0]['Medium'] ??
+                                //                     0) ||
+                                //             mediumCount < 0) ||
+                                //         (hardCount >
+                                //                 (difficultyList[0]['Hard'] ??
+                                //                     0) ||
+                                //             hardCount < 0)) ||
+                                //     (newValue == true)) {
+                                //   if (mounted) {
+                                //     showErrorDialog(context,
+                                //         'Easy should be ${difficultyList[0]['Easy']},Medium should be ${difficultyList[0]['Medium']},Hard should be ${difficultyList[0]['Hard']}');
+                                //   }
+                                // }
+
+                                if (qNoCounter == 0 &&
+                                    newValue == true) {
                                   if (mounted) {
                                     showErrorDialog(context,
                                         'You cannot add more questions because the total number of questions have reached their limit.');
@@ -476,6 +554,21 @@ class _ManagePaperState extends State<ManagePaper> {
                                     setState(() {
                                       tMarks += question['q_marks'] as int;
                                       qNoCounter--;
+
+                                      difficulty = question['q_difficulty'];
+                                      if (difficulty.toLowerCase() == 'easy') {
+                                        easyCount--;
+                                        print('easy $easyCount');
+                                      } else if (difficulty.toLowerCase() ==
+                                          'medium') {
+                                        mediumCount--;
+                                        print('medium $mediumCount');
+                                      } else if (difficulty.toLowerCase() ==
+                                          'hard') {
+                                        hardCount--;
+                                        print('hard $hardCount');
+                                      }
+
                                       //   counter = (counter - qMarks);
                                     });
                                   } else if (newValue == false) {
@@ -485,6 +578,20 @@ class _ManagePaperState extends State<ManagePaper> {
                                       //   counter = (counter + qMarks);
                                       tMarks -= question['q_marks'] as int;
                                       qNoCounter++;
+
+                                      difficulty = question['q_difficulty'];
+                                      if (difficulty.toLowerCase() == 'easy') {
+                                        easyCount++;
+                                        print('easy $easyCount');
+                                      } else if (difficulty.toLowerCase() ==
+                                          'medium') {
+                                        mediumCount++;
+                                        print('medium $mediumCount');
+                                      } else if (difficulty.toLowerCase() ==
+                                          'hard') {
+                                        hardCount++;
+                                        print('hard $hardCount');
+                                      }
                                     });
                                   }
                                 }
@@ -549,22 +656,23 @@ class _ManagePaperState extends State<ManagePaper> {
                 width: 170,
               ),
               customElevatedButton(
-                  onPressed: ()async {
+                  onPressed: () async {
                     //   if(counter==0&&qNoCounter==0){
-                    if (qNoCounter == 0) {
-                      int code=await APIHandler().updatePaperStatusToUploaded(paperId);
-                      if(code==200){
-                        if(mounted){
+                    if (qNoCounter == 0 &&
+                        easyCount == 0 &&
+                        mediumCount == 0 &&
+                        hardCount == 0) {
+                      int code = await APIHandler()
+                          .updatePaperStatusToUploaded(paperId);
+                      if (code == 200) {
+                        if (mounted) {
                           Navigator.pop(context);
-                showSuccesDialog(context, 'Submitted');
+                          showSuccesDialog(context, 'Submitted');
                         }
-                       
                       }
-                      
-                    } 
-                    else {
+                    } else {
                       showErrorDialog(context,
-                          'Please ensure question counter is 0 before submitting.');
+                          'Please ensure question and other counters are 0 before submitting.');
                     }
                   },
                   buttonText: 'Submit'),

@@ -35,7 +35,16 @@ class _LoginFacultyState extends State<LoginFaculty> {
     );
       }
    
-    } 
+    }
+     else {
+      if(username.text==''||password.text==''){
+     showErrorDialog(context, 'Please enter username or password');
+      }else{
+        
+     showErrorDialog(context, 'Invalid username or password');
+      
+      }
+    }
   } catch (e) {
     if(mounted){
  showErrorDialog(context, e.toString());

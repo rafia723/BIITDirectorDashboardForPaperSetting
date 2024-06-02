@@ -461,7 +461,7 @@ Future<void> loadApprovedPapersData() async {
                         ),
                         Expanded(
                             child: Text(
-                         '${tMarks ?? 0}',
+                         '$tMarks',
                           style: const TextStyle(fontSize: 12),
                         )),
                       ],

@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/Model/DifficultyModel.dart';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.14:3000/';
+  String apiUrl='http://192.168.231.92:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -1249,7 +1249,7 @@ Future<List<dynamic>>loadFacultyWithEnabledStatus() async {
 //////////////////////////////////////////////////////////////Difficulty////////////////////////////////////////////////////////////////
 
 Future<int> updateDifficulty(Difficulty difficulty) async {
-  Uri url = Uri.parse('${apiUrl}Difficulty/postDifficulty');
+  final Uri url = Uri.parse('${apiUrl}Difficulty/postDifficulty');
 
   try {
     final http.Response response = await http.post(
@@ -1261,9 +1261,29 @@ Future<int> updateDifficulty(Difficulty difficulty) async {
     );
     return response.statusCode;
   } catch (e) {
-    throw (e.toString());
+    throw Exception(e.toString());
   }
 }
+
+Future<List<dynamic>> loadDifficulty(int noOfQuestions) async {
+  List<dynamic> list = [];
+  try {
+    Uri uri = Uri.parse('${apiUrl}Difficulty/getDifficulty/$noOfQuestions');
+    var response = await http.get(uri);
+  
+print(response.statusCode);
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+    
+    } else {
+      throw Exception('Failed to load');
+    }
+    return list;
+  } catch (e) {
+    throw Exception(e.toString());
+  }
+}
+
 
 //////////////////////////////////////////////////////Session HOD////////////////////////////////////////////////////////////////////////
 Future<List<dynamic>> loadSession() async {
