@@ -159,21 +159,15 @@ class _CLOGridState extends State<CLOGrid> {
                         children: [
                           if (cloGridHeaderList.isNotEmpty)
                             Text(
-                              cloGridHeaderList[2]
-                                  ['name'], // Accessing name at index 0
-                              style:
+                              "   ${cloGridHeaderList[2]['name']} Term", // Accessing name at index 0
+                              style: 
                                   const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           const SizedBox(
                             width: 20,
                           ),
                           if (cloGridHeaderList.length > 1)
-                            Text(
-                              cloGridHeaderList[3]
-                                  ['name'], // Accessing name at index 1
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
+                            Text("${cloGridHeaderList[3]['name']} Term",style:const TextStyle(fontWeight: FontWeight.bold),),
                         ],
                       )),
                 ),

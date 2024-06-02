@@ -786,7 +786,7 @@ class _GridViewScreenState extends State<GridViewScreen> {
                                 Column(
                                   children:
                                       clolist.asMap().entries.map((entry) {
-                                    int cloIndex = entry.key;
+                                  //  int cloIndex = entry.key;
                                     int cloId = entry.value['clo_id'];
                                     String cloNumber =
                                         entry.value['clo_number'];

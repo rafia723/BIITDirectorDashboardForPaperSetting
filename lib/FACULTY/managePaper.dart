@@ -45,6 +45,7 @@ class _ManagePaperState extends State<ManagePaper> {
   int hardCount = 0;
   dynamic difficulty;
   List<dynamic> difficultyList = [];
+  List<dynamic> paperGridWeightage=[];
 
   @override
   void initState() {
@@ -83,6 +84,7 @@ class _ManagePaperState extends State<ManagePaper> {
           }
         }
       }
+      await loadClosWeightageofSpecificCourseAndHeaderName(widget.cid!, session!);
     }
   }
 
@@ -276,6 +278,20 @@ class _ManagePaperState extends State<ManagePaper> {
             );
           },
         );
+      }
+    }
+  }
+
+
+   Future<void> loadClosWeightageofSpecificCourseAndHeaderName(
+      int cid, String name) async {
+    try {
+      paperGridWeightage = await APIHandler()
+          .loadClosWeightageofSpecificCourseAndHeaderName(cid, name);
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
       }
     }
   }

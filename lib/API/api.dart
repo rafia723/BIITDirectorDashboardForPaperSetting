@@ -1174,6 +1174,26 @@ Future<List<dynamic>> loadCourseGridViewWeightageWithSpecificHeader(int cid, int
   }
 }
 
+
+Future<List<dynamic>> loadClosWeightageofSpecificCourseAndHeaderName(int cid, String headerName) async {
+  List<dynamic> list = [];
+  try {
+    Uri uri = Uri.parse('${apiUrl}GridView_Weightage/getCloWeightageofSpecificCourseAndHeaderName/$cid/$headerName');
+    var response = await http.get(uri);
+  
+
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+    
+    } else {
+      throw Exception('Failed to load clo grid weightage');
+    }
+    return list;
+  } catch (e) {
+    throw Exception(e.toString());
+  }
+}
+
 ////////////////////////////////////////////////////////Faculty////////////////////////////////////////////////////////////////////////
 Future<List<dynamic>>loadFacultyWithEnabledStatus() async {
   List<dynamic> list = [];
