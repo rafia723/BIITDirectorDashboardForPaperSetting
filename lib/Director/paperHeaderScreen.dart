@@ -186,6 +186,9 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
                     children: [
                       IconButton(
                         onPressed: () {
+                          if(paperId!=null){
+
+                         
                           Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
@@ -195,6 +198,7 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
                                         coursename: widget.coursename,
                                         pid: paperId,
                                       )));
+                                       }
                         },
                         icon: const Icon(
                           Icons.comment,

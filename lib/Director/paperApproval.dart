@@ -228,9 +228,9 @@ class _PaperApprovalState extends State<PaperApproval> {
     }
   }
 
-  Future<void> addFeedbackData(String feedbackText, int pid, int? qid) async {
+  Future<void> addFeedbackData(String feedbackText, int pid, int? qid,int? fid) async {
     try {
-      dynamic code = await APIHandler().addFeedback(feedbackText, pid, qid);
+      dynamic code = await APIHandler().addFeedback(feedbackText, pid, qid,fid);
       setState(() {});
       if (code == 200) {
         if (mounted) {
@@ -521,7 +521,7 @@ Future<void> loadApprovedPapersData() async {
                 final fetchedTopicId = question['t_id'];
                 final qid = question['q_id'];
 
-
+               final fid=question['f_id'];
                 if (!cloMap.containsKey(fetchedTopicId)) {
                   loadClosMappedWithTopicData(fetchedTopicId);
                 }
@@ -640,11 +640,16 @@ Future<void> loadApprovedPapersData() async {
                                     ),
                                     IconButton(
                                       onPressed: () {
+                                        if(commentController.text.isEmpty){
+
+                                       
                                          if(mounted){
                                   showErrorDialog(context, 'Enter comment first');
-                                }else{
+                                }
+                                 }
+                                else{
                                          addFeedbackData(commentController.text,
-                                            widget.pid, qid);
+                                            widget.pid, qid,fid);
                                 }
                                       },
                                       icon: const Icon(Icons.send),

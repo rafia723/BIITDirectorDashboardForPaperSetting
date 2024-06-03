@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/Model/DifficultyModel.dart';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.202.92:3000/';
+  String apiUrl='http://192.168.10.12:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -702,6 +702,21 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
     }
   }
 
+  Future<int> updateHeader(int cid, Map<String, dynamic> HeaderData) async {
+  Uri url = Uri.parse('${apiUrl}Paper/UpdatePaper'); // Append cid as a query parameter
+  try {
+    var paperJson = jsonEncode(HeaderData);
+    var response = await http.put(
+      url,
+      body: paperJson,
+      headers: {"Content-Type": "application/json"},
+    );
+    return response.statusCode;
+  } catch (error) {
+    throw Exception('Error: $error');
+  }
+}
+
   ///////////////////////////////////////////////////////Session///////////////////////////////////////////////////////////////////////////////
 
   Future<int> loadFirstSessionId() async {
@@ -732,6 +747,21 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
   List<dynamic> qlist=[];
     try {
       Uri uri = Uri.parse("${apiUrl}Question/getQuestion/$pid");
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+          qlist = jsonDecode(response.body);
+      } 
+      return qlist;
+    } catch (e) {
+     throw Exception('Error: $e');
+    }
+  }
+
+   Future<List<dynamic>> loadQuestionOfSpecificQid(int qid) async {
+  List<dynamic> qlist=[];
+    try {
+      Uri uri = Uri.parse("${apiUrl}Question/getQuestionbyQID/$qid");
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {
@@ -797,6 +827,22 @@ Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qm
   return {'status': statusCode, 'q_id': qId};
 }
 
+  Future<int> updateQuestionOfSpecificQid(int qid, Map<String, dynamic> HeaderData) async {
+  Uri url = Uri.parse('${apiUrl}Question/updateQuestionOfSpecificQid/$qid'); // Append cid as a query parameter
+  try {
+    var paperJson = jsonEncode(HeaderData);
+    var response = await http.put(
+      url,
+      body: paperJson,
+      headers: {"Content-Type": "application/json"},
+    );
+    return response.statusCode;
+  } catch (error) {
+    throw Exception('Error: $error');
+  }
+}
+
+
 ///////////////////////////////////////TOPCQUESTION////////////////////////////////////////////////////////////////////////////////////
 
 Future<int> addTopicOfQuestion(int qid, List<int> topicIds) async {
@@ -831,6 +877,25 @@ Future<List<int>> loadTopicMappedWithQuestion(int qid) async {
     throw Exception('Failed to load CLOs mapped with question');
   }
 }
+
+
+ Future<int> updateTopicQuestionMapping(int qId, List<int> topicIds) async {
+    Uri url = Uri.parse('${apiUrl}QuestionTopic/updateTopicQuestionMapping');
+    try {
+      var body = jsonEncode({
+        "q_id": qId,
+        "topicIds": topicIds,
+      });
+      var response = await http.post(
+        url,
+        body: body,
+        headers: {"Content-Type": "application/json"},
+      );
+      return response.statusCode;
+    } catch (error) {
+      throw Exception('Error: $error');
+    }
+  }
 
 ///////////////////////////////////////////////////////////////Faculty////////////////////////////////////////////////////////////////
 Future<Map<String, dynamic>> loginFaculty(String username, String password) async {
@@ -879,6 +944,50 @@ Future<Map<String, dynamic>> loginFaculty(String username, String password) asyn
      throw (e.toString());
     }
   }
+//////////////////////////////////////////////////FEEDBAckkkkkk/////////////////////////////////////////////////////////////////////////////
+
+
+ Future<List<dynamic>> loadCommentsForPaperHeaderOnlyifSenior(int fid) async {
+    List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${APIHandler().apiUrl}Feedback/getFeedbackOfPaperHeaderOnlySenior/$fid');
+      
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+          list = jsonDecode(response.body);
+      }
+       else {
+        throw Exception('Failed to load ');
+      }
+     }catch (e) {
+     throw Exception('Error: $e');
+    }
+    return list;
+  }
+
+
+ Future<List<dynamic>> loadCommentsforQuestion(int fid) async {
+    List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${APIHandler().apiUrl}Feedback/getFeedbackofQuestionSpecificTeacher/$fid');
+      
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+          list = jsonDecode(response.body);
+      }
+       else {
+        throw Exception('Failed to load ');
+      }
+     }catch (e) {
+     throw Exception('Error: $e');
+    }
+    return list;
+  }
+
+
+ 
 
 //////////////////////////////////////////////////////////Director Module/////////////////////////////////////////////////////////////////////////
 
@@ -1070,12 +1179,13 @@ Future<int> updateQuestionStatusToUploaded(int id) async {   //Additional Questi
 
 
 Future<int> addFeedback(
-      String feedbackText, int pid , int? qid) async {
+      String feedbackText, int pid , int? qid,int? fid) async {
     String url = "${apiUrl}Feedback/addFeedback";
     var obj = {
       'feedback_details': feedbackText,
       'p_id': pid,
       'q_id': qid,
+         'f_id': fid,
     };
     var json = jsonEncode(obj);
     Uri uri = Uri.parse(url);

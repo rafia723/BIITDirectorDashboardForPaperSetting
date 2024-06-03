@@ -8,13 +8,15 @@ class HeaderComment extends StatefulWidget {
   final String ccode;
   final int pid;
    final int? qid;
+    final int? fid;
    const HeaderComment({
     Key? key,
     required this.cid,
     required this.ccode,
     required this.coursename,
     required this.pid,
-    this.qid
+    this.qid,
+    this.fid
   }) : super(key: key);
 
   @override
@@ -24,9 +26,9 @@ class HeaderComment extends StatefulWidget {
 class _HeaderCommentState extends State<HeaderComment> {
   TextEditingController commentController = TextEditingController();
 
-  Future<void> addFeedbackData(String feedbackText, int pid, int? qid) async {
+  Future<void> addFeedbackData(String feedbackText, int pid, int? qid,int? fid) async {
     try {
-      dynamic code = await APIHandler().addFeedback(feedbackText, pid, qid);
+      dynamic code = await APIHandler().addFeedback(feedbackText, pid, qid,fid);
       setState(() {
         
       });
@@ -125,7 +127,7 @@ class _HeaderCommentState extends State<HeaderComment> {
                                   showErrorDialog(context, 'Enter comment first');
                                 }
                               }else{
-                                   addFeedbackData(commentController.text, widget.pid, widget.qid);
+                                   addFeedbackData(commentController.text, widget.pid, widget.qid,widget.fid);
                               }
                              
                             }, icon: const Icon(Icons.send))

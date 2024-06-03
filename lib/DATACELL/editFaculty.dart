@@ -25,6 +25,7 @@ Future<void> updateFacultyData(int id, Map<String, dynamic> facultyData) async {
       dynamic code=await APIHandler().updateFaculty(id, facultyData);
       
       if(code==200){
+        
             if(mounted){
              showDialog(
             context: context,
