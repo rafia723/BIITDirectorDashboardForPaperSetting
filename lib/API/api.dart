@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/Model/DifficultyModel.dart';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.12:3000/';
+  String apiUrl='http://192.168.183.92:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -886,7 +886,7 @@ Future<List<int>> loadTopicMappedWithQuestion(int qid) async {
         "q_id": qId,
         "topicIds": topicIds,
       });
-      var response = await http.post(
+      var response = await http.put(
         url,
         body: body,
         headers: {"Content-Type": "application/json"},
