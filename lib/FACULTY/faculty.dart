@@ -2,6 +2,7 @@
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/courseview.dart';
 import 'package:biit_directors_dashbooard/FACULTY/notification.dart';
+import 'package:biit_directors_dashbooard/FACULTY/paperStatusScreen.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
@@ -126,7 +127,12 @@ class _FacultyState extends State<Faculty> {
               Icons.timer,
             ), 
             onPressed: () {
-              
+               Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>  PaperStatusScreen(fid: widget.fid,),
+                ),
+              );
             },
           ),
         ],

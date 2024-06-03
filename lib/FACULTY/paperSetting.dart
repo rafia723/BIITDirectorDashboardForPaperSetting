@@ -34,9 +34,9 @@ class _PaperSettingState extends State<PaperSetting> {
   DateTime? date;
   String? duration;
   String? degree;
-  int tMarks=0;
-   Map<int, String> facultyNames = {}; 
-   dynamic fname;
+  int tMarks = 0;
+  Map<int, String> facultyNames = {};
+  dynamic fname;
   String? session;
   String? term;
   int? questions;
@@ -56,12 +56,14 @@ class _PaperSettingState extends State<PaperSetting> {
   List<dynamic> topicList = [];
   List<bool> isCheckedList = [];
   int? selectedTopicId;
-  int? fetchedTopicId=1;
+  int? fetchedTopicId = 1;
   List<dynamic> cloMappedWithSelectedTopic = []; //selected topic to be posted
   Map<int, List<dynamic>> cloMap = {};
+  List<int> selectedTopicIds = [];
+  List<int> topicIdsOfQuestion= [];
+  List<dynamic> cloMappedWithTopicIds= [];
 
-
-      @override
+  @override
   void initState() {
     super.initState();
     loadTeachers();
@@ -73,41 +75,47 @@ class _PaperSettingState extends State<PaperSetting> {
     await loadSession();
     if (sid != null) {
       await loadPaperHeader(widget.cid!, sid);
-      if(mounted){
-      setState(() {});
+      if (mounted) {
+        setState(() {});
       }
-
     }
     if (paperId != null) {
       await loadQuestion(paperId);
-       for(var marks in qlist){
-         tMarks += (marks['q_marks'] as int);
-     }
-      if(mounted){
- setState(() {});
+      for (var marks in qlist) {
+        tMarks += (marks['q_marks'] as int);
+      }
+      if (mounted) {
+        setState(() {});
       }
     }
     if (selectedTopicId != null) {
-      cloMappedWithSelectedTopic =await APIHandler().loadClosMappedWithTopic(selectedTopicId!);
+      cloMappedWithSelectedTopic =
+          await APIHandler().loadClosMappedWithTopic(selectedTopicId!);
+         // List<dynamic> list=await APIHandler().loadClosMappedWithTopicsList(selectedTopicIds);
+          
     }
-
-      showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text('Add Questions'),
-        content: const Text('Please make sure to add at least one question of each difficulty level (Easy, Medium, Hard) for each topic.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      );
-    },
-  );
+if(mounted){
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: const Text(
+      'Please make sure to add at least one question of each difficulty level (Easy, Medium, Hard) for each topic.',
+    ),
+    action: SnackBarAction(
+      label: 'OK',
+      onPressed: () {
+        // Add any action here if needed
+      },
+    ),
+  ),
+);
+}
+// if(qlist!=null){
+//    print(topicIdsOfQuestion);
+//    print(cloMappedWithTopicIds);
+//   await loadCloMappedWithTopicIdsList(topicIdsOfQuestion);
+//   print(cloMappedWithTopicIds);
+// }
+    
   }
 
   Future<void> loadFacultyName(int facultyid) async {
@@ -123,31 +131,38 @@ class _PaperSettingState extends State<PaperSetting> {
     }
   }
 
-
-
-Future<void> loadClosMappedWithTopicData(int tid) async {
-  try {
-    List<dynamic> list=await APIHandler().loadClosMappedWithTopic(tid);
-      cloMap[tid] = list;
-          setState(() {});
-  } catch (e) {
-    if(mounted){
-showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Error loading CLOs mapped with topic: $e'),
-        );
-      },
-    );
+  Future<void> loadCloMappedWithTopicIdsList(List<int> tids) async {
+    try {
+      cloMappedWithTopicIds = await APIHandler().loadClosMappedWithTopicsList(tids);
+      setState(() {
+        print(cloMappedWithTopicIds);
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
     }
-    
   }
-}
 
 
-
- 
+  Future<void> loadClosMappedWithTopicData(int tid) async {
+    try {
+      List<dynamic> list = await APIHandler().loadClosMappedWithTopic(tid);
+      cloMap[tid] = list;
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text('Error loading CLOs mapped with topic: $e'),
+            );
+          },
+        );
+      }
+    }
+  }
 
   Future<void> _selectImage() async {
     final picker = ImagePicker();
@@ -162,36 +177,33 @@ showDialog(
 
   Future<void> loadPaperHeader(int cid, int sid) async {
     try {
-      list=await APIHandler().loadPaperHeaderIfTermMidAndApproved(cid, sid);
-      setState(() {
-      });
-          if (list.isNotEmpty) {
-            paperId = list[0]['p_id'];
-            duration = list[0]['duration'];
-            degree = list[0]['degree'];
-           // tMarks = list[0]['t_marks'].toString();
-            session = list[0]['session'];
-            term = list[0]['term'];
-            questions = list[0]['NoOfQuestions'];
-            year = list[0]['year'];
-            date = DateTime.parse(list[0]['exam_date']);
-          }
-    } catch (e) {
-      if(mounted){
-showDialog(
-        context: context,
-        builder: (context) {
-          return  AlertDialog(
-            title: const Text('Error..'),
-            content: Text(e.toString()),
-          );
-        },
-      );
+      list = await APIHandler().loadPaperHeaderIfTermMidAndApproved(cid, sid);
+      setState(() {});
+      if (list.isNotEmpty) {
+        paperId = list[0]['p_id'];
+        duration = list[0]['duration'];
+        degree = list[0]['degree'];
+        // tMarks = list[0]['t_marks'].toString();
+        session = list[0]['session'];
+        term = list[0]['term'];
+        questions = list[0]['NoOfQuestions'];
+        year = list[0]['year'];
+        date = DateTime.parse(list[0]['exam_date']);
       }
-      
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error..'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
     }
   }
-
 
   Future<void> loadTopic(int cid, BuildContext context) async {
     try {
@@ -206,45 +218,45 @@ showDialog(
         throw Exception('Failed to load topics');
       }
     } catch (e) {
-      if(mounted){
-       showDialog(
-        context: context,
-        builder: (context) {
-          return const AlertDialog(
-            title: Text('Error loading topics'),
-          );
-        },
-      );
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return const AlertDialog(
+              title: Text('Error loading topics'),
+            );
+          },
+        );
       }
-      
     }
   }
- 
+
   Future<void> loadQuestion(int pid) async {
     try {
-     qlist=await APIHandler().loadQuestion(pid);
-        for (var question in qlist) {
+      qlist = await APIHandler().loadQuestion(pid);
+      for (var question in qlist) {
         facultyId = question['f_id'];
+        int qid = question['q_id'];
         if (facultyId != null) {
           await loadFacultyName(facultyId!);
         }
+      //   if(qid!=null){
+      //  topicIdsOfQuestion= await APIHandler().loadTopicMappedWithQuestion(qid);
+      //   }
       }
-     setState(() {
-       
-     });
+      setState(() {});
     } catch (e) {
-      if(mounted){
+      if (mounted) {
         showDialog(
-        context: context,
-        builder: (context) {
-          return  AlertDialog(
-            title: const Text('Error'),
-            content: Text(e.toString()),
-          );
-        },
-      );
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+            );
+          },
+        );
       }
-     
     }
   }
 
@@ -256,41 +268,38 @@ showDialog(
         teachers = teachersList;
       });
     } catch (e) {
-      if(mounted){
+      if (mounted) {
         showDialog(
-        context: context,
-        builder: (context) {
-          return  AlertDialog(
-            title: const Text('Error..'),
-            content: Text(e.toString()),
-          );
-        },
-      );
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error..'),
+              content: Text(e.toString()),
+            );
+          },
+        );
       }
     }
   }
 
   Future<void> loadSession() async {
     try {
-      sid=await APIHandler().loadFirstSessionId();
-      setState(() {
-      });
+      sid = await APIHandler().loadFirstSessionId();
+      setState(() {});
     } catch (e) {
-      if(mounted){
- showDialog(
-        context: context,
-        builder: (context) {
-          return  AlertDialog(
-            title: const Text('Error'),
-            content: Text(e.toString()),
-          );
-        },
-      );
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+            );
+          },
+        );
       }
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -490,63 +499,57 @@ showDialog(
                         icon: const Icon(Icons.photo_library)),
                     IconButton(
                       onPressed: () async {
-                        if (selectedTopicId == null||dropdownValue.isEmpty||marksController.text.isEmpty) {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              Future.delayed(const Duration(seconds: 2), () {
-                                Navigator.of(context)
-                                    .pop(); // Close the dialog after 1 second
-                              });
-                              return const AlertDialog(
-                                title: Text('Please select required information --Topic,Difficulty and marks'),
-                              );
-                            },
-                          );
-                        }
-                         else {
-                          dynamic code = await APIHandler().addQuestion(
+                        //2 selectedTopicIds.clear();
+                        if (selectedTopicId == null ||
+                            dropdownValue.isEmpty ||
+                            marksController.text.isEmpty) {
+                          showErrorDialog(context, 'Please select required information Topic,Difficulty and marks');
+                        } else {
+                          dynamic response = await APIHandler().addQuestion(
                             questionController.text,
                             selectedImage,
                             int.parse(marksController.text),
                             dropdownValue,
                             'pending',
-                            selectedTopicId!, 
+                            selectedTopicId!,
                             paperId,
-                            widget.fid,  //////////////////////////////////////////////
+                            widget.fid,
                           );
-                          if (code == 200) {
-                            tMarks+=int.parse(marksController.text);
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                Future.delayed(const Duration(seconds: 2), () {
-                                  Navigator.of(context)
-                                      .pop(); // Close the dialog after 1 second
-                                });
-                                return const AlertDialog(
-                                  title: Text('Question Inserted'),
-                                );
-                              },
-                            );
+
+                          if (response != null && response['status'] == 200) {
+                            int qId = response['q_id'];
+                            await APIHandler()
+                                .addTopicOfQuestion(qId, selectedTopicIds);
+                            tMarks += int.parse(marksController.text);
+
+                            // showDialog(
+                            //   context: context,
+                            //   builder: (context) {
+                            //     Future.delayed(const Duration(seconds: 1), () {
+                            //       Navigator.of(context)
+                            //           .pop(); // Close the dialog after 1 second
+                                    
+                            //     });
+                            //     return const AlertDialog(
+                            //       title: Text('Question Inserted'),
+                            //     );
+                            //   },
+                            // );
                             questionController.clear();
                             marksController.clear();
                             selectedImage = null;
-                            selectedTopicId=null;
+                            selectedTopicId = null;
                             setState(() {
                               dropdownValue = 'Easy';
-                              isCheckedList=List<bool>.filled(topicList.length,false);
+                              isCheckedList =
+                                  List<bool>.filled(topicList.length, false);
+                                    selectedTopicIds.clear();
                               loadQuestion(paperId);
                             });
                           } else {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: Text('Error....$code'),
-                                );
-                              },
-                            );
+                            if (mounted) {
+                              showErrorDialog(context, 'Error');
+                            }
                           }
                         }
                       },
@@ -572,7 +575,8 @@ showDialog(
                           child: GestureDetector(
                             onTap: () {
                               setState(() {
-                                selectedImage =null; // Remove the selected image
+                                selectedImage =
+                                    null; // Remove the selected image
                               });
                             },
                             child: Container(
@@ -629,9 +633,11 @@ showDialog(
                                     itemCount: topicList.length,
                                     itemBuilder: (context, index) {
                                       final topic = topicList[index];
+
                                       return CheckboxListTile(
                                         title: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                                 '${index + 1}. ${topic['t_name']}'),
@@ -639,10 +645,20 @@ showDialog(
                                         ),
                                         value: isCheckedList[
                                             index], // Set the initial value of checkbox
+
                                         onChanged: (bool? value) {
                                           setState(() {
                                             isCheckedList[index] = value!;
-                                            selectedTopicId =topicList[index]['t_id'];
+
+                                            selectedTopicId = topic['t_id'];
+                                            if (value == true) {
+                                              selectedTopicIds
+                                                  .add(topic['t_id']);
+                                            } else {
+                                              selectedTopicIds
+                                                  .remove(topic['t_id']);
+                                              print(selectedTopicId);
+                                            }
                                           });
                                         },
                                       );
@@ -650,10 +666,14 @@ showDialog(
                                   ),
                                 ),
                                 actions: [
-                                  Center(child: customElevatedButton(onPressed: (){
-                                    Navigator.pop(context);
-                                    
-                                  }, buttonText: 'Save'))
+                                  Center(
+                                      child: customElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+
+                                            print(selectedTopicIds);
+                                          },
+                                          buttonText: 'Save'))
                                 ],
                               );
                             },
@@ -688,88 +708,89 @@ showDialog(
                   ),
                 ],
               ),
-  ///////////////////////////////////////////////////Questions Display///////////////////////////////////////////////////////////////
-            Expanded(
-  child: ListView.builder(
-    itemCount: qlist.length,
-    itemBuilder: (context, index) {
-      final question = qlist[index];
-      final imageUrl = question['q_image']; 
-      final fetchedTopicId = question['t_id'];
-       facultyId = question['f_id'];
- final facultyName = facultyNames[facultyId] ?? 'Loading...';
+              ///////////////////////////////////////////////////Questions Display///////////////////////////////////////////////////////////////
+              Expanded(
+                child: ListView.builder(
+                  itemCount: qlist.length,
+                  itemBuilder: (context, index) {
+                    final question = qlist[index];
+                    final imageUrl = question['q_image'];
+                    final fetchedTopicId = question['t_id'];
+                    facultyId = question['f_id'];
+                    final facultyName = facultyNames[facultyId] ?? 'Loading...';
 
-      // Fetch CLOs for the current topic if not already fetched
-      if (!cloMap.containsKey(fetchedTopicId)) {
-        loadClosMappedWithTopicData(fetchedTopicId);
-      }
+                    // Fetch CLOs for the current topic if not already fetched
+                    if (!cloMap.containsKey(fetchedTopicId)) {
+                      loadClosMappedWithTopicData(fetchedTopicId);
+                    }
 
-      final cloList = cloMap[fetchedTopicId] ?? [];
+                    final cloList = cloMap[fetchedTopicId] ?? [];
 
-      return Card(
-        elevation: 5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-        ),
-        color: Colors.white.withOpacity(0.8),
-        child: ListTile(
-          tileColor: Colors.white,
-          title: Text(
-            'Question # ${index + 1}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(question['q_text']),
-              if (imageUrl != null)
-                Image.network(
-                  imageUrl,
-                  height: 150,
-                  width: 300,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const CircularProgressIndicator();
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Text('Error loading image: $error');
-                  },
-                ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text('${question['q_difficulty']},'),
-                  Text('${question['q_marks']},'),
-                   Text('$facultyName,'),
-                    FutureBuilder<List<int>>(
-                                future: APIHandler()
-                                    .loadCloNumberOfSpecificCloids(cloList
-                                        .map((clo) => clo['clo_id'])
-                                        .toList()),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const CircularProgressIndicator();
-                                  } else if (snapshot.hasError) {
-                                    return const Text(
-                                        'Error loading CLO numbers');
-                                  } else {
-                                    final cloNumbers = snapshot.data ?? [];
-                                    return Text(
-                                        'CLOs: ${cloNumbers.join(', ')}');
-                                  }
+                    return Card(
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      color: Colors.white.withOpacity(0.8),
+                      child: ListTile(
+                        tileColor: Colors.white,
+                        title: Text(
+                          'Question # ${index + 1}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(question['q_text']),
+                            if (imageUrl != null)
+                              Image.network(
+                                imageUrl,
+                                height: 150,
+                                width: 300,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return const CircularProgressIndicator();
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Text('Error loading image: $error');
                                 },
                               ),
-                  // Text('CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
-                ],
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text('${question['q_difficulty']},'),
+                                Text('${question['q_marks']},'),
+                                Text('$facultyName,'),
+                                FutureBuilder<List<int>>(
+                                  future: APIHandler()
+                                      .loadCloNumberOfSpecificCloids(cloList
+                                          .map((clo) => clo['clo_id'])
+                                          .toList()),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const CircularProgressIndicator();
+                                    } else if (snapshot.hasError) {
+                                      return const Text(
+                                          'Error loading CLO numbers');
+                                    } else {
+                                      final cloNumbers = snapshot.data ?? [];
+                                      return Text(
+                                          'CLOs: ${cloNumbers.join(', ')}');
+                                    }
+                                  },
+                                ),
+                                // Text('CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
-            ],
-          ),
-        ),
-      );
-    },
-  ),
-),
 // customElevatedButton(onPressed: (){
 //   Navigator.pop(context);
 // }, buttonText: 'Save')

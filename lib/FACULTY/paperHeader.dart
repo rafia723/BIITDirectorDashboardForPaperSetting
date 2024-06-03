@@ -1,5 +1,3 @@
-
-
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/paperSetting.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
@@ -451,7 +449,7 @@ class _PaperHeaderState extends State<PaperHeader> {
                   child: customElevatedButton(
                       onPressed: () {
                         if(noOfQuestionsController.text==''|| durationController.text==''|| degreeController.text==''
-                        ||selectedtermValue==''||_dateTime==null){
+                        ||selectedtermValue==''){
                           showErrorDialog(context, 'Please provide all necessary information');
                         }else{
 

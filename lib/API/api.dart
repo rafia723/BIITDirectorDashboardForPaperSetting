@@ -503,6 +503,41 @@ Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
    
   }
 
+  Future<List<dynamic>> loadClosMappedWithTopicsList(List<int> tids) async {
+  List<dynamic> list = [];
+  try {
+    // Construct the API endpoint URL
+    Uri uri = Uri.parse('${apiUrl}Clo_Topic_Mapping/getClosMappedWithTopicList');
+
+    // Prepare the request body containing the list of t_id
+    Map<String, dynamic> requestBody = {'t_ids': tids};
+
+    // Make a POST request with the request body
+    var response = await http.post(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(requestBody),
+    );
+
+    // Check if the response is successful
+    if (response.statusCode == 200) {
+      // Decode the response body and store it in the list variable
+      list = jsonDecode(response.body);
+    } else {
+      // Throw an exception if the response is not successful
+      throw Exception('Error: ${response.statusCode}');
+    }
+
+    // Return the list of CLOs mapped with the topics
+    return list;
+  } catch (e) {
+    // Throw an exception if there's an error during the process
+    throw Exception('Failed to load CLOs mapped with topics: $e');
+  }
+}
+
   ///////////////////////////////////////////////////////////SubTopics/////////////////////////////////////////////////////////////////////////////
  
  Future<List<dynamic>> loadSubTopic(int tid) async {
@@ -572,6 +607,25 @@ Future<List<dynamic>> loadTeachersByCourseId(int cid) async {
       throw Exception('Failed to load clos mapped with topic');
     }
     return list;
+  }
+
+
+  Future<List<dynamic>> loadPaperstatusOfSpecificFaculty(int id) async {
+   List<dynamic> list=[];
+    Uri url = Uri.parse('${apiUrl}Paper/getPaperStatusOfCoursesAssignedToFaculty/$id');
+    try {
+      var response = await http.get(url);
+       if (response.statusCode == 200) {
+        list = jsonDecode(response.body);
+       
+      } else {
+        throw ('Error....');
+      }
+    } catch (e) {
+      throw (e.toString());
+    }
+    return list;
+    
   }
 
 
@@ -707,7 +761,7 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
 
 
 
-Future<int> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int tid, int pid, int fid) async {
+Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int tid, int pid, int fid) async {
   String url = "${apiUrl}Question/addQuestion";
 
   // Prepare the multipart request
@@ -729,8 +783,53 @@ Future<int> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdif
   // Send the request and await the response
   var response = await request.send();
 
-  // Return the status code
+  // Parse the response
+  var responseBody = await response.stream.bytesToString();
+  var parsedResponse = jsonDecode(responseBody);
+
+  // Get the status code
+  var statusCode = response.statusCode;
+
+  // Get the q_id from the response if available
+  var qId = parsedResponse['q_id'];
+
+  // Return the status code and q_id
+  return {'status': statusCode, 'q_id': qId};
+}
+
+///////////////////////////////////////TOPCQUESTION////////////////////////////////////////////////////////////////////////////////////
+
+Future<int> addTopicOfQuestion(int qid, List<int> topicIds) async {
+  final response = await http.post(
+    Uri.parse("${apiUrl}QuestionTopic/addTopicQuestion"),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, dynamic>{
+      'q_id': qid,
+      'topicIds': topicIds,
+    }),
+  );
+
   return response.statusCode;
+}
+
+
+Future<List<int>> loadTopicMappedWithQuestion(int qid) async {
+  List<int> list = [];
+  try {
+    Uri uri = Uri.parse('${apiUrl}QuestionTopic/getTopicMappedWithQuestion/$qid');
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+    } else {
+      throw Exception('Error....');
+    }
+    return list;
+  } catch (e) {
+    throw Exception('Failed to load CLOs mapped with question');
+  }
 }
 
 ///////////////////////////////////////////////////////////////Faculty////////////////////////////////////////////////////////////////
