@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/Model/DifficultyModel.dart';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.183.92:3000/';
+  String apiUrl='http://192.168.10.12:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -503,40 +503,40 @@ Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
    
   }
 
-  Future<List<dynamic>> loadClosMappedWithTopicsList(List<int> tids) async {
-  List<dynamic> list = [];
-  try {
-    // Construct the API endpoint URL
-    Uri uri = Uri.parse('${apiUrl}Clo_Topic_Mapping/getClosMappedWithTopicList');
+//   Future<List<dynamic>> loadClosMappedWithTopicsList(List<int> tids) async {
+//   List<dynamic> list = [];
+//   try {
+//     // Construct the API endpoint URL
+//     Uri uri = Uri.parse('${apiUrl}Clo_Topic_Mapping/getClosMappedWithTopicList');
 
-    // Prepare the request body containing the list of t_id
-    Map<String, dynamic> requestBody = {'t_ids': tids};
+//     // Prepare the request body containing the list of t_id
+//     Map<String, dynamic> requestBody = {'t_ids': tids};
 
-    // Make a POST request with the request body
-    var response = await http.post(
-      uri,
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(requestBody),
-    );
+//     // Make a POST request with the request body
+//     var response = await http.post(
+//       uri,
+//       headers: <String, String>{
+//         'Content-Type': 'application/json; charset=UTF-8',
+//       },
+//       body: jsonEncode(requestBody),
+//     );
 
-    // Check if the response is successful
-    if (response.statusCode == 200) {
-      // Decode the response body and store it in the list variable
-      list = jsonDecode(response.body);
-    } else {
-      // Throw an exception if the response is not successful
-      throw Exception('Error: ${response.statusCode}');
-    }
+//     // Check if the response is successful
+//     if (response.statusCode == 200) {
+//       // Decode the response body and store it in the list variable
+//       list = jsonDecode(response.body);
+//     } else {
+//       // Throw an exception if the response is not successful
+//       throw Exception('Error: ${response.statusCode}');
+//     }
 
-    // Return the list of CLOs mapped with the topics
-    return list;
-  } catch (e) {
-    // Throw an exception if there's an error during the process
-    throw Exception('Failed to load CLOs mapped with topics: $e');
-  }
-}
+//     // Return the list of CLOs mapped with the topics
+//     return list;
+//   } catch (e) {
+//     // Throw an exception if there's an error during the process
+//     throw Exception('Failed to load CLOs mapped with topics: $e');
+//   }
+// }
 
   ///////////////////////////////////////////////////////////SubTopics/////////////////////////////////////////////////////////////////////////////
  
@@ -861,10 +861,27 @@ Future<int> addTopicOfQuestion(int qid, List<int> topicIds) async {
 }
 
 
-Future<List<int>> loadTopicMappedWithQuestion(int qid) async {
+Future<List<int>> loadTopicIdMappedWithQuestion(int qid) async {
   List<int> list = [];
   try {
     Uri uri = Uri.parse('${apiUrl}QuestionTopic/getTopicMappedWithQuestion/$qid');
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+    } else {
+      throw Exception('Error....');
+    }
+    return list;
+  } catch (e) {
+    throw Exception('Failed to load CLOs mapped with question');
+  }
+}
+
+Future<List<dynamic>> loadTopicsDataMappedWithQuestion(int qid) async {
+  List<dynamic> list = [];
+  try {
+    Uri uri = Uri.parse('${apiUrl}QuestionTopic/getTopicDataMappedWithQuestion/$qid');
     var response = await http.get(uri);
 
     if (response.statusCode == 200) {
@@ -897,6 +914,22 @@ Future<List<int>> loadTopicMappedWithQuestion(int qid) async {
     }
   }
 
+   Future<List<dynamic>> loadClosofSpecificQuestion(int qid) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse("${apiUrl}QuestionTopic/getClosOfSpecificQuesestion/$qid");
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+          list = jsonDecode(response.body);
+      } 
+      return list;
+    } catch (e) {
+     throw Exception('Error: $e');
+    }
+  }
+
+
 ///////////////////////////////////////////////////////////////Faculty////////////////////////////////////////////////////////////////
 Future<Map<String, dynamic>> loginFaculty(String username, String password) async {
   try {
@@ -923,6 +956,8 @@ Future<Map<String, dynamic>> loginFaculty(String username, String password) asyn
     throw Exception('Failed to login: $e');
   }
 }
+
+
 
 
 //////////////////////////////////////////////////////AssignedCourses//////////////////////////////////////////////////////////////////

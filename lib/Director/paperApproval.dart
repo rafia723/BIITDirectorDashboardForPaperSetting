@@ -1,13 +1,17 @@
+import 'dart:convert';
+
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/Director/AdditionalQuestions.dart';
 import 'package:biit_directors_dashbooard/Director/ApprovedPapersList.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class PaperApproval extends StatefulWidget {
   final int cid;
   final String coursename;
   final String ccode;
+   final String? status;
   final int pid;
   const PaperApproval({
     Key? key,
@@ -15,6 +19,7 @@ class PaperApproval extends StatefulWidget {
     required this.ccode,
     required this.coursename,
     required this.pid,
+      this.status,
   }) : super(key: key);
 
   @override
@@ -23,15 +28,14 @@ class PaperApproval extends StatefulWidget {
 
 class _PaperApprovalState extends State<PaperApproval> {
   List<dynamic> plist = [];
-   List<dynamic> aplist = [];
+  List<dynamic> aplist = [];
   List<dynamic> qlist = [];
   dynamic paperId;
   String? duration;
   String? degree;
-  int tMarks=0;
+  int tMarks = 0;
   String? session;
   String? term;
-  int? questions;
   int? year;
   DateTime? date;
   List<dynamic> teachers = [];
@@ -41,8 +45,16 @@ class _PaperApprovalState extends State<PaperApproval> {
   Map<int, List<dynamic>> cloMap = {};
   TextEditingController commentController = TextEditingController();
   Map<int, String> statusMap = {};
-  int acceptCount=0;
-  int rejectCount=0;
+  int acceptCount = 0;
+  int rejectCount = 0;
+  Map<int, List<dynamic>> cloListsForQuestions = {};
+   dynamic qNoCounter;
+   int? noOfQuestions;
+     List<dynamic> listOfClos=[];
+   List<int> missingcloss = [];
+     List<dynamic> paperGridWeightageOfTerm = [];
+  List<int> cloIdsShouldbeAddedList = [];
+ 
 
   @override
   void initState() {
@@ -59,25 +71,130 @@ class _PaperApprovalState extends State<PaperApproval> {
     if (sid != null) {
       loadPaperHeaderData(widget.cid, sid!);
     }
+    if(widget.pid!=null){
+        await loadQuestionsWithUploadedStatus(widget.pid!);
+    }
+    if (qlist.isNotEmpty) {
+      loadCloListsForQuestions();
+      if (qNoCounter != null) {
+                qNoCounter--;
+              }
+              
+    }
+
+     List<List<String>> allCloLists = [];
+      for (var question in qlist) {
+        int qid = question['q_id'];
+        List<String> cloListForQuestion =
+            await loadClosofSpecificQuestion(qid);
+        allCloLists.add(cloListForQuestion);
+      }
+
+      cloIdsShouldbeAddedList.clear();
+for (var item in paperGridWeightageOfTerm) {
+  try {
+    cloIdsShouldbeAddedList.add(int.parse(item['clonumber']));
+  } catch (e) {
+    print('Error parsing clonumber: ${item['clonumber']}');
+  }
+}
+      print(' CLOs should be added: $cloIdsShouldbeAddedList');
+
+
+  List<int> selectedQuestionIds = qlist
+          .where((question) => question['q_status'] == 'uploaded')
+          .map<int>((question) => question['q_id'] as int)
+          .toList();
+       missingcloss =
+          await findMissingCLOs(selectedQuestionIds, cloIdsShouldbeAddedList);
+
+      print('Missing CLOs: $missingcloss');
+  }
+
+    Future<void> loadClosWeightageofSpecificCourseAndHeaderName(
+      int cid, String term) async {
+    try {
+      List<dynamic> list = await APIHandler()
+          .loadClosWeightageofSpecificCourseAndHeaderName(cid, term);
+      if (list.isNotEmpty) {
+        paperGridWeightageOfTerm = list;
+      }
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
+    }
+  }
+
+  Future<List<int>> findMissingCLOs(
+      List<int> selectedQuestionIds, List<int> cloIdsShouldbeAddedList) async {
+    Set<int> actualCLOs = {};
+
+    for (int questionId in selectedQuestionIds) {
+      List<String> cloStrings = await loadClosofSpecificQuestion(questionId);
+      actualCLOs.addAll(cloStrings.map((clo) => int.parse(clo)));
+    }
+    print('Actual $actualCLOs');
+    List<int> missingcloss =
+        cloIdsShouldbeAddedList.toSet().difference(actualCLOs).toList();
+    return missingcloss;
+  }
+
+  Future<List<String>> loadClosofSpecificQuestion(int qid) async {
+  try {
+    Uri uri = Uri.parse('${APIHandler().apiUrl}QuestionTopic/getClosOfSpecificQuesestion/$qid');
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      List<dynamic> cloData = jsonDecode(response.body);
+      List<String> cloNumbers = cloData.map((data) => data['clo_number'].toString()).toList();
+      return cloNumbers;
+    } else {
+      throw Exception('Error fetching CLOs for question');
+    }
+  } catch (e) {
+    throw Exception('Failed to load CLOs mapped with question');
+  }
+}
+
+  Future<void> loadCloListsForQuestions() async {
+    for (var question in qlist) {
+      int qid = question['q_id'];
+      List<dynamic> cloListForQuestion =
+          await APIHandler().loadClosofSpecificQuestion(qid);
+      cloListsForQuestions[qid] = cloListForQuestion;
+    }
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> loadPaperHeaderData(int cid, int sid) async {
     try {
       plist = await APIHandler().loadPaperHeader(cid, sid);
       setState(() {
+     
         if (plist.isNotEmpty) {
           paperId = plist[0]['p_id'];
           duration = plist[0]['duration'];
           degree = plist[0]['degree'];
-        //  tMarks = plist[0]['t_marks'].toString();
-
+          //  tMarks = plist[0]['t_marks'].toString();
           session = plist[0]['session'];
           term = plist[0]['term'];
-          questions = plist[0]['NoOfQuestions'];
+          noOfQuestions = plist[0]['NoOfQuestions'];
+  
+          qNoCounter = noOfQuestions;
+
           year = plist[0]['year'];
           date = DateTime.parse(plist[0]['exam_date']);
         }
-      });
+         });
+           await loadClosWeightageofSpecificCourseAndHeaderName(
+            widget.cid!, term!);
+            setState(() {
+              
+            });
     } catch (e) {
       if (mounted) {
         showDialog(
@@ -137,6 +254,20 @@ class _PaperApprovalState extends State<PaperApproval> {
   Future<void> loadQuestionsWithUploadedStatus(int pid) async {
     try {
       qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
+      if (qlist.isNotEmpty) {
+        loadCloListsForQuestions();
+      }
+       List<dynamic> allCloLists = []; // List to store CLOs of all questions
+    for (var question in qlist) {
+  
+      int qid = question['q_id'];
+      List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid); // Load CLOs for each question
+      allCloLists.add(cloListForQuestion); // Add CLOs to the list
+    
+    }
+    setState(() {
+      listOfClos = allCloLists; // Assign the list of CLOs to cloList
+    });
       setState(() {});
     } catch (e) {
       if (mounted) {
@@ -146,25 +277,6 @@ class _PaperApprovalState extends State<PaperApproval> {
             return AlertDialog(
               title: const Text('Error'),
               content: Text(e.toString()),
-            );
-          },
-        );
-      }
-    }
-  }
-
-  Future<void> loadClosMappedWithTopicData(int tid) async {
-    try {
-      List<dynamic> list = await APIHandler().loadClosMappedWithTopic(tid);
-      cloMap[tid] = list;
-      setState(() {});
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text('Error loading CLOs mapped with topic: $e'),
             );
           },
         );
@@ -228,9 +340,11 @@ class _PaperApprovalState extends State<PaperApproval> {
     }
   }
 
-  Future<void> addFeedbackData(String feedbackText, int pid, int? qid,int? fid) async {
+  Future<void> addFeedbackData(
+      String feedbackText, int pid, int? qid, int? fid) async {
     try {
-      dynamic code = await APIHandler().addFeedback(feedbackText, pid, qid,fid);
+      dynamic code =
+          await APIHandler().addFeedback(feedbackText, pid, qid, fid);
       setState(() {});
       if (code == 200) {
         if (mounted) {
@@ -245,7 +359,7 @@ class _PaperApprovalState extends State<PaperApproval> {
     }
   }
 
-Future<void> loadApprovedPapersData() async {
+  Future<void> loadApprovedPapersData() async {
     try {
       aplist = await APIHandler().loadApprovedPapers();
       setState(() {});
@@ -268,8 +382,9 @@ Future<void> loadApprovedPapersData() async {
     try {
       for (var question in qlist) {
         int qid = question['q_id'];
-        int qmarks=question['q_marks'];
-        tMarks+=qmarks;
+        int qmarks = question['q_marks'];
+        tMarks += qmarks;
+         qNoCounter--;
         await updateQuestionStatus(qid, newStatus);
       }
       setState(() {
@@ -297,8 +412,9 @@ Future<void> loadApprovedPapersData() async {
     try {
       for (var question in qlist) {
         int qid = question['q_id'];
-         int qmarks=question['q_marks'];
-        tMarks-=qmarks;
+        int qmarks = question['q_marks'];
+        tMarks -= qmarks;
+         qNoCounter++;
         await updateQuestionStatus(qid, 'uploaded');
       }
       setState(() {
@@ -461,7 +577,7 @@ Future<void> loadApprovedPapersData() async {
                         ),
                         Expanded(
                             child: Text(
-                         '$tMarks',
+                          '$tMarks',
                           style: const TextStyle(fontSize: 12),
                         )),
                       ],
@@ -518,15 +634,12 @@ Future<void> loadApprovedPapersData() async {
               itemBuilder: (context, index) {
                 final question = qlist[index];
                 final imageUrl = question['q_image'];
-                final fetchedTopicId = question['t_id'];
+                final qDifficulty=question['q_difficulty'];
                 final qid = question['q_id'];
+                final fid = question['f_id'];
+                List<dynamic> cloListForQuestion =
+                    cloListsForQuestions[question['q_id']] ?? [];
 
-               final fid=question['f_id'];
-                if (!cloMap.containsKey(fetchedTopicId)) {
-                  loadClosMappedWithTopicData(fetchedTopicId);
-                }
-
-                final cloList = cloMap[fetchedTopicId] ?? [];
                 return Card(
                   elevation: 5,
                   shape: RoundedRectangleBorder(
@@ -565,7 +678,7 @@ Future<void> loadApprovedPapersData() async {
                               Text('${question['q_difficulty']},'),
                               Text('${question['q_marks']},'),
                               Text(
-                                  'CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
+                                  'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}'),
                             ],
                           ),
                           Row(
@@ -578,8 +691,8 @@ Future<void> loadApprovedPapersData() async {
                                   onTap: () => {
                                         setState(() {
                                           statusMap[qid] = 'approved';
-                                          
-                                          tMarks+=question['q_marks'] as int;
+
+                                          tMarks += question['q_marks'] as int;
                                         }),
                                         updateQuestionStatus(qid, 'approved')
                                       }),
@@ -589,8 +702,9 @@ Future<void> loadApprovedPapersData() async {
                                 onChanged: (value) {
                                   setState(() {
                                     statusMap[qid] = value!;
-                                    
-                                 tMarks+=question['q_marks'] as int;
+
+                                    tMarks += question['q_marks'] as int;
+                                    qNoCounter--;
                                   });
                                   updateQuestionStatus(qid, value!);
                                 },
@@ -600,9 +714,9 @@ Future<void> loadApprovedPapersData() async {
                                   onTap: () => {
                                         setState(() {
                                           statusMap[qid] = 'rejected';
-                                              tMarks-=question['q_marks'] as int;
+                                          tMarks -= question['q_marks'] as int;
                                         }),
-                                        updateQuestionStatus(qid, 'rejected')
+                                     //   updateQuestionStatus(qid, 'rejected')
                                       }),
                               Radio(
                                   value: 'rejected',
@@ -610,11 +724,15 @@ Future<void> loadApprovedPapersData() async {
                                   onChanged: (value) {
                                     setState(() {
                                       statusMap[qid] = value!;
-                                          tMarks-=question['q_marks'] as int;
+                                      tMarks -= question['q_marks'] as int;
+                                       qNoCounter++;
                                     });
-                                    updateQuestionStatus(qid, value!);
-                                  }),
+                              //      updateQuestionStatus(qid, value!);
+                                  }
+                                  ),
+                                 
                             ],
+                            
                           ),
                           statusMap[qid] == 'rejected'
                               ? Row(
@@ -639,18 +757,21 @@ Future<void> loadApprovedPapersData() async {
                                       ),
                                     ),
                                     IconButton(
-                                      onPressed: () {
-                                        if(commentController.text.isEmpty){
-
-                                       
-                                         if(mounted){
-                                  showErrorDialog(context, 'Enter comment first');
-                                }
-                                 }
-                                else{
-                                         addFeedbackData(commentController.text,
-                                            widget.pid, qid,fid);
-                                }
+                                      onPressed: () async{
+                                        if (commentController.text.isEmpty) {
+                                          if (mounted) {
+                                            showErrorDialog(
+                                                context, 'Enter comment first');
+                                          }
+                                        } else {
+                                          addFeedbackData(
+                                              commentController.text,
+                                              widget.pid,
+                                              qid,
+                                              fid);
+                                        }
+                                       await updateQuestionStatus(qid, 'rejected');
+                                        await loadQuestionsWithUploadedStatus(paperId);
                                       },
                                       icon: const Icon(Icons.send),
                                     ),
@@ -661,18 +782,19 @@ Future<void> loadApprovedPapersData() async {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 AdditionlQuestions(
-                                                
                                               pid: paperId,
                                               ccode: widget.ccode,
                                               cid: widget.cid,
                                               coursename: widget.coursename,
+                                              qdifficulty: qDifficulty,
+                                              qid: qid,
                                             ),
                                           ),
                                         );
                                         setState(() {
-                                          loadQuestionsWithUploadedStatus(widget.pid);
+                                          loadQuestionsWithUploadedStatus(
+                                              widget.pid);
                                         });
-                                       
                                       },
                                       icon:
                                           const Icon(Icons.find_replace_sharp),
@@ -688,19 +810,34 @@ Future<void> loadApprovedPapersData() async {
               },
             ),
           ),
+         
           acceptAllChecked
-              ? customElevatedButton(
-                  onPressed: () {
+              ? 
+            
+              customElevatedButton(
+                  onPressed: () async{
+                 //    await initializeData();
+                  //  if(qNoCounter==0){
+                      if(missingcloss.isNotEmpty){
+                        showErrorDialog(context, 'Missing Clos! $missingcloss');
+                      }else{
+
+                    
                     updatePaperStatus(widget.pid);
                     Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                             builder: (context) => const DRTApprovedPapers()));
-                            setState(() {
-                              loadApprovedPapersData();
-                            });
-                  },
-
+                    setState(() {
+                      loadApprovedPapersData();
+                    });
+                  }
+                    }
+                  // else{
+                  //   showErrorDialog(context, 'Number of approved questions should be $noOfQuestions');
+                  // }
+                  //  },
+  ,
                   buttonText: 'Approve')
               : const SizedBox(),
         ]),

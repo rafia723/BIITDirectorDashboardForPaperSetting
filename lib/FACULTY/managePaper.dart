@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/clogrid.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class ManagePaper extends StatefulWidget {
   final int? cid;
@@ -46,10 +49,9 @@ class _ManagePaperState extends State<ManagePaper> {
   List<dynamic> difficultyList = [];
   List<dynamic> paperGridWeightageOfTerm = [];
   List<int> cloIdsShouldbeAddedList = [];
-  List<int> cloIdzInQuestions = []; // Updated to List<int>
-  Set<int> missingCLOs = {};
-  Set<int> missingCLOsOnCheckOrUnchecked = {};
-  Map<int, Set<int>> selectedCLOs = {};
+  List<dynamic> listOfClos=[];
+   List<int> missingcloss = [];
+     Map<int, List<dynamic>> cloListsForQuestions = {};
 
   @override
   void initState() {
@@ -57,55 +59,28 @@ class _ManagePaperState extends State<ManagePaper> {
     loadTeachers();
     initializeData();
   }
-// // When a question is selected (checkbox checked), add its CLO ID(s) to the list
-// void addToSelectedCLOs(int questionId, int topicId) async {
-//   try {
-//     // Fetch CLOs mapped with the associated topic
-//     List<dynamic> cloList = await APIHandler().loadClosMappedWithTopic(topicId);
-//     if (cloList.isNotEmpty) {
-//       selectedCLOs[questionId] = (selectedCLOs[questionId] ?? {})..addAll(cloList.map((clo) => clo['clo_id']));
-//     }
-//   } catch (e) {
-//     print('Error fetching CLOs: $e');
-//   }
-// }
 
-// // When a question is deselected (checkbox unchecked), remove its CLO ID(s) from the list
-// void removeFromSelectedCLOs(int questionId) {
-//   selectedCLOs.remove(questionId);
-// }
 
-  void addToSelectedCLOs(int questionId, int topicId) async {
-    try {
-      // Fetch CLOs mapped with the associated topic
-      List<dynamic> cloList =
-          await APIHandler().loadClosMappedWithTopic(topicId);
-      if (cloList.isNotEmpty) {
-        selectedCLOs[questionId] = (selectedCLOs[questionId] ?? {})
-          ..addAll(cloList.map((clo) => clo['clo_id']));
-        // Update missing CLOs after adding to selected CLOs
-      }
-    } catch (e) {
-      print('Error fetching CLOs: $e');
-    }
-  }
 
-// When a question is deselected (checkbox unchecked), remove its CLO ID(s) from the list
-  void removeFromSelectedCLOs(int questionId) {
-    selectedCLOs.remove(questionId);
-    // Update missing CLOs after removing from selected CLOs
-  }
-
-  Future<void> initializeData() async {
+    Future<void> initializeData() async {
     await loadSession();
     if (sid != null) {
       await loadPaperHeaderData(widget.cid!, sid!);
     }
     if (paperId != null) {
-      //  await loadClosDataForQuestions();
-      await loadQuestion(paperId);
+      await loadQuestion(paperId!);
+
+      // Collect all CLOs for selected questions
+      List<List<String>> allCloLists = [];
+      for (var question in qlist) {
+        int qid = question['q_id'];
+        List<String> cloListForQuestion =
+            await loadClosofSpecificQuestion(qid);
+        allCloLists.add(cloListForQuestion);
+      }
 
       // Deduct marks for questions already marked as uploaded
+      if(qlist.isNotEmpty){
       for (var question in qlist) {
         if (question['q_status'] == 'uploaded') {
           int qMarks = question['q_marks'];
@@ -129,60 +104,55 @@ class _ManagePaperState extends State<ManagePaper> {
           }
         }
       }
-      cloIdsShouldbeAddedList.clear();
-      for (var item in paperGridWeightageOfTerm) {
-        cloIdsShouldbeAddedList.add(item['clo_id']);
-      }
-      print('clo idx should be included$cloIdsShouldbeAddedList');
-
-      // Initialize cloIdzInQuestions for each selected question
-      for (var question in qlist) {
-        if (question['q_status'] == 'uploaded') {
-          question['cloIdzInQuestions'] = [];
-        }
+       loadCloListsForQuestions();
       }
 
-      // Collect CLO IDs only for selected questions
-      for (var question in qlist) {
-        if (question['q_status'] == 'uploaded') {
-          final fetchedTopicId = question['t_id'];
-          if (cloMap.containsKey(fetchedTopicId)) {
-            for (var clo in cloMap[fetchedTopicId]!) {
-              question['cloIdzInQuestions'].add(clo['clo_id']);
-            }
-          }
-        }
-      }
-      cloIdzInQuestions.clear();
-      // Collect all unique CLO IDs in selected questions
-      for (var question in qlist) {
-        if (question['q_status'] == 'uploaded') {
-          cloIdzInQuestions.addAll(
-              (question['cloIdzInQuestions'] as List<dynamic>).cast<int>());
-        }
-      }
+     cloIdsShouldbeAddedList.clear();
+for (var item in paperGridWeightageOfTerm) {
+  try {
+    cloIdsShouldbeAddedList.add(int.parse(item['clonumber']));
+  } catch (e) {
+    print('Error parsing clonumber: ${item['clonumber']}');
+  }
+}
+      print(' CLOs should be added: $cloIdsShouldbeAddedList');
 
-      // Remove duplicates from cloIdzInQuestions
-      cloIdzInQuestions = cloIdzInQuestions.toSet().toList();
-      print('cloidzod selected questions $cloIdzInQuestions');
+      List<int> selectedQuestionIds = qlist
+          .where((question) => question['q_status'] == 'uploaded')
+          .map<int>((question) => question['q_id'] as int)
+          .toList();
+       missingcloss =
+          await findMissingCLOs(selectedQuestionIds, cloIdsShouldbeAddedList);
 
-      missingCLOs.clear();
-      // Check for missing CLOs
-      missingCLOs =
-          cloIdsShouldbeAddedList.toSet().difference(cloIdzInQuestions.toSet());
+      print('Missing CLOs: $missingcloss');
     }
   }
 
-  Future<void> loadClosDataForQuestions() async {
-    if (paperId != null) {
-      for (var question in qlist) {
-        final fetchedTopicId = question['t_id'];
-        await loadClosMappedWithTopicData(fetchedTopicId);
-        setState(() {});
-      }
+  Future<List<int>> findMissingCLOs(
+      List<int> selectedQuestionIds, List<int> cloIdsShouldbeAddedList) async {
+    Set<int> actualCLOs = {};
+
+    for (int questionId in selectedQuestionIds) {
+      List<String> cloStrings = await loadClosofSpecificQuestion(questionId);
+      actualCLOs.addAll(cloStrings.map((clo) => int.parse(clo)));
     }
+    print('Actual $actualCLOs');
+    List<int> missingcloss =
+        cloIdsShouldbeAddedList.toSet().difference(actualCLOs).toList();
+    return missingcloss;
   }
 
+
+Future<void> loadCloListsForQuestions() async {
+  for (var question in qlist) {
+    int qid = question['q_id'];
+    List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid);
+    cloListsForQuestions[qid] = cloListForQuestion;
+  }
+ if(mounted){
+  setState(() {}); 
+ }
+}
   Future<void> updateStatus(int id, dynamic newStatus) async {
     try {
       dynamic code = await APIHandler()
@@ -298,36 +268,47 @@ class _ManagePaperState extends State<ManagePaper> {
     }
   }
 
-  Future<void> loadQuestion(int pid) async {
-    try {
-      qlist = await APIHandler().loadQuestion(pid);
-      for (var question in qlist) {
-        fid = question['f_id'];
-        if (fid != null) {
-          await loadFacultyName(fid);
-        }
-      }
-      setState(() {});
-    } catch (e) {
-      if (mounted) {
-        showErrorDialog(context, e.toString());
-      }
-    }
-  }
 
-  Future<void> loadClosMappedWithTopicData(int tid) async {
-    try {
-      List<dynamic> list = await APIHandler().loadClosMappedWithTopic(tid);
-      if (list.isNotEmpty) {
-        cloMap[tid] = list;
-      }
-      setState(() {});
-    } catch (e) {
-      if (mounted) {
-        showErrorDialog(context, e.toString());
+
+ Future<void> loadQuestion(int pid) async {
+  try {
+    qlist = await APIHandler().loadQuestion(pid);
+    List<dynamic> allCloLists = []; // List to store CLOs of all questions
+    for (var question in qlist) {
+      fid = question['f_id'];
+      int qid = question['q_id'];
+      List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid); // Load CLOs for each question
+      allCloLists.add(cloListForQuestion); // Add CLOs to the list
+      if (fid != null) {
+        await loadFacultyName(fid!);
       }
     }
+    setState(() {
+      listOfClos = allCloLists; // Assign the list of CLOs to cloList
+    });
+  } catch (e) {
+    if (mounted) {
+      showErrorDialog(context, e.toString());
+    }
   }
+}
+
+Future<List<String>> loadClosofSpecificQuestion(int qid) async {
+  try {
+    Uri uri = Uri.parse('${APIHandler().apiUrl}QuestionTopic/getClosOfSpecificQuesestion/$qid');
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      List<dynamic> cloData = jsonDecode(response.body);
+      List<String> cloNumbers = cloData.map((data) => data['clo_number'].toString()).toList();
+      return cloNumbers;
+    } else {
+      throw Exception('Error fetching CLOs for question');
+    }
+  } catch (e) {
+    throw Exception('Failed to load CLOs mapped with question');
+  }
+}
 
   Future<void> loadClosWeightageofSpecificCourseAndHeaderName(
       int cid, String term) async {
@@ -344,6 +325,22 @@ class _ManagePaperState extends State<ManagePaper> {
       }
     }
   }
+
+Future<List<int>> loadTopicsMappedWithQuestion(int qid) async {
+  try {
+    Uri uri = Uri.parse('${APIHandler().apiUrl}QuestionTopic/getTopicMappedWithQuestion/$qid');
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      List<dynamic> topicIds = jsonDecode(response.body);
+      return topicIds.cast<int>();
+    } else {
+      throw Exception('Error fetching topics for question');
+    }
+  } catch (e) {
+    throw Exception('Failed to load topics mapped with question');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -558,166 +555,133 @@ class _ManagePaperState extends State<ManagePaper> {
               ],
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: qlist.length,
-              itemBuilder: (context, index) {
-                final question = qlist[index];
-                final imageUrl = question['q_image'];
-                final fetchedTopicId = question['t_id'];
-                fid = question['f_id'];
-                final facultyName = facultyNames[fid] ?? 'Loading...';
+ Expanded(
+  child: ListView.builder(
+    itemCount: qlist.length,
+    itemBuilder: (context, index) {
+      final question = qlist[index];
+      final imageUrl = question['q_image'];
+      fid = question['f_id'];
+      final facultyName = facultyNames[fid] ?? 'Loading...';
 
-                // Fetch CLOs for the current topic if not already fetched
-                if (!cloMap.containsKey(fetchedTopicId)) {
-                  loadClosMappedWithTopicData(fetchedTopicId);
-                }
-                final cloList = cloMap[fetchedTopicId] ?? [];
-                return Card(
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
+      // Get CLOs for this question from the preloaded map
+      List<dynamic> cloListForQuestion = cloListsForQuestions[question['q_id']] ?? [];
+
+      return Card(
+        elevation: 5,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15.0),
+        ),
+        color: Colors.white.withOpacity(0.8),
+        child: GestureDetector(
+          child: ListTile(
+            tileColor: Colors.white,
+            title: Row(
+              children: [
+                Text(
+                  'Question # ${index + 1}',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+                const SizedBox(
+                  width: 190,
+                ),
+                Checkbox(
+                    value: question['q_status'] == 'uploaded',
+                    onChanged: (bool? newValue) async {
+                      if (qNoCounter == 0 && newValue == true) {
+                        if (mounted) {
+                          showErrorDialog(context,
+                              'You cannot add more questions because the total number of questions have reached their limit.');
+                        }
+                      } else {
+                        await updateStatus(
+                            question['q_id'], newValue);
+
+                        if (newValue == true) {
+                          setState(() {
+                            tMarks += question['q_marks'] as int;
+                            qNoCounter--;
+
+                            difficulty = question['q_difficulty'];
+                            if (difficulty.toLowerCase() == 'easy') {
+                              easyCount--;
+                              print('easy $easyCount');
+                            } else if (difficulty.toLowerCase() ==
+                                'medium') {
+                              mediumCount--;
+                              print('medium $mediumCount');
+                            } else if (difficulty.toLowerCase() ==
+                                'hard') {
+                              hardCount--;
+                              print('hard $hardCount');
+                            }
+                          });
+                      
+                        } else if (newValue == false) {
+                          setState(() {
+                            tMarks -= question['q_marks'] as int;
+                            qNoCounter++;
+
+                            difficulty = question['q_difficulty'];
+                            if (difficulty.toLowerCase() == 'easy') {
+                              easyCount++;
+                              print('easy $easyCount');
+                            } else if (difficulty.toLowerCase() ==
+                                'medium') {
+                              mediumCount++;
+                              print('medium $mediumCount');
+                            } else if (difficulty.toLowerCase() ==
+                                'hard') {
+                              hardCount++;
+                              print('hard $hardCount');
+                            }
+                          });
+                         
+                        }
+                         initializeData();
+                      }
+                    }),
+              ],
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(question['q_text']),
+                if (imageUrl != null)
+                  Image.network(
+                    imageUrl,
+                    height: 150,
+                    width: 300,
+                    loadingBuilder:
+                        (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return const CircularProgressIndicator();
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Text('Error loading image: $error');
+                    },
                   ),
-                  color: Colors.white.withOpacity(0.8),
-                  child: GestureDetector(
-                    child: ListTile(
-                      tileColor: Colors.white,
-                      title: Row(
-                        children: [
-                          Text(
-                            'Question # ${index + 1}',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 15),
-                          ),
-                          const SizedBox(
-                            width: 190,
-                          ),
-                          Checkbox(
-                              value: question['q_status'] == 'uploaded',
-                              onChanged: (bool? newValue) async {
-                                if (qNoCounter == 0 && newValue == true) {
-                                  if (mounted) {
-                                    showErrorDialog(context,
-                                        'You cannot add more questions because the total number of questions have reached their limit.');
-                                  }
-                                } else {
-                                  await updateStatus(
-                                      question['q_id'], newValue);
-
-                                  if (newValue == true) {
-                                    //   int qMarks = question['q_marks'];
-                                    setState(() {
-                                      tMarks += question['q_marks'] as int;
-                                      qNoCounter--;
-
-                                      difficulty = question['q_difficulty'];
-                                      if (difficulty.toLowerCase() == 'easy') {
-                                        easyCount--;
-                                        print('easy $easyCount');
-                                      } else if (difficulty.toLowerCase() ==
-                                          'medium') {
-                                        mediumCount--;
-                                        print('medium $mediumCount');
-                                      } else if (difficulty.toLowerCase() ==
-                                          'hard') {
-                                        hardCount--;
-                                        print('hard $hardCount');
-                                      }
-//  addToSelectedCLOs(
-//               question['q_id'],
-//               question['t_id']
-//           );
-                                      setState(() {
-                                        initializeData();
-                                      });
-                                      //   counter = (counter - qMarks);
-                                    });
-                                  } else if (newValue == false) {
-                                    // If the checkbox is unchecked, add the qMarks back to tMarks
-                                    //  int qMarks = question['q_marks'];
-                                    setState(() {
-                                      //   counter = (counter + qMarks);
-                                      tMarks -= question['q_marks'] as int;
-                                      qNoCounter++;
-
-                                      difficulty = question['q_difficulty'];
-                                      if (difficulty.toLowerCase() == 'easy') {
-                                        easyCount++;
-                                        print('easy $easyCount');
-                                      } else if (difficulty.toLowerCase() ==
-                                          'medium') {
-                                        mediumCount++;
-                                        print('medium $mediumCount');
-                                      } else if (difficulty.toLowerCase() ==
-                                          'hard') {
-                                        hardCount++;
-                                        print('hard $hardCount');
-                                      }
-                                      //                               removeFromSelectedCLOs(
-                                      //     question['q_id']
-                                      // );
-                                      setState(() {
-                                        initializeData();
-                                      });
-                                    });
-                                  }
-                                }
-                              }),
-                        ],
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(question['q_text']),
-                          if (imageUrl != null)
-                            Image.network(
-                              imageUrl,
-                              height: 150,
-                              width: 300,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return const CircularProgressIndicator();
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Text('Error loading image: $error');
-                              },
-                            ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text('${question['q_difficulty']},'),
-                              Text('${question['q_marks']},'),
-                              Text('$facultyName,'),
-                              FutureBuilder<List<int>>(
-                                future: APIHandler()
-                                    .loadCloNumberOfSpecificCloids(cloList
-                                        .map((clo) => clo['clo_id'])
-                                        .toList()),
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const CircularProgressIndicator();
-                                  } else if (snapshot.hasError) {
-                                    return const Text(
-                                        'Error loading CLO numbers');
-                                  } else {
-                                    final cloNumbers = snapshot.data ?? [];
-                                    return Text(
-                                        'CLOs: ${cloNumbers.join(', ')}');
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text('${question['q_difficulty']},'),
+                    Text('${question['q_marks']},'),
+                    Text('$facultyName,'),
+                    Text(
+                      'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}'
                     ),
-                  ),
-                );
-              },
+                  ],
+                ),
+              ],
             ),
           ),
+        ),
+      );
+    }
+  ),
+),
+        
           Row(
             children: [
               const SizedBox(
@@ -741,25 +705,20 @@ class _ManagePaperState extends State<ManagePaper> {
               ),
               customElevatedButton(
                   onPressed: () async {
-                    //   if(counter==0&&qNoCounter==0){
+                  
                     if (qNoCounter == 0 &&
                         easyCount == 0 &&
                         mediumCount == 0 &&
                         hardCount == 0) {
-                      initializeData();
-                      if (missingCLOs.isNotEmpty) {
-                        // print('Missing $missingCLOs');
-                        //   print('Missing /hhjj $missingCLOsOnCheckOrUnchecked');
-                        //Display missing clo
+                      if (missingcloss.isNotEmpty) {
                         showDialog(
                           context: context,
                           builder: (context) {
+
                             return AlertDialog(
-                              title: const Text('Missing CLOs'),
+                              title:  const Text('Missing CLOs'),
                               content:
-                                  // Text(
-                                  //     'Some CLOs are missing $missingCLOs'),
-                                  const Text('Some CLOs are missing'),
+                                   Text('CLO-$missingcloss is missing'),
                               actions: [
                                 TextButton(
                                   onPressed: () {
@@ -786,6 +745,7 @@ class _ManagePaperState extends State<ManagePaper> {
                           'Please ensure question and other counters are 0 before submitting.');
                     }
                   },
+                  
                   buttonText: 'Submit'),
             ],
           )

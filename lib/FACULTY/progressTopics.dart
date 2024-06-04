@@ -226,98 +226,95 @@ class _ProgressTopicScreenState extends State<ProgressTopicScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: customAppBar(context: context, title: 'Topics Progress'),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/bg.png'),
-                  fit: BoxFit.cover,
-                ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: customAppBar(context: context, title: 'Topics Progress'),
+    body: Stack(
+      children: [
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/bg.png'),
+                fit: BoxFit.cover,
               ),
             ),
           ),
-          Container(
-            alignment: Alignment.topLeft,
-            padding: const EdgeInsets.only(left: 15.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 10),
-                Text(
-                  widget.coursename,
-                  style: const TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+        ),
+        Container(
+          alignment: Alignment.topLeft,
+          padding: const EdgeInsets.only(left: 15.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              Text(
+                widget.coursename,
+                style: const TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
                 ),
-                Text(
-                  'Course Code: ${widget.ccode}',
-                  style: const TextStyle(
-                    fontSize: 16.0,
-                  ),
+              ),
+              Text(
+                'Course Code: ${widget.ccode}',
+                style: const TextStyle(
+                  fontSize: 16.0,
                 ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 10),
-                      customButton(
-                        onPressed: () {
-                         
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => CoveredTopics(
-                                      cid: widget.cid,
-                                      ccode: widget.ccode,
-                                      coursename: widget.coursename,
-                                      fid: widget.fid)));
-                        },
-                        buttonText: 'Covered',
-                        isPressed: isPressedCovered,
-                      ),
-                      const SizedBox(width: 10),
-                      customButton(
-                        onPressed: () {
-                        
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => CommonTopicsScreen(
-                                      cid: widget.cid,
-                                      ccode: widget.ccode,
-                                      coursename: widget.coursename,
-                                      fid: widget.fid)));
-                        },
-                        buttonText: 'Common',
-                        isPressed: isPressedCommon,
-                      ),
-                      const SizedBox(width: 10),
-                      customButton(
-                        onPressed: () {
-                          
-                        },
-                        buttonText: 'Progress',
-                        isPressed: isPressedProgress,
-                      ),
-                    ],
-                  ),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 10),
+                    customButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => CoveredTopics(
+                                    cid: widget.cid,
+                                    ccode: widget.ccode,
+                                    coursename: widget.coursename,
+                                    fid: widget.fid)));
+                      },
+                      buttonText: 'Covered',
+                      isPressed: isPressedCovered,
+                    ),
+                    const SizedBox(width: 10),
+                    customButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => CommonTopicsScreen(
+                                    cid: widget.cid,
+                                    ccode: widget.ccode,
+                                    coursename: widget.coursename,
+                                    fid: widget.fid)));
+                      },
+                      buttonText: 'Common',
+                      isPressed: isPressedCommon,
+                    ),
+                    const SizedBox(width: 10),
+                    customButton(
+                      onPressed: () {},
+                      buttonText: 'Progress',
+                      isPressed: isPressedProgress,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Topics',
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Topics',
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold,
                 ),
-                SingleChildScrollView(
+              ),
+              Expanded(
+                child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -327,8 +324,7 @@ class _ProgressTopicScreenState extends State<ProgressTopicScreen> {
                           Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Container(
-                              constraints:
-                                  const BoxConstraints(maxWidth: 200),
+                              constraints: const BoxConstraints(maxWidth: 200),
                               decoration: BoxDecoration(
                                 color: const Color.fromARGB(26, 112, 106, 106),
                                 borderRadius: BorderRadius.circular(10),
@@ -374,8 +370,7 @@ class _ProgressTopicScreenState extends State<ProgressTopicScreen> {
                               title: Row(
                                 children: [
                                   Checkbox(
-                                    value: topicCheckState[topic['t_id']] ??
-                                        false,
+                                    value: topicCheckState[topic['t_id']] ?? false,
                                     onChanged: null,
                                   ),
                                   Text(topic['t_name']),
@@ -383,20 +378,16 @@ class _ProgressTopicScreenState extends State<ProgressTopicScreen> {
                               ),
                               initiallyExpanded: isPressedProgress,
                               onExpansionChanged: (bool expanded) {
-                                if (expanded &&
-                                    subTopicMap[topic['t_id']] == null) {
+                                if (expanded && subTopicMap[topic['t_id']] == null) {
                                   loadSubTopic(topic['t_id']);
                                 }
                               },
                               children: [
                                 if (subTopicMap[topic['t_id']] != null)
-                                  for (var subTopic
-                                      in subTopicMap[topic['t_id']]!)
+                                  for (var subTopic in subTopicMap[topic['t_id']]!)
                                     CheckboxListTile(
                                       title: Text(subTopic['st_name']),
-                                      value: subTopicCheckState[topic['t_id']]
-                                              ?[subTopic['st_id']] ??
-                                          false,
+                                      value: subTopicCheckState[topic['t_id']]?[subTopic['st_id']] ?? false,
                                       onChanged: null,
                                     ),
                               ],
@@ -405,12 +396,13 @@ class _ProgressTopicScreenState extends State<ProgressTopicScreen> {
                       ),
                     ],
                   ),
-                )
-              ],
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 }

@@ -8,7 +8,8 @@ class AdditionlQuestions extends StatefulWidget {
   final String coursename;
   final String ccode;
    final int pid;
-  
+  final String qdifficulty;
+     final int qid;
    const AdditionlQuestions({
     Key? key,
  
@@ -16,6 +17,8 @@ class AdditionlQuestions extends StatefulWidget {
     required this.ccode,
     required this.coursename,
     required this.pid,
+        required this.qdifficulty,
+         required this.qid,
   
   }) : super(key: key);
   @override
@@ -25,8 +28,9 @@ class AdditionlQuestions extends StatefulWidget {
 class _AdditionlQuestionsState extends State<AdditionlQuestions> {
   List<dynamic> qlist = [];
   dynamic paperId;
+    Map<int, List<dynamic>> cloListsForQuestions = {};
   
-  Map<int, List<dynamic>> cloMap = {};
+  
 
  
 
@@ -38,10 +42,12 @@ class _AdditionlQuestionsState extends State<AdditionlQuestions> {
 
   Future<void> initializeData() async {
 loadQuestionsWithPendingStatus(widget.pid);
+if(qlist.isNotEmpty){
+  loadCloListsForQuestions();
+}
     setState(() {});
-  }
 
-  
+  }
 
   
   
@@ -49,8 +55,12 @@ loadQuestionsWithPendingStatus(widget.pid);
   Future<void> loadQuestionsWithPendingStatus(int pid) async {
     try {
       qlist = await APIHandler().loadQuestionsWithPendingStatus(pid);
+  
       setState(() {
       });
+      if(qlist.isNotEmpty){
+        loadCloListsForQuestions();
+      }
     } catch (e) {
       if (mounted) {
         showDialog(
@@ -70,6 +80,9 @@ loadQuestionsWithPendingStatus(widget.pid);
     try {
       qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
       setState(() {});
+       if(qlist.isNotEmpty){
+        loadCloListsForQuestions();
+      }
     } catch (e) {
       if (mounted) {
         showDialog(
@@ -85,27 +98,10 @@ loadQuestionsWithPendingStatus(widget.pid);
     }
   }
 
-  Future<void> loadClosMappedWithTopicData(int tid) async {
-    try {
-      List<dynamic> list = await APIHandler().loadClosMappedWithTopic(tid);
-      cloMap[tid] = list;
-      setState(() {});
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text('Error loading CLOs mapped with topic: $e'),
-            );
-          },
-        );
-      }
-    }
-  }
+  
 
 
-  Future<void> updateQuestionStatus(int qid) async {
+  Future<void> updateQuestionStatustoUploaded(int qid) async {
     try {
       dynamic code = await APIHandler()
           .updateQuestionStatusToUploaded(qid);
@@ -135,7 +131,46 @@ loadQuestionsWithPendingStatus(widget.pid);
     }
   }
 
+  Future<void> updateQuestionStatustoRejected(int qid, String newStatus) async {
+    try {
+      dynamic code = await APIHandler()
+          .updateQuestionStatusToApprovedOrRejected(qid, newStatus);
+      if (mounted) {
+        if (code == 200) {
+          setState(() {
+           
+          });
+        } else {
+          throw Exception('Non-200 response code code=$code');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error changing status of question'),
+              content: Text(e.toString()), // Optionally show the error message
+            );
+          },
+        );
+      }
+    }
+  }
 
+
+ Future<void> loadCloListsForQuestions() async {
+    for (var question in qlist) {
+      int qid = question['q_id'];
+      List<dynamic> cloListForQuestion =
+          await APIHandler().loadClosofSpecificQuestion(qid);
+      cloListsForQuestions[qid] = cloListForQuestion;
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
   
 
 
@@ -163,17 +198,10 @@ loadQuestionsWithPendingStatus(widget.pid);
               itemBuilder: (context, index) {
                 final question = qlist[index];
                 final imageUrl = question['q_image'];
-                final fetchedTopicId = question['t_id'];
+               List<dynamic> cloListForQuestion =
+                    cloListsForQuestions[question['q_id']] ?? [];
 
-                // Fetch CLOs for the current topic if not already fetched
-                if (!cloMap.containsKey(fetchedTopicId)) {
-                  loadClosMappedWithTopicData(fetchedTopicId);
-                }
-
-                final cloList = cloMap[fetchedTopicId] ?? [];
-               
                     return Card(
-                      
                         elevation: 5,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15.0),
@@ -211,15 +239,17 @@ loadQuestionsWithPendingStatus(widget.pid);
                                   children: [
                                     Text('${question['q_difficulty']},'),
                                     Text('${question['q_marks']},'),
-                                    Text(
-                                        'CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
+                                     Text(
+                                  'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}'),
                                   ],
                                 ),
                               ],
                             ),
-                            trailing: IconButton(onPressed: (){
-                        
-                              updateQuestionStatus(question['q_id']);
+                            trailing: IconButton(onPressed: ()async{
+                        if(question['q_difficulty']==widget.qdifficulty){
+                            await  updateQuestionStatustoRejected(widget.qid,'rejected');
+                            await  updateQuestionStatustoUploaded(question['q_id']);
+                             await loadQuestionsWithUploadedStatus(widget.pid);
                                  Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
@@ -227,14 +257,20 @@ loadQuestionsWithPendingStatus(widget.pid);
                                             pid: widget.pid,
                                             cid: widget.cid,
                                             ccode: widget.ccode,
-                                            coursename: widget.coursename))
+                                            coursename: widget.coursename,
+                                            status: 'rejected',))
                                             );
-                                              setState(() {
-                                          loadQuestionsWithUploadedStatus(widget.pid);
-                                        });
-                                            
-                     
-                            }, icon: const Icon(Icons.check)),
+                                           await loadQuestionsWithUploadedStatus(widget.pid);
+                                        
+                                          setState(() {
+                                             
+                                          });
+                                        
+                            }else{
+                                showErrorDialog(context, 'Difficulty level is not matching with the rejected question so you cant replace it,Difficulty level of rejected question was ${widget.qdifficulty}');
+                            }
+                            },
+                            icon: const Icon(Icons.check)),
                           ),
                         ),
                       );

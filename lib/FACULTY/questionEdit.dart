@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 class QuestionEdit extends StatefulWidget {
@@ -58,19 +56,17 @@ class _QuestionEditState extends State<QuestionEdit> {
   List<dynamic> topicList = [];
   List<bool> isCheckedList = [];
   int? selectedTopicId;
-  int? fetchedTopicId = 1;
-  List<dynamic> cloMappedWithSelectedTopic = []; //selected topic to be posted
-  Map<int, List<dynamic>> cloMap = {};
+  
   List<int> selectedTopicIds = [];
-  List<int> topicIdsOfQuestion = [];
-  List<dynamic> cloMappedWithTopicIds = [];
+  List<dynamic> cloList=[];
+
 
   @override
   void initState() {
     super.initState();
     loadTeachers();
     initializeData();
-    loadTopic(widget.cid!, context);
+   loadTopics();
   }
 
   Future<void> initializeData() async {
@@ -82,7 +78,7 @@ class _QuestionEditState extends State<QuestionEdit> {
       }
     }
     if (paperId != null) {
-      await loadQuestion();
+      await loadQuestion(paperId);
       for (var marks in qlist) {
         tMarks += (marks['q_marks'] as int);
       }
@@ -90,11 +86,7 @@ class _QuestionEditState extends State<QuestionEdit> {
         setState(() {});
       }
     }
-    if (selectedTopicId != null) {
-      cloMappedWithSelectedTopic =
-          await APIHandler().loadClosMappedWithTopic(selectedTopicId!);
-      // List<dynamic> list=await APIHandler().loadClosMappedWithTopicsList(selectedTopicIds);
-    }
+  
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -110,12 +102,7 @@ class _QuestionEditState extends State<QuestionEdit> {
         ),
       );
     }
-// if(qlist!=null){
-//    print(topicIdsOfQuestion);
-//    print(cloMappedWithTopicIds);
-//   await loadCloMappedWithTopicIdsList(topicIdsOfQuestion);
-//   print(cloMappedWithTopicIds);
-// }
+
   }
 
   Future<void> loadFacultyName(int facultyid) async {
@@ -131,38 +118,9 @@ class _QuestionEditState extends State<QuestionEdit> {
     }
   }
 
-  Future<void> loadCloMappedWithTopicIdsList(List<int> tids) async {
-    try {
-      cloMappedWithTopicIds =
-          await APIHandler().loadClosMappedWithTopicsList(tids);
-      setState(() {
-        print(cloMappedWithTopicIds);
-      });
-    } catch (e) {
-      if (mounted) {
-        showErrorDialog(context, e.toString());
-      }
-    }
-  }
+ 
 
-  Future<void> loadClosMappedWithTopicData(int tid) async {
-    try {
-      List<dynamic> list = await APIHandler().loadClosMappedWithTopic(tid);
-      cloMap[tid] = list;
-      setState(() {});
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: Text('Error loading CLOs mapped with topic: $e'),
-            );
-          },
-        );
-      }
-    }
-  }
+  
 
   Future<void> _selectImage() async {
     final picker = ImagePicker();
@@ -205,58 +163,45 @@ class _QuestionEditState extends State<QuestionEdit> {
     }
   }
 
-  Future<void> loadTopic(int cid, BuildContext context) async {
-    try {
-      Uri uri = Uri.parse('${APIHandler().apiUrl}Topic/getTopic/$cid');
-      var response = await http.get(uri);
+ 
 
-      if (response.statusCode == 200) {
-        topicList = jsonDecode(response.body);
-        isCheckedList = List<bool>.filled(topicList.length, false);
-        setState(() {});
-      } else {
-        throw Exception('Failed to load topics');
-      }
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return const AlertDialog(
-              title: Text('Error loading topics'),
-            );
-          },
-        );
+  Future<void> loadQuestion(int pid) async {
+  try {
+    qlist = await APIHandler().loadQuestion(pid);
+    List<dynamic> allCloLists = []; // List to store CLOs of all questions
+    for (var question in qlist) {
+      facultyId = question['f_id'];
+      int qid = question['q_id'];
+      List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid); // Load CLOs for each question
+      allCloLists.add(cloListForQuestion); // Add CLOs to the list
+      if (facultyId != null) {
+        await loadFacultyName(facultyId!);
       }
     }
+    setState(() {
+      cloList = allCloLists; // Assign the list of CLOs to cloList
+    });
+  } catch (e) {
+    if (mounted) {
+      showErrorDialog(context, e.toString());
+    }
   }
-
-  Future<void> loadQuestion() async {
+}
+  Future<void> loadTopics() async {
     try {
-      qlist = await APIHandler().loadQuestionOfSpecificQid(widget.qid);
-      for (var question in qlist) {
-        facultyId = question['f_id'];
-        int qid = question['q_id'];
-        if (facultyId != null) {
-          await loadFacultyName(facultyId!);
+      topicList = await APIHandler().loadTopics(widget.cid!);
+      setState(() {
+        if(topicList.isNotEmpty){
+ isCheckedList = List<bool>.filled(topicList.length, false);
         }
-      }
-      setState(() {});
+      
+      });
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: Text(e.toString()),
-            );
-          },
-        );
+        showErrorDialog(context, e.toString());
       }
     }
   }
-
   Future<void> loadTeachers() async {
     try {
       List<dynamic> teachersList =
@@ -524,7 +469,7 @@ class _QuestionEditState extends State<QuestionEdit> {
 
     if (response == 200) {
       if (selectedTopicIds.isNotEmpty) {
-        await APIHandler().updateTopicQuestionMapping(widget.qid, selectedTopicIds!);
+        await APIHandler().updateTopicQuestionMapping(widget.qid, selectedTopicIds);
       }
       tMarks += marks;
 
@@ -536,7 +481,7 @@ class _QuestionEditState extends State<QuestionEdit> {
         dropdownValue = 'Easy';
         isCheckedList = List<bool>.filled(topicList.length, false);
         selectedTopicIds.clear();
-        loadQuestion();
+        loadQuestion(paperId!);
       });
     } else {
       if (mounted) {
@@ -703,88 +648,80 @@ class _QuestionEditState extends State<QuestionEdit> {
                 ],
               ),
               ///////////////////////////////////////////////////Questions Display///////////////////////////////////////////////////////////////
-              Expanded(
-                child: ListView.builder(
-                  itemCount: qlist.length,
-                  itemBuilder: (context, index) {
-                    final question = qlist[index];
-                    final imageUrl = question['q_image'];
-                    final fetchedTopicId = question['t_id'];
-                    facultyId = question['f_id'];
-                    final facultyName = facultyNames[facultyId] ?? 'Loading...';
+             Expanded(
+  child: ListView.builder(
+    itemCount: qlist.length,
+    itemBuilder: (context, index) {
+      final question = qlist[index];
+      final imageUrl = question['q_image'];
+      facultyId = question['f_id'];
+      final facultyName = facultyNames[facultyId] ?? 'Loading...';
 
-                    // Fetch CLOs for the current topic if not already fetched
-                    if (!cloMap.containsKey(fetchedTopicId)) {
-                      loadClosMappedWithTopicData(fetchedTopicId);
-                    }
+      // Load cloList for each question
+      Future<List<dynamic>> loadCloList() async {
+        int qid = question['q_id'];
+        return await APIHandler().loadClosofSpecificQuestion(qid);
+      }
 
-                    final cloList = cloMap[fetchedTopicId] ?? [];
-
-                    return Card(
-                      elevation: 5,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0),
+      return FutureBuilder(
+        future: loadCloList(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Text('');
+          } else if (snapshot.hasError) {
+            return Text('Error loading CLOs: ${snapshot.error}');
+          } else {
+            List<dynamic> cloListForQuestion = snapshot.data ?? [];
+            return Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              color: Colors.white.withOpacity(0.8),
+              child: ListTile(
+                tileColor: Colors.white,
+                title: Text(
+                  'Question # ${index + 1}',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(question['q_text']),
+                    if (imageUrl != null)
+                      Image.network(
+                        imageUrl,
+                        height: 150,
+                        width: 300,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const CircularProgressIndicator();
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Text('Error loading image: $error');
+                        },
                       ),
-                      color: Colors.white.withOpacity(0.8),
-                      child: ListTile(
-                        tileColor: Colors.white,
-                        title: Text(
-                          'Question # ${index + 1}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(question['q_text']),
-                            if (imageUrl != null)
-                              Image.network(
-                                imageUrl,
-                                height: 150,
-                                width: 300,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return const CircularProgressIndicator();
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Text('Error loading image: $error');
-                                },
-                              ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text('${question['q_difficulty']},'),
-                                Text('${question['q_marks']},'),
-                                Text('$facultyName,'),
-                                FutureBuilder<List<int>>(
-                                  future: APIHandler()
-                                      .loadCloNumberOfSpecificCloids(cloList
-                                          .map((clo) => clo['clo_id'])
-                                          .toList()),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const CircularProgressIndicator();
-                                    } else if (snapshot.hasError) {
-                                      return const Text(
-                                          'Error loading CLO numbers');
-                                    } else {
-                                      final cloNumbers = snapshot.data ?? [];
-                                      return Text(
-                                          'CLOs: ${cloNumbers.join(', ')}');
-                                    }
-                                  },
-                                ),
-                                // Text('CLOs: ${cloList.map((clo) => clo['clo_id']).join(',')}'),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text('${question['q_difficulty']},'),
+                        Text('${question['q_marks']},'),
+                        Text('$facultyName,'),
+                        Text(
+                          'CLOs: ${cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}'
+                        )
+                      ],
+                    ),
+                  ],
                 ),
               ),
+            );
+          }
+        },
+      );
+    },
+  ),
+),
 // customElevatedButton(onPressed: (){
 //   Navigator.pop(context);
 // }, buttonText: 'Save')
