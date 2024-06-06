@@ -71,10 +71,8 @@ class _PaperApprovalState extends State<PaperApproval> {
     if (sid != null) {
       loadPaperHeaderData(widget.cid, sid!);
     }
-    if(widget.pid!=null){
-        await loadQuestionsWithUploadedStatus(widget.pid!);
-    }
-    if (qlist.isNotEmpty) {
+      await loadQuestionsWithUploadedStatus(widget.pid);
+      if (qlist.isNotEmpty) {
       loadCloListsForQuestions();
       if (qNoCounter != null) {
                 qNoCounter--;
@@ -191,7 +189,7 @@ for (var item in paperGridWeightageOfTerm) {
         }
          });
            await loadClosWeightageofSpecificCourseAndHeaderName(
-            widget.cid!, term!);
+            widget.cid, term!);
             setState(() {
               
             });

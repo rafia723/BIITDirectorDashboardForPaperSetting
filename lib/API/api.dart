@@ -355,6 +355,26 @@ Future<List<int>> loadCloNumberOfSpecificCloids(List<dynamic> cloIds) async {
     return list;
   }
 
+
+   Future<List<dynamic>> loadCommonTopics(int cid) async {
+    List<dynamic> list=[];
+    try {
+      Uri uri = Uri.parse('${APIHandler().apiUrl}TopicTaught/getcommonTopictaught/$cid');
+      
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+          list = jsonDecode(response.body);
+      }
+       else {
+        throw Exception('Failed to load common Topics');
+      }
+     }catch (e) {
+     throw Exception('Error: $e');
+    }
+    return list;
+  }
+
 Future<int> addTopicTaught(int tid, int? stid, int fid) async {
   String url = "${apiUrl}TopicTaught/addTopicTaught";
   var obj = {

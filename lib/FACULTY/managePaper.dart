@@ -59,28 +59,15 @@ class _ManagePaperState extends State<ManagePaper> {
     loadTeachers();
     initializeData();
   }
-
-
-
-    Future<void> initializeData() async {
-    await loadSession();
+Future<void> initializeData()async{
+ await loadSession();
     if (sid != null) {
       await loadPaperHeaderData(widget.cid!, sid!);
     }
-    if (paperId != null) {
+     if (paperId != null) {
       await loadQuestion(paperId!);
-
-      // Collect all CLOs for selected questions
-      List<List<String>> allCloLists = [];
-      for (var question in qlist) {
-        int qid = question['q_id'];
-        List<String> cloListForQuestion =
-            await loadClosofSpecificQuestion(qid);
-        allCloLists.add(cloListForQuestion);
-      }
-
-      // Deduct marks for questions already marked as uploaded
-      if(qlist.isNotEmpty){
+}
+   if(qlist.isNotEmpty){
       for (var question in qlist) {
         if (question['q_status'] == 'uploaded') {
           int qMarks = question['q_marks'];
@@ -107,6 +94,21 @@ class _ManagePaperState extends State<ManagePaper> {
        loadCloListsForQuestions();
       }
 
+//checksFunction();
+}
+
+    Future<void> checksFunction() async {
+      // Collect all CLOs for selected questions
+      List<List<String>> allCloLists = [];
+      for (var question in qlist) {
+        int qid = question['q_id'];
+        List<String> cloListForQuestion =
+            await loadClosofSpecificQuestion(qid);
+        allCloLists.add(cloListForQuestion);
+      }
+
+      // Deduct marks for questions already marked as uploaded
+     
      cloIdsShouldbeAddedList.clear();
 for (var item in paperGridWeightageOfTerm) {
   try {
@@ -126,7 +128,7 @@ for (var item in paperGridWeightageOfTerm) {
 
       print('Missing CLOs: $missingcloss');
     }
-  }
+
 
   Future<List<int>> findMissingCLOs(
       List<int> selectedQuestionIds, List<int> cloIdsShouldbeAddedList) async {
@@ -594,7 +596,7 @@ Future<List<int>> loadTopicsMappedWithQuestion(int qid) async {
                           showErrorDialog(context,
                               'You cannot add more questions because the total number of questions have reached their limit.');
                         }
-                      } else {
+                        }else{
                         await updateStatus(
                             question['q_id'], newValue);
 
@@ -636,10 +638,11 @@ Future<List<int>> loadTopicsMappedWithQuestion(int qid) async {
                               hardCount++;
                               print('hard $hardCount');
                             }
+                            
                           });
-                         
-                        }
-                         initializeData();
+                          
+                          }
+                         checksFunction();
                       }
                     }),
               ],

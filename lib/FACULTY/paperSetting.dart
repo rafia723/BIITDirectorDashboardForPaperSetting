@@ -53,7 +53,7 @@ class _PaperSettingState extends State<PaperSetting> {
   int? pid;
   dynamic facultyId;
   Uint8List? selectedImage;
-  List<dynamic> topicList = [];
+  List<dynamic> commonTopicList= [];
   List<bool> isCheckedList = [];
   int? selectedTopicId;
   Map<int, List<dynamic>> cloListsForQuestions = {};
@@ -68,7 +68,7 @@ class _PaperSettingState extends State<PaperSetting> {
     super.initState();
     loadTeachers();
     initializeData();
-    loadTopics();
+    loadCommonTopics();
     
   }
 
@@ -83,15 +83,13 @@ class _PaperSettingState extends State<PaperSetting> {
     if (paperId != null) {
       await loadQuestion(paperId);
       if(qlist.isNotEmpty){
+       
 for (var marks in qlist) {
+   int qid= marks['q_id'];
         tMarks += (marks['q_marks'] as int);
-      
-      }
-       loadCloListsForQuestions();
-    //   loadTopicListsForQuestions();
-      
-      }
-      
+       loadCloListsForQuestions(qid);
+        }
+      } 
     }
   
 if(mounted){
@@ -109,9 +107,14 @@ ScaffoldMessenger.of(context).showSnackBar(
   ),
 );
 }
-
-
   }
+
+  
+  Future<void> checksFunction() async {
+      if (paperId != null) {
+      await loadQuestion(paperId);
+    }
+    }
 
   Future<void> loadFacultyName(int facultyid) async {
     try {
@@ -126,12 +129,10 @@ ScaffoldMessenger.of(context).showSnackBar(
     }
   }
 
-Future<void> loadCloListsForQuestions() async {
-  for (var question in qlist) {
-    int qid = question['q_id'];
+Future<void> loadCloListsForQuestions(int qid) async {
+  
     List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid);
     cloListsForQuestions[qid] = cloListForQuestion;
-  }
  if(mounted){
   setState(() {}); 
  }
@@ -191,12 +192,12 @@ Future<void> loadCloListsForQuestions() async {
   }
 
  
-    Future<void> loadTopics() async {
+    Future<void> loadCommonTopics() async {
     try {
-      topicList = await APIHandler().loadTopics(widget.cid!);
+      commonTopicList = await APIHandler().loadCommonTopics(widget.cid!);
       setState(() {
-        if(topicList.isNotEmpty){
- isCheckedList = List<bool>.filled(topicList.length, false);
+        if(commonTopicList.isNotEmpty){
+ isCheckedList = List<bool>.filled(commonTopicList.length, false);
         }
       
       });
@@ -211,15 +212,16 @@ Future<void> loadCloListsForQuestions() async {
   try {
     qlist = await APIHandler().loadQuestion(pid);
     List<dynamic> allCloLists = []; // List to store CLOs of all questions
-     List<dynamic> allTopicLists = []; // List to store topic of all questions
+   //  List<dynamic> allTopicLists = []; // List to store topic of all questions
     for (var question in qlist) {
       facultyId = question['f_id'];
       int qid = question['q_id'];
       List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid); // Load CLOs for each question
       allCloLists.add(cloListForQuestion); // Add CLOs to the list
+      loadCloListsForQuestions(qid);
 
-       List<dynamic> topicListForQuestion = await APIHandler().loadTopicsDataMappedWithQuestion(qid); // Load topics for each question
-      allTopicLists.add(topicListForQuestion); // Add topics to the list
+      //  List<dynamic> topicListForQuestion = await APIHandler().loadTopicsDataMappedWithQuestion(qid); // Load topics for each question
+      // allTopicLists.add(topicListForQuestion); // Add topics to the list
       if (facultyId != null) {
         await loadFacultyName(facultyId!);
       }
@@ -417,10 +419,12 @@ Future<void> loadCloListsForQuestions() async {
                                   fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                             Expanded(
-                                child: Text(
-                              '$tMarks',
-                              style: const TextStyle(fontSize: 12),
-                            )),
+                             child: tMarks == 0
+    ? const Text('Loading...')
+    : Text(
+        '$tMarks',
+        style: const TextStyle(fontSize: 12),
+      ),),
                           ],
                         ),
                         Row(
@@ -473,7 +477,8 @@ Future<void> loadCloListsForQuestions() async {
                         icon: const Icon(Icons.photo_library)),
                     IconButton(
                       onPressed: () async {
-                       initializeData();
+                   //    initializeData();
+                   checksFunction();
                         //2 selectedTopicIds.clear();
                         if (selectedTopicId == null ||
                             dropdownValue.isEmpty ||
@@ -503,7 +508,7 @@ Future<void> loadCloListsForQuestions() async {
                             setState(() {
                               dropdownValue = 'Easy';
                               isCheckedList =
-                                  List<bool>.filled(topicList.length, false);
+                                  List<bool>.filled(commonTopicList.length, false);
                                     selectedTopicIds.clear();
                               loadQuestion(paperId);
 
@@ -592,9 +597,9 @@ Future<void> loadCloListsForQuestions() async {
                                   width: double.maxFinite,
                                   height: 300,
                                   child: ListView.builder(
-                                    itemCount: topicList.length,
+                                    itemCount: commonTopicList.length,
                                     itemBuilder: (context, index) {
-                                      final topic = topicList[index];
+                                      final topic = commonTopicList[index];
 
                                       return CheckboxListTile(
                                         title: Column(
