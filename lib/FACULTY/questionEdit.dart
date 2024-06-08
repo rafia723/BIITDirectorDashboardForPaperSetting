@@ -56,9 +56,14 @@ class _QuestionEditState extends State<QuestionEdit> {
   List<dynamic> topicList = [];
   List<bool> isCheckedList = [];
   int? selectedTopicId;
-  
+
   List<int> selectedTopicIds = [];
-  List<dynamic> cloList=[];
+  List<dynamic> cloList = [];
+
+  dynamic fetchedQText;
+  dynamic fetchedQDifficulty;
+  dynamic fetchedQMarks;
+  dynamic fetchedImgUrl;
 
 
   @override
@@ -66,7 +71,7 @@ class _QuestionEditState extends State<QuestionEdit> {
     super.initState();
     loadTeachers();
     initializeData();
-   loadTopics();
+    loadTopics();
   }
 
   Future<void> initializeData() async {
@@ -78,31 +83,18 @@ class _QuestionEditState extends State<QuestionEdit> {
       }
     }
     if (paperId != null) {
-      await loadQuestion(paperId);
+      await loadQuestionData();
       for (var marks in qlist) {
         tMarks += (marks['q_marks'] as int);
       }
+      questionController.text=fetchedQText;
+      marksController.text=fetchedQMarks.toString();
+      dropdownValue=fetchedQDifficulty;
+      
       if (mounted) {
         setState(() {});
       }
     }
-  
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Please make sure to add at least one question of each difficulty level (Easy, Medium, Hard) for each topic.',
-          ),
-          action: SnackBarAction(
-            label: 'OK',
-            onPressed: () {
-              // Add any action here if needed
-            },
-          ),
-        ),
-      );
-    }
-
   }
 
   Future<void> loadFacultyName(int facultyid) async {
@@ -117,10 +109,6 @@ class _QuestionEditState extends State<QuestionEdit> {
       }
     }
   }
-
- 
-
-  
 
   Future<void> _selectImage() async {
     final picker = ImagePicker();
@@ -163,38 +151,26 @@ class _QuestionEditState extends State<QuestionEdit> {
     }
   }
 
- 
-
-  Future<void> loadQuestion(int pid) async {
-  try {
-    qlist = await APIHandler().loadQuestion(pid);
-    List<dynamic> allCloLists = []; // List to store CLOs of all questions
-    for (var question in qlist) {
-      facultyId = question['f_id'];
-      int qid = question['q_id'];
-      List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid); // Load CLOs for each question
-      allCloLists.add(cloListForQuestion); // Add CLOs to the list
-      if (facultyId != null) {
-        await loadFacultyName(facultyId!);
-      }
-    }
-    setState(() {
-      cloList = allCloLists; // Assign the list of CLOs to cloList
-    });
-  } catch (e) {
-    if (mounted) {
-      showErrorDialog(context, e.toString());
-    }
-  }
-}
-  Future<void> loadTopics() async {
+  Future<void> loadQuestionData() async {
     try {
-      topicList = await APIHandler().loadTopics(widget.cid!);
-      setState(() {
-        if(topicList.isNotEmpty){
- isCheckedList = List<bool>.filled(topicList.length, false);
+      qlist = await APIHandler().loadQuestionOfSpecificQid(widget.qid);
+      List<dynamic> allCloLists = []; // List to store CLOs of all questions
+      for (var question in qlist) {
+        facultyId = question['f_id'];
+       // int qid = question['q_id'];
+        fetchedQText=question['q_text'];
+        fetchedQMarks=question['q_marks'];
+        fetchedQDifficulty=question['q_difficulty'];
+        fetchedImgUrl=question['q_image'];
+        List<dynamic> cloListForQuestion = await APIHandler()
+            .loadClosofSpecificQuestion(widget.qid); // Load CLOs for each question
+        allCloLists.add(cloListForQuestion); // Add CLOs to the list
+        if (facultyId != null) {
+          await loadFacultyName(facultyId!);
         }
-      
+      }
+      setState(() {
+        cloList = allCloLists; // Assign the list of CLOs to cloList
       });
     } catch (e) {
       if (mounted) {
@@ -202,6 +178,22 @@ class _QuestionEditState extends State<QuestionEdit> {
       }
     }
   }
+
+  Future<void> loadTopics() async {
+    try {
+      topicList = await APIHandler().loadCommonTopics(widget.cid!);
+      setState(() {
+        if (topicList.isNotEmpty) {
+          isCheckedList = List<bool>.filled(topicList.length, false);
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
+    }
+  }
+
   Future<void> loadTeachers() async {
     try {
       List<dynamic> teachersList =
@@ -434,64 +426,72 @@ class _QuestionEditState extends State<QuestionEdit> {
                                     BorderRadius.all(Radius.circular(16.0)))),
                       ),
                     ),
+                     IconButton(
+                        onPressed: () {
+                          _selectImage();
+                        },
+                        icon: const Icon(Icons.photo_library)),
                     IconButton(
-                    onPressed: () async {
-  try {
-    // Validate the necessary fields
-    if (questionController.text.isEmpty || marksController.text.isEmpty) {
-      showErrorDialog(context, 'Please provide all necessary information');
-      return; // Exit if validation fails
-    }
-
-    int? marks;
-    try {
-      marks = int.parse(marksController.text);
-    } catch (e) {
-      showErrorDialog(context, 'Invalid marks. Please enter a valid number.');
-      return; // Exit if marks parsing fails
-    }
-
-    Map<String, dynamic> headerData = {
-      "q_text": questionController.text,
-      if (selectedImage != null) "q_image": selectedImage,
-      "q_marks": marks,
-      "q_difficulty": dropdownValue,
-      "q_status": 'uploaded',
-      if (selectedTopicId != null) "t_id": selectedTopicId,
-      "p_id": paperId,
-      "f_id": widget.fid,
-    };
-
-    int response = await APIHandler().updateQuestionOfSpecificQid(
-      widget.qid, // Replace this with the actual question ID
-      headerData,
-    );
-
-    if (response == 200) {
-      if (selectedTopicIds.isNotEmpty) {
-        await APIHandler().updateTopicQuestionMapping(widget.qid, selectedTopicIds);
-      }
-      tMarks += marks;
-
-      questionController.clear();
-      marksController.clear();
-      selectedImage = null;
-      selectedTopicId = null;
-      setState(() {
-        dropdownValue = 'Easy';
-        isCheckedList = List<bool>.filled(topicList.length, false);
-        selectedTopicIds.clear();
-        loadQuestion(paperId!);
-      });
-    } else {
-      if (mounted) {
-        showErrorDialog(context, 'Error');
-      }
-    }
-  } catch (e) {
-    showErrorDialog(context, 'An unexpected error occurred: $e');
-  }
-},
+                      onPressed: () async {
+                        try {
+                          // Validate the necessary fields
+                          if (questionController.text.isEmpty ||marksController.text.isEmpty) {
+                            showErrorDialog(context,
+                                'Please provide all necessary information');
+                            return; // Exit if validation fails
+                          }
+                          int? marks;
+                          try {
+                            marks = int.parse(marksController.text);
+                          } catch (e) {
+                            showErrorDialog(context,
+                                'Invalid marks. Please enter a valid number.');
+                            return; // Exit if marks parsing fails
+                          }
+                          Map<String, dynamic> headerData = {
+                            "q_text": questionController.text,
+                            if (selectedImage != null) "q_image": selectedImage,
+                            "q_marks": marks,
+                            "q_difficulty": dropdownValue,
+                            "q_status": 'uploaded',
+                            if (selectedTopicId != null)
+                              "t_id": selectedTopicId,
+                            "p_id": paperId,
+                            "f_id": widget.fid,
+                          };
+                          int response =
+                              await APIHandler().updateQuestionOfSpecificQid(
+                            widget
+                                .qid, // Replace this with the actual question ID
+                            headerData,
+                          );
+                          if (response == 200) {
+                            if (selectedTopicIds.isNotEmpty) {
+                              await APIHandler().updateTopicQuestionMapping(
+                                  widget.qid, selectedTopicIds);
+                            }
+                            tMarks += marks;
+                            questionController.clear();
+                            marksController.clear();
+                            selectedImage = null;
+                            selectedTopicId = null;
+                            setState(() {
+                              dropdownValue = 'Easy';
+                              isCheckedList =
+                                  List<bool>.filled(topicList.length, false);
+                              selectedTopicIds.clear();
+                              loadQuestionData();
+                            });
+                          } else {
+                            if (mounted) {
+                              showErrorDialog(context, 'Error');
+                            }
+                          }
+                        } catch (e) {
+                          showErrorDialog(
+                              context, 'An unexpected error occurred: $e');
+                        }
+                      },
                       icon: const Icon(Icons.add),
                     ),
                   ],
@@ -500,11 +500,11 @@ class _QuestionEditState extends State<QuestionEdit> {
               Row(
                 children: [
                   const SizedBox(height: 10),
-                  if (selectedImage != null)
+                  if (fetchedImgUrl != null)
                     Stack(
                       children: [
-                        Image.memory(
-                          selectedImage!,
+                        Image.network(
+                          fetchedImgUrl!,
                           width: 200,
                           height: 200,
                         ),
@@ -514,7 +514,7 @@ class _QuestionEditState extends State<QuestionEdit> {
                           child: GestureDetector(
                             onTap: () {
                               setState(() {
-                                selectedImage =
+                                fetchedImgUrl =
                                     null; // Remove the selected image
                               });
                             },
@@ -609,7 +609,6 @@ class _QuestionEditState extends State<QuestionEdit> {
                                       child: customElevatedButton(
                                           onPressed: () {
                                             Navigator.pop(context);
-
                                             print(selectedTopicIds);
                                           },
                                           buttonText: 'Save'))
@@ -648,80 +647,93 @@ class _QuestionEditState extends State<QuestionEdit> {
                 ],
               ),
               ///////////////////////////////////////////////////Questions Display///////////////////////////////////////////////////////////////
-             Expanded(
-  child: ListView.builder(
-    itemCount: qlist.length,
-    itemBuilder: (context, index) {
-      final question = qlist[index];
-      final imageUrl = question['q_image'];
-      facultyId = question['f_id'];
-      final facultyName = facultyNames[facultyId] ?? 'Loading...';
+              Expanded(
+                child: ListView.builder(
+                  itemCount: qlist.length,
+                  itemBuilder: (context, index) {
+                    final question = qlist[index];
+                    final imageUrl = question['q_image'];
+                    facultyId = question['f_id'];
+                    final facultyName = facultyNames[facultyId] ?? 'Loading...';
 
-      // Load cloList for each question
-      Future<List<dynamic>> loadCloList() async {
-        int qid = question['q_id'];
-        return await APIHandler().loadClosofSpecificQuestion(qid);
-      }
-
-      return FutureBuilder(
-        future: loadCloList(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Text('');
-          } else if (snapshot.hasError) {
-            return Text('Error loading CLOs: ${snapshot.error}');
-          } else {
-            List<dynamic> cloListForQuestion = snapshot.data ?? [];
-            return Card(
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15.0),
-              ),
-              color: Colors.white.withOpacity(0.8),
-              child: ListTile(
-                tileColor: Colors.white,
-                title: Text(
-                  'Question # ${index + 1}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                    // Load cloList for each question
+                    Future<List<dynamic>> loadCloList() async {
+                      int qid = question['q_id'];
+                      return await APIHandler().loadClosofSpecificQuestion(qid);
+                    }
+                    return FutureBuilder(
+                      future: loadCloList(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Text('');
+                        } else if (snapshot.hasError) {
+                          return Text('Error loading CLOs: ${snapshot.error}');
+                        } else {
+                          List<dynamic> cloListForQuestion =
+                              snapshot.data ?? [];
+                          return Card(
+                            elevation: 5,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                            ),
+                            color: Colors.white.withOpacity(0.8),
+                            child: GestureDetector(
+                              onTap: (){
+                                   questionController.text=fetchedQText;
+      marksController.text=fetchedQMarks.toString();
+      dropdownValue=fetchedQDifficulty;
+                              },
+                              child: ListTile(
+                                tileColor: Colors.white,
+                                title: Text(
+                                  'Question # ${index + 1}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(question['q_text']),
+                                    if (imageUrl != null)
+                                      Image.network(
+                                        imageUrl,
+                                        height: 150,
+                                        width: 300,
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
+                                          return const CircularProgressIndicator();
+                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Text(
+                                              'Error loading image: $error');
+                                        },
+                                      ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Text('${question['q_difficulty']},'),
+                                        Text('${question['q_marks']},'),
+                                        Text('$facultyName,'),
+                                        Text(
+                                            'CLOs: ${cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}')
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    );
+                  },
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(question['q_text']),
-                    if (imageUrl != null)
-                      Image.network(
-                        imageUrl,
-                        height: 150,
-                        width: 300,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return const CircularProgressIndicator();
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Text('Error loading image: $error');
-                        },
-                      ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text('${question['q_difficulty']},'),
-                        Text('${question['q_marks']},'),
-                        Text('$facultyName,'),
-                        Text(
-                          'CLOs: ${cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}'
-                        )
-                      ],
-                    ),
-                  ],
-                ),
               ),
-            );
-          }
-        },
-      );
-    },
-  ),
-),
 // customElevatedButton(onPressed: (){
 //   Navigator.pop(context);
 // }, buttonText: 'Save')

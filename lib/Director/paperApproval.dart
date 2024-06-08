@@ -11,7 +11,7 @@ class PaperApproval extends StatefulWidget {
   final int cid;
   final String coursename;
   final String ccode;
-   final String? status;
+  final String? status;
   final int pid;
   const PaperApproval({
     Key? key,
@@ -19,7 +19,7 @@ class PaperApproval extends StatefulWidget {
     required this.ccode,
     required this.coursename,
     required this.pid,
-      this.status,
+    this.status,
   }) : super(key: key);
 
   @override
@@ -43,18 +43,17 @@ class _PaperApprovalState extends State<PaperApproval> {
   bool isChecked = false;
   bool acceptAllChecked = false; // State variable for "Accept All" checkbox
   Map<int, List<dynamic>> cloMap = {};
-  TextEditingController commentController = TextEditingController();
+   Map<int, TextEditingController> commentControllers = {}; // Map for controllers
   Map<int, String> statusMap = {};
   int acceptCount = 0;
   int rejectCount = 0;
   Map<int, List<dynamic>> cloListsForQuestions = {};
-   dynamic qNoCounter;
-   int? noOfQuestions;
-     List<dynamic> listOfClos=[];
-   List<int> missingcloss = [];
-     List<dynamic> paperGridWeightageOfTerm = [];
+  dynamic qNoCounter;
+  int? noOfQuestions;
+  List<dynamic> listOfClos = [];
+  List<int> missingcloss = [];
+  List<dynamic> paperGridWeightageOfTerm = [];
   List<int> cloIdsShouldbeAddedList = [];
- 
 
   @override
   void initState() {
@@ -71,45 +70,69 @@ class _PaperApprovalState extends State<PaperApproval> {
     if (sid != null) {
       loadPaperHeaderData(widget.cid, sid!);
     }
-      await loadQuestionsWithUploadedStatus(widget.pid);
-      if (qlist.isNotEmpty) {
+    await loadQuestionsWithUploadedStatus(widget.pid);
+    if (qlist.isNotEmpty) {
       loadCloListsForQuestions();
       if (qNoCounter != null) {
-                qNoCounter--;
-              }
-              
+        qNoCounter--;
+      }
     }
 
-     List<List<String>> allCloLists = [];
-      for (var question in qlist) {
-        int qid = question['q_id'];
-        List<String> cloListForQuestion =
-            await loadClosofSpecificQuestion(qid);
-        allCloLists.add(cloListForQuestion);
+    List<List<String>> allCloLists = [];
+    for (var question in qlist) {
+      int qid = question['q_id'];
+      List<String> cloListForQuestion = await loadClosofSpecificQuestion(qid);
+      allCloLists.add(cloListForQuestion);
+    }
+
+    cloIdsShouldbeAddedList.clear();
+    for (var item in paperGridWeightageOfTerm) {
+      try {
+        cloIdsShouldbeAddedList.add(int.parse(item['clonumber']));
+      } catch (e) {
+        print('Error parsing clonumber: ${item['clonumber']}');
       }
+    }
+    print(' CLOs should be added: $cloIdsShouldbeAddedList');
 
-      cloIdsShouldbeAddedList.clear();
-for (var item in paperGridWeightageOfTerm) {
-  try {
-    cloIdsShouldbeAddedList.add(int.parse(item['clonumber']));
-  } catch (e) {
-    print('Error parsing clonumber: ${item['clonumber']}');
-  }
-}
-      print(' CLOs should be added: $cloIdsShouldbeAddedList');
+    List<int> selectedQuestionIds = qlist
+        .where((question) => question['q_status'] == 'uploaded')
+        .map<int>((question) => question['q_id'] as int)
+        .toList();
+    missingcloss =
+        await findMissingCLOs(selectedQuestionIds, cloIdsShouldbeAddedList);
 
-
-  List<int> selectedQuestionIds = qlist
-          .where((question) => question['q_status'] == 'uploaded')
-          .map<int>((question) => question['q_id'] as int)
-          .toList();
-       missingcloss =
-          await findMissingCLOs(selectedQuestionIds, cloIdsShouldbeAddedList);
-
-      print('Missing CLOs: $missingcloss');
+    print('Missing CLOs: $missingcloss');
   }
 
-    Future<void> loadClosWeightageofSpecificCourseAndHeaderName(
+  Future<bool?> customConfirmationDialog(BuildContext context,
+      {required String title, required String content}) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> loadClosWeightageofSpecificCourseAndHeaderName(
       int cid, String term) async {
     try {
       List<dynamic> list = await APIHandler()
@@ -140,21 +163,23 @@ for (var item in paperGridWeightageOfTerm) {
   }
 
   Future<List<String>> loadClosofSpecificQuestion(int qid) async {
-  try {
-    Uri uri = Uri.parse('${APIHandler().apiUrl}QuestionTopic/getClosOfSpecificQuesestion/$qid');
-    var response = await http.get(uri);
+    try {
+      Uri uri = Uri.parse(
+          '${APIHandler().apiUrl}QuestionTopic/getClosOfSpecificQuesestion/$qid');
+      var response = await http.get(uri);
 
-    if (response.statusCode == 200) {
-      List<dynamic> cloData = jsonDecode(response.body);
-      List<String> cloNumbers = cloData.map((data) => data['clo_number'].toString()).toList();
-      return cloNumbers;
-    } else {
-      throw Exception('Error fetching CLOs for question');
+      if (response.statusCode == 200) {
+        List<dynamic> cloData = jsonDecode(response.body);
+        List<String> cloNumbers =
+            cloData.map((data) => data['clo_number'].toString()).toList();
+        return cloNumbers;
+      } else {
+        throw Exception('Error fetching CLOs for question');
+      }
+    } catch (e) {
+      throw Exception('Failed to load CLOs mapped with question');
     }
-  } catch (e) {
-    throw Exception('Failed to load CLOs mapped with question');
   }
-}
 
   Future<void> loadCloListsForQuestions() async {
     for (var question in qlist) {
@@ -172,7 +197,6 @@ for (var item in paperGridWeightageOfTerm) {
     try {
       plist = await APIHandler().loadPaperHeader(cid, sid);
       setState(() {
-     
         if (plist.isNotEmpty) {
           paperId = plist[0]['p_id'];
           duration = plist[0]['duration'];
@@ -181,18 +205,15 @@ for (var item in paperGridWeightageOfTerm) {
           session = plist[0]['session'];
           term = plist[0]['term'];
           noOfQuestions = plist[0]['NoOfQuestions'];
-  
+
           qNoCounter = noOfQuestions;
 
           year = plist[0]['year'];
           date = DateTime.parse(plist[0]['exam_date']);
         }
-         });
-           await loadClosWeightageofSpecificCourseAndHeaderName(
-            widget.cid, term!);
-            setState(() {
-              
-            });
+      });
+      await loadClosWeightageofSpecificCourseAndHeaderName(widget.cid, term!);
+      setState(() {});
     } catch (e) {
       if (mounted) {
         showDialog(
@@ -250,37 +271,41 @@ for (var item in paperGridWeightageOfTerm) {
   }
 
   Future<void> loadQuestionsWithUploadedStatus(int pid) async {
-    try {
-      qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
-      if (qlist.isNotEmpty) {
-        loadCloListsForQuestions();
-      }
-       List<dynamic> allCloLists = []; // List to store CLOs of all questions
+  try {
+    qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
+    if (qlist.isNotEmpty) {
+      await loadCloListsForQuestions();
+    }
+    List<dynamic> allCloLists = []; // List to store CLOs of all questions
     for (var question in qlist) {
-  
       int qid = question['q_id'];
-      List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid); // Load CLOs for each question
+      List<dynamic> cloListForQuestion = await APIHandler()
+          .loadClosofSpecificQuestion(qid); // Load CLOs for each question
       allCloLists.add(cloListForQuestion); // Add CLOs to the list
-    
+      
+      // Check if commentControllers contains the qid
+      if (!commentControllers.containsKey(qid)) {
+        // Add a TextEditingController to the commentControllers map if it doesn't exist
+        commentControllers[qid] = TextEditingController();
+      }
     }
     setState(() {
-      listOfClos = allCloLists; // Assign the list of CLOs to cloList
+      listOfClos = allCloLists; // Assign the list of CLOs to listOfClos
     });
-      setState(() {});
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: Text(e.toString()),
-            );
-          },
-        );
-      }
+  } catch (e) {
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content: Text(e.toString()),
+          );
+        },
+      );
     }
   }
+}
 
   Future<void> updateQuestionStatus(int qid, String newStatus) async {
     try {
@@ -347,7 +372,7 @@ for (var item in paperGridWeightageOfTerm) {
       if (code == 200) {
         if (mounted) {
           showSuccesDialog(context, 'Comment Posted....');
-          commentController.clear();
+          commentControllers[qid]?.clear();
         }
       }
     } catch (e) {
@@ -382,7 +407,7 @@ for (var item in paperGridWeightageOfTerm) {
         int qid = question['q_id'];
         int qmarks = question['q_marks'];
         tMarks += qmarks;
-         qNoCounter--;
+        qNoCounter--;
         await updateQuestionStatus(qid, newStatus);
       }
       setState(() {
@@ -412,7 +437,7 @@ for (var item in paperGridWeightageOfTerm) {
         int qid = question['q_id'];
         int qmarks = question['q_marks'];
         tMarks -= qmarks;
-         qNoCounter++;
+        qNoCounter++;
         await updateQuestionStatus(qid, 'uploaded');
       }
       setState(() {
@@ -632,7 +657,7 @@ for (var item in paperGridWeightageOfTerm) {
               itemBuilder: (context, index) {
                 final question = qlist[index];
                 final imageUrl = question['q_image'];
-                final qDifficulty=question['q_difficulty'];
+                final qDifficulty = question['q_difficulty'];
                 final qid = question['q_id'];
                 final fid = question['f_id'];
                 List<dynamic> cloListForQuestion =
@@ -684,16 +709,7 @@ for (var item in paperGridWeightageOfTerm) {
                               const SizedBox(
                                 width: 170,
                               ),
-                              GestureDetector(
-                                  child: const Text('Accept'),
-                                  onTap: () => {
-                                        setState(() {
-                                          statusMap[qid] = 'approved';
-
-                                          tMarks += question['q_marks'] as int;
-                                        }),
-                                        updateQuestionStatus(qid, 'approved')
-                                      }),
+                              const Text('Accept'),
                               Radio(
                                 value: 'approved',
                                 groupValue: statusMap[qid],
@@ -707,30 +723,50 @@ for (var item in paperGridWeightageOfTerm) {
                                   updateQuestionStatus(qid, value!);
                                 },
                               ),
-                              GestureDetector(
-                                  child: const Text('Reject'),
-                                  onTap: () => {
-                                        setState(() {
-                                          statusMap[qid] = 'rejected';
-                                          tMarks -= question['q_marks'] as int;
-                                        }),
-                                     //   updateQuestionStatus(qid, 'rejected')
-                                      }),
+                              const Text('Reject'),
                               Radio(
-                                  value: 'rejected',
-                                  groupValue: statusMap[qid],
-                                  onChanged: (value) {
+                                value: 'rejected',
+                                groupValue: statusMap[qid],
+                                onChanged: (value) async {
+                                  bool? confirmation =
+                                      await customConfirmationDialog(
+                                    context,
+                                    title: 'Confirmation',
+                                    content:
+                                        'Do you want to replace this question?',
+                                  );
+
+                                  if (confirmation == true) {
+                                    await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            AdditionlQuestions(
+                                          pid: paperId,
+                                          ccode: widget.ccode,
+                                          cid: widget.cid,
+                                          coursename: widget.coursename,
+                                          qdifficulty: qDifficulty,
+                                          qid: qid,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
                                     setState(() {
                                       statusMap[qid] = value!;
                                       tMarks -= question['q_marks'] as int;
-                                       qNoCounter++;
+                                      qNoCounter++;
                                     });
-                              //      updateQuestionStatus(qid, value!);
+
+                                   //  updateQuestionStatus(qid, value!);
+                                  //   loadQuestionsWithUploadedStatus(paperId);
+                                     setState(() {
+                                       
+                                     });
                                   }
-                                  ),
-                                 
+                                },
+                              )
                             ],
-                            
                           ),
                           statusMap[qid] == 'rejected'
                               ? Row(
@@ -742,7 +778,7 @@ for (var item in paperGridWeightageOfTerm) {
                                             260, // Maximum width constraint
                                       ),
                                       child: TextFormField(
-                                        controller: commentController,
+                                        controller: commentControllers[qid],
                                         decoration: const InputDecoration(
                                           labelText: 'Comment',
                                           labelStyle: TextStyle(
@@ -754,25 +790,20 @@ for (var item in paperGridWeightageOfTerm) {
                                         ),
                                       ),
                                     ),
-                                    IconButton(
-                                      onPressed: () async{
-                                        if (commentController.text.isEmpty) {
-                                          if (mounted) {
-                                            showErrorDialog(
-                                                context, 'Enter comment first');
-                                          }
-                                        } else {
-                                          addFeedbackData(
-                                              commentController.text,
-                                              widget.pid,
-                                              qid,
-                                              fid);
-                                        }
-                                       await updateQuestionStatus(qid, 'rejected');
-                                        await loadQuestionsWithUploadedStatus(paperId);
-                                      },
-                                      icon: const Icon(Icons.send),
-                                    ),
+                                   IconButton(
+                      onPressed: () async {
+                        String commentText = commentControllers[qid]?.text ?? '';
+                        if (commentText.isEmpty) {
+                          if (mounted) {
+                            showErrorDialog(context, 'Enter comment first');
+                          }
+                        } else {
+                          await addFeedbackData(commentText, widget.pid, qid, fid);
+                          await loadQuestionsWithUploadedStatus(widget.pid);
+                        }
+                      },
+                      icon: const Icon(Icons.send),
+                    ),
                                     IconButton(
                                       onPressed: () async {
                                         await Navigator.push(
@@ -808,34 +839,29 @@ for (var item in paperGridWeightageOfTerm) {
               },
             ),
           ),
-         
           acceptAllChecked
-              ? 
-            
-              customElevatedButton(
-                  onPressed: () async{
-                 //    await initializeData();
-                  //  if(qNoCounter==0){
-                      if(missingcloss.isNotEmpty){
-                        showErrorDialog(context, 'Missing Clos! $missingcloss');
-                      }else{
-
-                    
-                    updatePaperStatus(widget.pid);
-                    Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const DRTApprovedPapers()));
-                    setState(() {
-                      loadApprovedPapersData();
-                    });
-                  }
+              ? customElevatedButton(
+                  onPressed: () async {
+                    //    await initializeData();
+                    //  if(qNoCounter==0){
+                    if (missingcloss.isNotEmpty) {
+                      showErrorDialog(context, 'Missing Clos! $missingcloss');
+                    } else {
+                      updatePaperStatus(widget.pid);
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const DRTApprovedPapers()));
+                      setState(() {
+                        loadApprovedPapersData();
+                      });
                     }
+                  }
                   // else{
                   //   showErrorDialog(context, 'Number of approved questions should be $noOfQuestions');
                   // }
                   //  },
-  ,
+                  ,
                   buttonText: 'Approve')
               : const SizedBox(),
         ]),
