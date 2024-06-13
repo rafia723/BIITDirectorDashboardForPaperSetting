@@ -65,7 +65,6 @@ class _QuestionEditState extends State<QuestionEdit> {
   dynamic fetchedQMarks;
   dynamic fetchedImgUrl;
 
-
   @override
   void initState() {
     super.initState();
@@ -87,10 +86,10 @@ class _QuestionEditState extends State<QuestionEdit> {
       for (var marks in qlist) {
         tMarks += (marks['q_marks'] as int);
       }
-      questionController.text=fetchedQText;
-      marksController.text=fetchedQMarks.toString();
-      dropdownValue=fetchedQDifficulty;
-      
+      questionController.text = fetchedQText;
+      marksController.text = fetchedQMarks.toString();
+      dropdownValue = fetchedQDifficulty;
+
       if (mounted) {
         setState(() {});
       }
@@ -110,15 +109,13 @@ class _QuestionEditState extends State<QuestionEdit> {
     }
   }
 
-  Future<void> _selectImage() async {
-    final picker = ImagePicker();
-    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedImage != null) {
-      final bytes = await pickedImage.readAsBytes();
-      setState(() {
-        selectedImage = bytes;
-      });
+  Future<Uint8List?> _selectImage() async {
+    final ImagePicker _picker = ImagePicker();
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      return await image.readAsBytes();
     }
+    return null;
   }
 
   Future<void> loadPaperHeader(int cid, int sid) async {
@@ -157,13 +154,15 @@ class _QuestionEditState extends State<QuestionEdit> {
       List<dynamic> allCloLists = []; // List to store CLOs of all questions
       for (var question in qlist) {
         facultyId = question['f_id'];
-       // int qid = question['q_id'];
-        fetchedQText=question['q_text'];
-        fetchedQMarks=question['q_marks'];
-        fetchedQDifficulty=question['q_difficulty'];
-        fetchedImgUrl=question['q_image'];
+        // int qid = question['q_id'];
+        fetchedQText = question['q_text'];
+        fetchedQMarks = question['q_marks'];
+        fetchedQDifficulty = question['q_difficulty'];
+        fetchedImgUrl = question['q_image'];
+        print('fetchedurl $fetchedImgUrl');
         List<dynamic> cloListForQuestion = await APIHandler()
-            .loadClosofSpecificQuestion(widget.qid); // Load CLOs for each question
+            .loadClosofSpecificQuestion(
+                widget.qid); // Load CLOs for each question
         allCloLists.add(cloListForQuestion); // Add CLOs to the list
         if (facultyId != null) {
           await loadFacultyName(facultyId!);
@@ -419,23 +418,33 @@ class _QuestionEditState extends State<QuestionEdit> {
                       child: TextFormField(
                         controller: questionController,
                         decoration: const InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(
-                                vertical: 10.0, horizontal: 12.0),
-                            border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(16.0)))),
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: 10.0, horizontal: 12.0),
+                          border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(16.0))),
+                        ),
                       ),
                     ),
-                     IconButton(
-                        onPressed: () {
-                          _selectImage();
-                        },
-                        icon: const Icon(Icons.photo_library)),
+                    IconButton(
+                      onPressed: () async {
+                        // Implement your image selection logic here
+                        // For example, using an image picker package
+                        final selectedImage = await _selectImage();
+                        setState(() {
+                          this.selectedImage = selectedImage;
+                          fetchedImgUrl =
+                              null; // Clear fetched image if a new image is selected
+                        });
+                      },
+                      icon: const Icon(Icons.photo_library),
+                    ),
                     IconButton(
                       onPressed: () async {
                         try {
                           // Validate the necessary fields
-                          if (questionController.text.isEmpty ||marksController.text.isEmpty) {
+                          if (questionController.text.isEmpty ||
+                              marksController.text.isEmpty) {
                             showErrorDialog(context,
                                 'Please provide all necessary information');
                             return; // Exit if validation fails
@@ -448,34 +457,33 @@ class _QuestionEditState extends State<QuestionEdit> {
                                 'Invalid marks. Please enter a valid number.');
                             return; // Exit if marks parsing fails
                           }
-                          Map<String, dynamic> headerData = {
-                            "q_text": questionController.text,
-                            if (selectedImage != null) "q_image": selectedImage,
-                            "q_marks": marks,
-                            "q_difficulty": dropdownValue,
-                            "q_status": 'uploaded',
-                            if (selectedTopicId != null)
-                              "t_id": selectedTopicId,
-                            "p_id": paperId,
-                            "f_id": widget.fid,
-                          };
+                          print(
+                              'selected $selectedImage fetched $fetchedImgUrl');
                           int response =
                               await APIHandler().updateQuestionOfSpecificQid(
-                            widget
-                                .qid, // Replace this with the actual question ID
-                            headerData,
-                          );
+                                  widget.qid,
+                                  questionController.text,
+                                  selectedImage != null
+                                      ? selectedImage
+                                      : fetchedImgUrl != null
+                                          ? fetchedImgUrl
+                                          : null,
+                                  marks!,
+                                  dropdownValue,
+                                  'uploaded',
+                                  paperId,
+                                  widget.fid);
                           if (response == 200) {
                             if (selectedTopicIds.isNotEmpty) {
                               await APIHandler().updateTopicQuestionMapping(
                                   widget.qid, selectedTopicIds);
                             }
-                            tMarks += marks;
-                            questionController.clear();
-                            marksController.clear();
-                            selectedImage = null;
-                            selectedTopicId = null;
                             setState(() {
+                              questionController.clear();
+                              marksController.clear();
+                              selectedImage = null;
+                              fetchedImgUrl = null;
+                              selectedTopicId = null;
                               dropdownValue = 'Easy';
                               isCheckedList =
                                   List<bool>.filled(topicList.length, false);
@@ -483,9 +491,7 @@ class _QuestionEditState extends State<QuestionEdit> {
                               loadQuestionData();
                             });
                           } else {
-                            if (mounted) {
-                              showErrorDialog(context, 'Error');
-                            }
+                            showErrorDialog(context, 'Error $response');
                           }
                         } catch (e) {
                           showErrorDialog(
@@ -497,44 +503,35 @@ class _QuestionEditState extends State<QuestionEdit> {
                   ],
                 ),
               ),
-              Row(
-                children: [
-                  const SizedBox(height: 10),
-                  if (fetchedImgUrl != null)
-                    Stack(
-                      children: [
-                        Image.network(
-                          fetchedImgUrl!,
-                          width: 200,
-                          height: 200,
+              if (fetchedImgUrl != null || selectedImage != null)
+                Stack(
+                  children: [
+                    fetchedImgUrl != null
+                        ? Image.network(fetchedImgUrl!, width: 200, height: 200)
+                        : Image.memory(selectedImage!, width: 200, height: 200),
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            fetchedImgUrl = null;
+                            selectedImage = null;
+                            print('$fetchedImgUrl $selectedImage');
+                          });
+                        },
+                        child: Container(
+                          color: Colors.red,
+                          padding: const EdgeInsets.all(5),
+                          child: const Icon(Icons.close, color: Colors.white),
                         ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                fetchedImgUrl =
-                                    null; // Remove the selected image
-                              });
-                            },
-                            child: Container(
-                              color: Colors.red,
-                              padding: const EdgeInsets.all(5),
-                              child: const Icon(
-                                Icons.close,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                ],
-              ),
+                  ],
+                ),
               Row(
                 children: [
-                  const Text('    Difficulty:  '),
+                  const Text('Difficulty:  '),
                   DropdownButton<String>(
                     value: dropdownValue,
                     onChanged: (String? newValue) {
@@ -542,7 +539,7 @@ class _QuestionEditState extends State<QuestionEdit> {
                         dropdownValue = newValue!;
                       });
                     },
-                    items: <String>['Easy', 'Medium', 'Hard']
+                    items: ['Easy', 'Medium', 'Hard']
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
@@ -550,9 +547,7 @@ class _QuestionEditState extends State<QuestionEdit> {
                       );
                     }).toList(),
                   ),
-                  const SizedBox(
-                    width: 50,
-                  ),
+                  const SizedBox(width: 50),
                   const Text('Topic:  '),
                   ElevatedButton(
                     onPressed: () {
@@ -560,7 +555,6 @@ class _QuestionEditState extends State<QuestionEdit> {
                         context: context,
                         builder: (context) {
                           return StatefulBuilder(
-                            //to update the status within alertbox
                             builder:
                                 (BuildContext context, StateSetter setState) {
                               return AlertDialog(
@@ -572,31 +566,19 @@ class _QuestionEditState extends State<QuestionEdit> {
                                     itemCount: topicList.length,
                                     itemBuilder: (context, index) {
                                       final topic = topicList[index];
-
                                       return CheckboxListTile(
-                                        title: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                                '${index + 1}. ${topic['t_name']}'),
-                                          ],
-                                        ),
-                                        value: isCheckedList[
-                                            index], // Set the initial value of checkbox
-
+                                        title: Text(
+                                            '${index + 1}. ${topic['t_name']}'),
+                                        value: isCheckedList[index],
                                         onChanged: (bool? value) {
                                           setState(() {
                                             isCheckedList[index] = value!;
-
-                                            selectedTopicId = topic['t_id'];
-                                            if (value == true) {
+                                            if (value) {
                                               selectedTopicIds
                                                   .add(topic['t_id']);
                                             } else {
                                               selectedTopicIds
                                                   .remove(topic['t_id']);
-                                              print(selectedTopicId);
                                             }
                                           });
                                         },
@@ -606,12 +588,13 @@ class _QuestionEditState extends State<QuestionEdit> {
                                 ),
                                 actions: [
                                   Center(
-                                      child: customElevatedButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            print(selectedTopicIds);
-                                          },
-                                          buttonText: 'Save'))
+                                    child: customElevatedButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      buttonText: 'Save',
+                                    ),
+                                  ),
                                 ],
                               );
                             },
@@ -619,11 +602,9 @@ class _QuestionEditState extends State<QuestionEdit> {
                         },
                       );
                     },
-                    child: const Text(
-                      'Select',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  )
+                    child: const Text('Select',
+                        style: TextStyle(color: Colors.black)),
+                  ),
                 ],
               ),
               Row(
@@ -632,7 +613,7 @@ class _QuestionEditState extends State<QuestionEdit> {
                   const Text('Marks:  '),
                   SizedBox(
                     width: 50,
-                    height: 35, // Set the width as needed
+                    height: 35,
                     child: TextFormField(
                       keyboardType: TextInputType.number,
                       maxLines: 1,
@@ -661,6 +642,7 @@ class _QuestionEditState extends State<QuestionEdit> {
                       int qid = question['q_id'];
                       return await APIHandler().loadClosofSpecificQuestion(qid);
                     }
+
                     return FutureBuilder(
                       future: loadCloList(),
                       builder: (context, snapshot) {
@@ -679,10 +661,10 @@ class _QuestionEditState extends State<QuestionEdit> {
                             ),
                             color: Colors.white.withOpacity(0.8),
                             child: GestureDetector(
-                              onTap: (){
-                                   questionController.text=fetchedQText;
-      marksController.text=fetchedQMarks.toString();
-      dropdownValue=fetchedQDifficulty;
+                              onTap: () {
+                                questionController.text = fetchedQText;
+                                marksController.text = fetchedQMarks.toString();
+                                dropdownValue = fetchedQDifficulty;
                               },
                               child: ListTile(
                                 tileColor: Colors.white,

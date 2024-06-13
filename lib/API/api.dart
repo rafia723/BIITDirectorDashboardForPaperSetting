@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/Model/DifficultyModel.dart';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.12:3000/';
+  String apiUrl='http://192.168.10.5:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -847,19 +847,40 @@ Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qm
   return {'status': statusCode, 'q_id': qId};
 }
 
-  Future<int> updateQuestionOfSpecificQid(int qid, Map<String, dynamic> HeaderData) async {
-  Uri url = Uri.parse('${apiUrl}Question/updateQuestionOfSpecificQid/$qid'); // Append cid as a query parameter
-  try {
-    var paperJson = jsonEncode(HeaderData);
-    var response = await http.put(
-      url,
-      body: paperJson,
-      headers: {"Content-Type": "application/json"},
-    );
-    return response.statusCode;
-  } catch (error) {
-    throw Exception('Error: $error');
+Future<int> updateQuestionOfSpecificQid(int qid, String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid) async {
+  String url = "${apiUrl}Question/updateQuestionOfSpecificQid/$qid";
+
+  // Prepare the multipart request
+  var request = http.MultipartRequest('PUT', Uri.parse(url));
+  request.headers.addAll({"Content-Type": "application/json; charset=UTF-8"});
+  request.fields.addAll({
+    'q_text': qtext,
+    'q_marks': qmarks.toString(),
+    'q_difficulty': qdifficulty,
+    'q_status': qstatus,
+   // 't_id': tid.toString(),
+    'p_id': pid.toString(),
+    'f_id': fid.toString(),
+  
+  });
+
+  if (qimage != null) {
+    // Attach the image file to the request
+    request.files.add(http.MultipartFile.fromBytes('q_image', qimage, filename: 'image.jpg')); // Set a filename for the image
   }
+
+  // Send the request and await the response
+  var response = await request.send();
+
+  // Parse the response
+  var responseBody = await response.stream.bytesToString();
+  var parsedResponse = jsonDecode(responseBody);
+
+  // Get the status code
+  var statusCode = response.statusCode;
+
+  // Return the status code
+  return statusCode;
 }
 
 
