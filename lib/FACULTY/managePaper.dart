@@ -65,6 +65,7 @@ Future<void> initializeData()async{
       await loadPaperHeaderData(widget.cid!, sid!);
     }
      if (paperId != null) {
+    
       await loadQuestion(paperId!);
 }
    if(qlist.isNotEmpty){
@@ -92,6 +93,7 @@ Future<void> initializeData()async{
         }
       }
        loadCloListsForQuestions();
+       checksFunction();
       }
 
 //checksFunction();

@@ -110,8 +110,8 @@ class _QuestionEditState extends State<QuestionEdit> {
   }
 
   Future<Uint8List?> _selectImage() async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       return await image.readAsBytes();
     }
@@ -444,7 +444,7 @@ class _QuestionEditState extends State<QuestionEdit> {
                         try {
                           // Validate the necessary fields
                           if (questionController.text.isEmpty ||
-                              marksController.text.isEmpty) {
+                              marksController.text.isEmpty||selectedTopicIds.isEmpty) {
                             showErrorDialog(context,
                                 'Please provide all necessary information');
                             return; // Exit if validation fails
@@ -463,12 +463,8 @@ class _QuestionEditState extends State<QuestionEdit> {
                               await APIHandler().updateQuestionOfSpecificQid(
                                   widget.qid,
                                   questionController.text,
-                                  selectedImage != null
-                                      ? selectedImage
-                                      : fetchedImgUrl != null
-                                          ? fetchedImgUrl
-                                          : null,
-                                  marks!,
+                                  selectedImage ?? (fetchedImgUrl),
+                                  marks,
                                   dropdownValue,
                                   'uploaded',
                                   paperId,

@@ -478,7 +478,8 @@ Future<void> loadCloListsForQuestions(int qid) async {
                    //    initializeData();
                    checksFunction();
                         //2 selectedTopicIds.clear();
-                        if (selectedTopicId == null ||
+                       // if (selectedTopicId == null ||
+                       if( selectedTopicIds.isEmpty||
                             dropdownValue.isEmpty ||
                             marksController.text.isEmpty) {
                           showErrorDialog(context, 'Please select required information Topic,Difficulty and marks');
@@ -489,7 +490,7 @@ Future<void> loadCloListsForQuestions(int qid) async {
                             int.parse(marksController.text),
                             dropdownValue,
                             'pending',
-                            selectedTopicId!,
+                         //   selectedTopicId!,
                             paperId,
                             widget.fid,
                           );
@@ -502,7 +503,7 @@ Future<void> loadCloListsForQuestions(int qid) async {
                             questionController.clear();
                             marksController.clear();
                             selectedImage = null;
-                            selectedTopicId = null;
+                          //  selectedTopicId = null;
                             setState(() {
                               dropdownValue = 'Easy';
                               isCheckedList =
@@ -615,14 +616,14 @@ Future<void> loadCloListsForQuestions(int qid) async {
                                           setState(() {
                                             isCheckedList[index] = value!;
 
-                                            selectedTopicId = topic['t_id'];
+                                         //   selectedTopicId = topic['t_id'];
                                             if (value == true) {
                                               selectedTopicIds
                                                   .add(topic['t_id']);
                                             } else {
                                               selectedTopicIds
                                                   .remove(topic['t_id']);
-                                              print(selectedTopicId);
+                                            //  print(selectedTopicId);
                                             }
                                           });
                                         },

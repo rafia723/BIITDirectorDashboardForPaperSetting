@@ -811,7 +811,7 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
 
 
 
-Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int tid, int pid, int fid) async {
+Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid) async {
   String url = "${apiUrl}Question/addQuestion";
 
   // Prepare the multipart request
@@ -822,7 +822,7 @@ Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qm
     'q_marks': qmarks.toString(),
     'q_difficulty': qdifficulty,
     'q_status': qstatus,
-    't_id': tid.toString(),
+   // 't_id': tid.toString(),
     'p_id': pid.toString(),
     'f_id': fid.toString(),
   });
