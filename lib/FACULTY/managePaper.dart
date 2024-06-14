@@ -52,6 +52,7 @@ class _ManagePaperState extends State<ManagePaper> {
   List<dynamic> listOfClos=[];
    List<int> missingcloss = [];
      Map<int, List<dynamic>> cloListsForQuestions = {};
+     List<int> cloWeightageCheck=[];
 
   @override
   void initState() {
@@ -132,14 +133,16 @@ for (var item in paperGridWeightageOfTerm) {
     }
 
 
-  Future<List<int>> findMissingCLOs(
-      List<int> selectedQuestionIds, List<int> cloIdsShouldbeAddedList) async {
+  Future<List<int>> findMissingCLOs(List<int> selectedQuestionIds, List<int> cloIdsShouldbeAddedList) async {
     Set<int> actualCLOs = {};
 
     for (int questionId in selectedQuestionIds) {
       List<String> cloStrings = await loadClosofSpecificQuestion(questionId);
       actualCLOs.addAll(cloStrings.map((clo) => int.parse(clo)));
     }
+     Set<int> notInCloGridSpecificTerm = actualCLOs.difference(cloIdsShouldbeAddedList.toSet());
+   cloWeightageCheck=notInCloGridSpecificTerm.toList();
+     print('Dont have weightage in this term $notInCloGridSpecificTerm');
     print('Actual $actualCLOs');
     List<int> missingcloss =
         cloIdsShouldbeAddedList.toSet().difference(actualCLOs).toList();
@@ -593,12 +596,15 @@ Future<List<int>> loadTopicsMappedWithQuestion(int qid) async {
                 Checkbox(
                     value: question['q_status'] == 'uploaded',
                     onChanged: (bool? newValue) async {
+                   
                       if (qNoCounter == 0 && newValue == true) {
                         if (mounted) {
                           showErrorDialog(context,
                               'You cannot add more questions because the total number of questions have reached their limit.');
                         }
-                        }else{
+                        }
+                    
+                        else{
                         await updateStatus(
                             question['q_id'], newValue);
 
@@ -645,8 +651,10 @@ Future<List<int>> loadTopicsMappedWithQuestion(int qid) async {
                           
                           }
                          checksFunction();
-                      }
+                        }
+                         
                     }),
+    
               ],
             ),
             subtitle: Column(
@@ -724,6 +732,7 @@ Future<List<int>> loadTopicsMappedWithQuestion(int qid) async {
                               title:  const Text('Missing CLOs'),
                               content:
                                    Text('CLO-$missingcloss is missing'),
+                                  
                               actions: [
                                 TextButton(
                                   onPressed: () {
@@ -735,7 +744,33 @@ Future<List<int>> loadTopicsMappedWithQuestion(int qid) async {
                             );
                           },
                         );
-                      } else {
+                      } else if(cloWeightageCheck.isNotEmpty){
+
+                        if (mounted) {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+
+                            return AlertDialog(
+                              title:  const Text('Clo Weightage Error'),
+                              content:
+                                   Text('CLO-$cloWeightageCheck has no weightage in $term'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                        }
+                         }
+                         
+                      
+                      else {
                         int code = await APIHandler()
                             .updatePaperStatusToUploaded(paperId);
                         if (code == 200) {

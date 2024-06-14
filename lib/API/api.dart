@@ -1183,7 +1183,7 @@ Future<List<dynamic>> loadUnUploadedPapers() async {
  Future<List<dynamic>> loadQuestionsWithUploadedStatus(int pid) async {
   List<dynamic> qlist=[];
     try {
-      Uri uri = Uri.parse("${apiUrl}Question/getQuestionsWithUploadedStatus/$pid");
+      Uri uri = Uri.parse("${apiUrl}Question/getQuestionsWithUploadedOrApprovedStatus/$pid");
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {

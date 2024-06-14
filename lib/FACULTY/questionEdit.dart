@@ -4,6 +4,7 @@ import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 class QuestionEdit extends StatefulWidget {
   final int? cid;
@@ -89,6 +90,7 @@ class _QuestionEditState extends State<QuestionEdit> {
       questionController.text = fetchedQText;
       marksController.text = fetchedQMarks.toString();
       dropdownValue = fetchedQDifficulty;
+
 
       if (mounted) {
         setState(() {});
@@ -444,7 +446,8 @@ class _QuestionEditState extends State<QuestionEdit> {
                         try {
                           // Validate the necessary fields
                           if (questionController.text.isEmpty ||
-                              marksController.text.isEmpty||selectedTopicIds.isEmpty) {
+                              marksController.text.isEmpty ||
+                              selectedTopicIds.isEmpty) {
                             showErrorDialog(context,
                                 'Please provide all necessary information');
                             return; // Exit if validation fails
@@ -459,11 +462,24 @@ class _QuestionEditState extends State<QuestionEdit> {
                           }
                           print(
                               'selected $selectedImage fetched $fetchedImgUrl');
-                          int response =
-                              await APIHandler().updateQuestionOfSpecificQid(
+                          Uint8List? qimage;
+                          if (fetchedImgUrl != null) {
+                            var response =
+                                await http.get(Uri.parse(fetchedImgUrl));
+                            if (response.statusCode == 200) {
+                              qimage = Uint8List.fromList(response.bodyBytes);
+                            } else {
+                              if (mounted) {
+                                showErrorDialog(
+                                    context, 'Error downloading image');
+                              }
+                            }
+                          }
+                          int response = await APIHandler()
+                              .updateQuestionOfSpecificQid(
                                   widget.qid,
                                   questionController.text,
-                                  selectedImage ?? (fetchedImgUrl),
+                                  selectedImage ?? (qimage),
                                   marks,
                                   dropdownValue,
                                   'uploaded',
@@ -479,7 +495,7 @@ class _QuestionEditState extends State<QuestionEdit> {
                               marksController.clear();
                               selectedImage = null;
                               fetchedImgUrl = null;
-                              selectedTopicId = null;
+                           //   selectedTopicId = null;
                               dropdownValue = 'Easy';
                               isCheckedList =
                                   List<bool>.filled(topicList.length, false);

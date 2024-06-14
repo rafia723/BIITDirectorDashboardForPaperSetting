@@ -59,7 +59,7 @@ class _PaperApprovalState extends State<PaperApproval> {
   void initState() {
     super.initState();
     initializeData();
-    loadQuestionsWithUploadedStatus(widget.pid);
+    loadQuestionsWithUploadedAndApprovedStatus(widget.pid);
   }
 
   Future<void> initializeData() async {
@@ -70,7 +70,7 @@ class _PaperApprovalState extends State<PaperApproval> {
     if (sid != null) {
       loadPaperHeaderData(widget.cid, sid!);
     }
-    await loadQuestionsWithUploadedStatus(widget.pid);
+    await loadQuestionsWithUploadedAndApprovedStatus(widget.pid);
     if (qlist.isNotEmpty) {
       loadCloListsForQuestions();
       if (qNoCounter != null) {
@@ -270,7 +270,7 @@ class _PaperApprovalState extends State<PaperApproval> {
     }
   }
 
-  Future<void> loadQuestionsWithUploadedStatus(int pid) async {
+  Future<void> loadQuestionsWithUploadedAndApprovedStatus(int pid) async {
   try {
     qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
     if (qlist.isNotEmpty) {
@@ -288,6 +288,8 @@ class _PaperApprovalState extends State<PaperApproval> {
         // Add a TextEditingController to the commentControllers map if it doesn't exist
         commentControllers[qid] = TextEditingController();
       }
+         // Set the initial status of each question in the statusMap
+        statusMap[qid] = question['q_status'];
     }
     setState(() {
       listOfClos = allCloLists; // Assign the list of CLOs to listOfClos
@@ -735,7 +737,6 @@ class _PaperApprovalState extends State<PaperApproval> {
                                     content:
                                         'Do you want to replace this question?',
                                   );
-
                                   if (confirmation == true) {
                                     await Navigator.push(
                                       context,
@@ -799,7 +800,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                           }
                         } else {
                           await addFeedbackData(commentText, widget.pid, qid, fid);
-                          await loadQuestionsWithUploadedStatus(widget.pid);
+                          await loadQuestionsWithUploadedAndApprovedStatus(widget.pid);
                         }
                       },
                       icon: const Icon(Icons.send),
@@ -821,7 +822,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                                           ),
                                         );
                                         setState(() {
-                                          loadQuestionsWithUploadedStatus(
+                                          loadQuestionsWithUploadedAndApprovedStatus(
                                               widget.pid);
                                         });
                                       },
@@ -839,8 +840,8 @@ class _PaperApprovalState extends State<PaperApproval> {
               },
             ),
           ),
-          acceptAllChecked
-              ? customElevatedButton(
+         if(acceptAllChecked) 
+               customElevatedButton(
                   onPressed: () async {
                     //    await initializeData();
                     //  if(qNoCounter==0){
@@ -863,7 +864,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                   //  },
                   ,
                   buttonText: 'Approve')
-              : const SizedBox(),
+             // : const SizedBox(),
         ]),
       ]),
     );
