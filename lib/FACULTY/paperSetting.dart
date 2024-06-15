@@ -1,4 +1,3 @@
-
 import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
@@ -51,15 +50,15 @@ class _PaperSettingState extends State<PaperSetting> {
   int? pid;
   dynamic facultyId;
   Uint8List? selectedImage;
-  List<dynamic> commonTopicList= [];
+  List<dynamic> commonTopicList = [];
   List<bool> isCheckedList = [];
   int? selectedTopicId;
   Map<int, List<dynamic>> cloListsForQuestions = {};
-   // Map<int, List<dynamic>> topicListsForQuestions = {};
+  // Map<int, List<dynamic>> topicListsForQuestions = {};
   //Map<int, List<dynamic>> cloMap = {};
   List<int> selectedTopicIds = [];
- 
-  List<dynamic> cloList=[];
+
+  List<dynamic> cloList = [];
 
   @override
   void initState() {
@@ -67,7 +66,6 @@ class _PaperSettingState extends State<PaperSetting> {
     loadTeachers();
     initializeData();
     loadCommonTopics();
-    
   }
 
   Future<void> initializeData() async {
@@ -80,39 +78,35 @@ class _PaperSettingState extends State<PaperSetting> {
     }
     if (paperId != null) {
       await loadQuestion(paperId);
-      if(qlist.isNotEmpty){
-       
-for (var marks in qlist) {
-   int qid= marks['q_id'];
-        tMarks += (marks['q_marks'] as int);
-       loadCloListsForQuestions(qid);
+      if (qlist.isNotEmpty) {
+        for (var marks in qlist) {
+          int qid = marks['q_id'];
+          tMarks += (marks['q_marks'] as int);
+          loadCloListsForQuestions(qid);
         }
-      } 
+      }
     }
-  
-if(mounted){
-ScaffoldMessenger.of(context).showSnackBar(
-  SnackBar(
-    content: const Text(
-      'Please make sure to add at least one question of each difficulty level (Easy, Medium, Hard) for each topic.',
-    ),
-    action: SnackBarAction(
-      label: 'OK',
-      onPressed: () {
-      
-      },
-    ),
-  ),
-);
-}
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Please make sure to add at least one question of each difficulty level (Easy, Medium, Hard) for each topic.',
+          ),
+          action: SnackBarAction(
+            label: 'OK',
+            onPressed: () {},
+          ),
+        ),
+      );
+    }
   }
 
-  
   Future<void> checksFunction() async {
-      if (paperId != null) {
+    if (paperId != null) {
       await loadQuestion(paperId);
     }
-    }
+  }
 
   Future<void> loadFacultyName(int facultyid) async {
     try {
@@ -127,14 +121,14 @@ ScaffoldMessenger.of(context).showSnackBar(
     }
   }
 
-Future<void> loadCloListsForQuestions(int qid) async {
-  
-    List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid);
+  Future<void> loadCloListsForQuestions(int qid) async {
+    List<dynamic> cloListForQuestion =
+        await APIHandler().loadClosofSpecificQuestion(qid);
     cloListsForQuestions[qid] = cloListForQuestion;
- if(mounted){
-  setState(() {}); 
- }
-}
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
 // Future<void> loadTopicListsForQuestions() async {
 //   for (var question in qlist) {
@@ -143,10 +137,9 @@ Future<void> loadCloListsForQuestions(int qid) async {
 //     topicListForQuestion[qid] = topicListForQuestion;
 //   }
 //  if(mounted){
-//   setState(() {}); 
+//   setState(() {});
 //  }
 // }
-
 
   Future<void> _selectImage() async {
     final picker = ImagePicker();
@@ -189,15 +182,13 @@ Future<void> loadCloListsForQuestions(int qid) async {
     }
   }
 
- 
-    Future<void> loadCommonTopics() async {
+  Future<void> loadCommonTopics() async {
     try {
       commonTopicList = await APIHandler().loadCommonTopics(widget.cid!);
       setState(() {
-        if(commonTopicList.isNotEmpty){
- isCheckedList = List<bool>.filled(commonTopicList.length, false);
+        if (commonTopicList.isNotEmpty) {
+          isCheckedList = List<bool>.filled(commonTopicList.length, false);
         }
-      
       });
     } catch (e) {
       if (mounted) {
@@ -206,33 +197,34 @@ Future<void> loadCloListsForQuestions(int qid) async {
     }
   }
 
- Future<void> loadQuestion(int pid) async {
-  try {
-    qlist = await APIHandler().loadQuestion(pid);
-    List<dynamic> allCloLists = []; // List to store CLOs of all questions
-   //  List<dynamic> allTopicLists = []; // List to store topic of all questions
-    for (var question in qlist) {
-      facultyId = question['f_id'];
-      int qid = question['q_id'];
-      List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid); // Load CLOs for each question
-      allCloLists.add(cloListForQuestion); // Add CLOs to the list
-      loadCloListsForQuestions(qid);
+  Future<void> loadQuestion(int pid) async {
+    try {
+      qlist = await APIHandler().loadQuestion(pid);
+      List<dynamic> allCloLists = []; // List to store CLOs of all questions
+      //  List<dynamic> allTopicLists = []; // List to store topic of all questions
+      for (var question in qlist) {
+        facultyId = question['f_id'];
+        int qid = question['q_id'];
+        List<dynamic> cloListForQuestion = await APIHandler()
+            .loadClosofSpecificQuestion(qid); // Load CLOs for each question
+        allCloLists.add(cloListForQuestion); // Add CLOs to the list
+        loadCloListsForQuestions(qid);
 
-      //  List<dynamic> topicListForQuestion = await APIHandler().loadTopicsDataMappedWithQuestion(qid); // Load topics for each question
-      // allTopicLists.add(topicListForQuestion); // Add topics to the list
-      if (facultyId != null) {
-        await loadFacultyName(facultyId!);
+        //  List<dynamic> topicListForQuestion = await APIHandler().loadTopicsDataMappedWithQuestion(qid); // Load topics for each question
+        // allTopicLists.add(topicListForQuestion); // Add topics to the list
+        if (facultyId != null) {
+          await loadFacultyName(facultyId!);
+        }
+      }
+      setState(() {
+        cloList = allCloLists; // Assign the list of CLOs to cloList
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
       }
     }
-    setState(() {
-      cloList = allCloLists; // Assign the list of CLOs to cloList
-    });
-  } catch (e) {
-    if (mounted) {
-      showErrorDialog(context, e.toString());
-    }
   }
-}
 
   Future<void> loadTeachers() async {
     try {
@@ -417,12 +409,13 @@ Future<void> loadCloListsForQuestions(int qid) async {
                                   fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                             Expanded(
-                             child: tMarks == 0
-    ? const Text('0')
-    : Text(
-        '$tMarks',
-        style: const TextStyle(fontSize: 12),
-      ),),
+                              child: tMarks == 0
+                                  ? const Text('0')
+                                  : Text(
+                                      '$tMarks',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                            ),
                           ],
                         ),
                         Row(
@@ -475,14 +468,15 @@ Future<void> loadCloListsForQuestions(int qid) async {
                         icon: const Icon(Icons.photo_library)),
                     IconButton(
                       onPressed: () async {
-                   //    initializeData();
-                   checksFunction();
+                        //    initializeData();
+                        checksFunction();
                         //2 selectedTopicIds.clear();
-                       // if (selectedTopicId == null ||
-                       if( selectedTopicIds.isEmpty||
+                        // if (selectedTopicId == null ||
+                        if (selectedTopicIds.isEmpty ||
                             dropdownValue.isEmpty ||
                             marksController.text.isEmpty) {
-                          showErrorDialog(context, 'Please select required information Topic,Difficulty and marks');
+                          showErrorDialog(context,
+                              'Please select required information Topic,Difficulty and marks');
                         } else {
                           dynamic response = await APIHandler().addQuestion(
                             questionController.text,
@@ -490,7 +484,7 @@ Future<void> loadCloListsForQuestions(int qid) async {
                             int.parse(marksController.text),
                             dropdownValue,
                             'pending',
-                         //   selectedTopicId!,
+                            //   selectedTopicId!,
                             paperId,
                             widget.fid,
                           );
@@ -503,14 +497,13 @@ Future<void> loadCloListsForQuestions(int qid) async {
                             questionController.clear();
                             marksController.clear();
                             selectedImage = null;
-                          //  selectedTopicId = null;
+                            //  selectedTopicId = null;
                             setState(() {
                               dropdownValue = 'Easy';
-                              isCheckedList =
-                                  List<bool>.filled(commonTopicList.length, false);
-                                    selectedTopicIds.clear();
+                              isCheckedList = List<bool>.filled(
+                                  commonTopicList.length, false);
+                              selectedTopicIds.clear();
                               loadQuestion(paperId);
-
                             });
                           } else {
                             if (mounted) {
@@ -616,14 +609,14 @@ Future<void> loadCloListsForQuestions(int qid) async {
                                           setState(() {
                                             isCheckedList[index] = value!;
 
-                                         //   selectedTopicId = topic['t_id'];
+                                            //   selectedTopicId = topic['t_id'];
                                             if (value == true) {
                                               selectedTopicIds
                                                   .add(topic['t_id']);
                                             } else {
                                               selectedTopicIds
                                                   .remove(topic['t_id']);
-                                            //  print(selectedTopicId);
+                                              //  print(selectedTopicId);
                                             }
                                           });
                                         },
@@ -676,69 +669,70 @@ Future<void> loadCloListsForQuestions(int qid) async {
               ),
               ///////////////////////////////////////////////////Questions Display///////////////////////////////////////////////////////////////
 
- 
- Expanded(
-  child: ListView.builder(
-    itemCount: qlist.length,
-    itemBuilder: (context, index) {
-      final question = qlist[index];
-      final imageUrl = question['q_image'];
-      facultyId = question['f_id'];
-      final facultyName = facultyNames[facultyId] ?? 'Loading...';
+              Expanded(
+                child: ListView.builder(
+                  itemCount: qlist.length,
+                  itemBuilder: (context, index) {
+                    final question = qlist[index];
+                    final imageUrl = question['q_image'];
+                    facultyId = question['f_id'];
+                    final facultyName = facultyNames[facultyId] ?? 'Loading...';
 
-      // Get CLOs for this question from the preloaded map
-      List<dynamic> cloListForQuestion = cloListsForQuestions[question['q_id']] ?? [];
-   print('CLOs for Question #${index + 1}: $cloListForQuestion'); // Debug print
+                    // Get CLOs for this question from the preloaded map
+                    List<dynamic> cloListForQuestion =
+                        cloListsForQuestions[question['q_id']] ?? [];
+                    print(
+                        'CLOs for Question #${index + 1}: $cloListForQuestion'); // Debug print
 
-  //    List<dynamic> topicListForQuestion = topicListsForQuestions[question['q_id']] ?? [];
-  //  print('topic for Question #${index + 1}: $topicListForQuestion'); // Debug print
-      return Card(
-        elevation: 5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-        ),
-        color: Colors.white.withOpacity(0.8),
-        child: ListTile(
-          tileColor: Colors.white,
-          title: Text(
-            'Question # ${index + 1}',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(question['q_text']),
-              if (imageUrl != null)
-                Image.network(
-                  imageUrl,
-                  height: 150,
-                  width: 300,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const CircularProgressIndicator();
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Text('Error loading image: $error');
+                    //    List<dynamic> topicListForQuestion = topicListsForQuestions[question['q_id']] ?? [];
+                    //  print('topic for Question #${index + 1}: $topicListForQuestion'); // Debug print
+                    return Card(
+                      elevation: 5,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                      ),
+                      color: Colors.white.withOpacity(0.8),
+                      child: ListTile(
+                        tileColor: Colors.white,
+                        title: Text(
+                          'Question # ${index + 1}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(question['q_text']),
+                            if (imageUrl != null)
+                              Image.network(
+                                imageUrl,
+                                height: 150,
+                                width: 300,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return const CircularProgressIndicator();
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Text('Error loading image: $error');
+                                },
+                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text('${question['q_difficulty']},'),
+                                Text('${question['q_marks']},'),
+                                Text('$facultyName,'),
+                                Text(
+                                    'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}')
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
                   },
                 ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text('${question['q_difficulty']},'),
-                  Text('${question['q_marks']},'),
-                  Text('$facultyName,'),
-                  Text(
-                    'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}'
-                  )
-                ],
               ),
-            ],
-          ),
-        ),
-      );
-    },
-  ),
-),
 // customElevatedButton(onPressed: (){
 //   Navigator.pop(context);
 // }, buttonText: 'Save')

@@ -72,10 +72,20 @@ class _PaperApprovalState extends State<PaperApproval> {
     }
     await loadQuestionsWithUploadedAndApprovedStatus(widget.pid);
     if (qlist.isNotEmpty) {
-      loadCloListsForQuestions();
-      if (qNoCounter != null) {
-        qNoCounter--;
+           for (var question in qlist) {
+        if (question['q_status'] == 'approved') {
+          int qMarks = question['q_marks'];
+          if (mounted) {
+            setState(() {
+              tMarks += qMarks;
+              if (qNoCounter != null) {
+                qNoCounter--;
+              }
+            });
+          }
+        }
       }
+      loadCloListsForQuestions();
     }
 
     List<List<String>> allCloLists = [];
@@ -103,6 +113,7 @@ class _PaperApprovalState extends State<PaperApproval> {
         await findMissingCLOs(selectedQuestionIds, cloIdsShouldbeAddedList);
 
     print('Missing CLOs: $missingcloss');
+    print(qNoCounter);
   }
 
   Future<bool?> customConfirmationDialog(BuildContext context,
@@ -195,7 +206,7 @@ class _PaperApprovalState extends State<PaperApproval> {
 
   Future<void> loadPaperHeaderData(int cid, int sid) async {
     try {
-      plist = await APIHandler().loadPaperHeader(cid, sid);
+      plist = await APIHandler().loadPaperHeaderIfTermMidAndApproved(cid, sid);
       setState(() {
         if (plist.isNotEmpty) {
           paperId = plist[0]['p_id'];
@@ -405,11 +416,14 @@ class _PaperApprovalState extends State<PaperApproval> {
 
   Future<void> updateAllStatuses(String newStatus) async {
     try {
+      qNoCounter=noOfQuestions;
+       tMarks=0;
       for (var question in qlist) {
         int qid = question['q_id'];
-        int qmarks = question['q_marks'];
-        tMarks += qmarks;
-        qNoCounter--;
+       int qmarks = question['q_marks'];
+       
+       tMarks += qmarks;
+       qNoCounter--;
         await updateQuestionStatus(qid, newStatus);
       }
       setState(() {
@@ -417,6 +431,7 @@ class _PaperApprovalState extends State<PaperApproval> {
           int qid = question['q_id'];
           statusMap[qid] = newStatus;
         }
+        print('hehe all accept $qNoCounter');
       });
     } catch (e) {
       if (mounted) {
@@ -435,11 +450,13 @@ class _PaperApprovalState extends State<PaperApproval> {
 
   Future<void> revertAllStatuses() async {
     try {
+      qNoCounter=0;
       for (var question in qlist) {
         int qid = question['q_id'];
-        int qmarks = question['q_marks'];
-        tMarks -= qmarks;
-        qNoCounter++;
+
+       int qmarks = question['q_marks'];
+       tMarks -= qmarks;
+       qNoCounter++;
         await updateQuestionStatus(qid, 'uploaded');
       }
       setState(() {
@@ -447,6 +464,7 @@ class _PaperApprovalState extends State<PaperApproval> {
           int qid = question['q_id'];
           statusMap[qid] = 'uploaded';
         }
+          print('hehe all reject $qNoCounter');
       });
     } catch (e) {
       if (mounted) {
@@ -632,6 +650,7 @@ class _PaperApprovalState extends State<PaperApproval> {
               ),
             ),
           ),
+        if(qNoCounter==0)
           Row(
             children: [
               const SizedBox(
@@ -721,6 +740,7 @@ class _PaperApprovalState extends State<PaperApproval> {
 
                                     tMarks += question['q_marks'] as int;
                                     qNoCounter--;
+                                      print('After approval $qNoCounter');
                                   });
                                   updateQuestionStatus(qid, value!);
                                 },
@@ -757,6 +777,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                                       statusMap[qid] = value!;
                                       tMarks -= question['q_marks'] as int;
                                       qNoCounter++;
+                                      print('After rejection$qNoCounter');
                                     });
 
                                    //  updateQuestionStatus(qid, value!);

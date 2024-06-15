@@ -106,7 +106,7 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
 
   Future<void> loadPaperHeaderData(int cid, int sid) async {
     try {
-      plist = await APIHandler().loadPaperHeader(cid, sid);
+      plist = await APIHandler().loadPaperHeaderIfTermMidAndApproved(cid, sid);
       setState(() {
         if (plist.isNotEmpty) {
           paperId = plist[0]['p_id'];

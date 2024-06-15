@@ -246,7 +246,7 @@ setState(() {
                         customButton(
                             text: 'Manage Paper',
                             onPressed: () {
-                              if(status=='pending'){
+                              if(status=='pending'||status=='uploaded'){
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
