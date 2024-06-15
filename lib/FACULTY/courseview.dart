@@ -35,6 +35,10 @@ class _CourseViewState extends State<CourseView> {
   dynamic sid;
   List<dynamic> list = [];
   bool isLoading=true;
+  int? paperId;
+  String? session;
+  String? term;
+  String? status;
 
 
   @override
@@ -59,8 +63,8 @@ setState(() {
   Future<void> loadSession() async {
     try {
       sid = await APIHandler().loadFirstSessionId();
-      setState(() {});
-    } catch (e) {
+      setState(() { });
+    }catch (e) {
       if (mounted) {
         showDialog(
           context: context,
@@ -77,8 +81,14 @@ setState(() {
 
   Future<void> loadPaperHeader(int cid, int sid) async {
     try {
-      list = await APIHandler().loadPaperHeader(cid, sid);
+      list = await APIHandler().loadPaperHeaderIfTermMidAndApproved(cid, sid);
       setState(() {});
+       if (list.isNotEmpty) {
+        paperId = list[0]['p_id'];
+        session = list[0]['session'];
+        term = list[0]['term'];
+        status=list[0]['status'];
+    } 
     } catch (e) {
       if (mounted) {
         showDialog(
@@ -236,6 +246,7 @@ setState(() {
                         customButton(
                             text: 'Manage Paper',
                             onPressed: () {
+                              if(status=='pending'){
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -245,6 +256,10 @@ setState(() {
                                       cid: widget.cid),
                                 ),
                               );
+                               }
+                               else{
+                                showErrorDialog(context, 'The $term term paper is $status');
+                               }
                             }),
                         const SizedBox(height: 10),
                         customButton(

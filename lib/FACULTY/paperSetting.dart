@@ -418,7 +418,7 @@ Future<void> loadCloListsForQuestions(int qid) async {
                             ),
                             Expanded(
                              child: tMarks == 0
-    ? const Text('Loading...')
+    ? const Text('0')
     : Text(
         '$tMarks',
         style: const TextStyle(fontSize: 12),

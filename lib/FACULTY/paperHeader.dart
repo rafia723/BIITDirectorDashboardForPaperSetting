@@ -452,8 +452,6 @@ class _PaperHeaderState extends State<PaperHeader> {
                         ||selectedtermValue==''){
                           showErrorDialog(context, 'Please provide all necessary information');
                         }else{
-
-                        
                          APIHandler()
                             .addPaperHeader(
                           durationController.text,
