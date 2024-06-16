@@ -86,7 +86,7 @@ class _PaperHeaderState extends State<PaperHeader> {
      for (var item in list) {
     String term = item['term']!.toLowerCase();
      status = item['status']!.toLowerCase();
-    if (term == 'mid'&&(status=='approved'||status=='printed')) {
+    if (term == 'mid'&&(status=='printed')) {
       midAndApproved=true;
     }
      if (term == 'mid') {

@@ -1,4 +1,7 @@
+
+
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/DATACELL/paperPrinting.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
@@ -122,6 +125,16 @@ class _ApprovedState extends State<Approved> {
                         ),
                         color: Colors.white.withOpacity(0.8),
                       child: ListTile(
+                        onTap: () => {
+                               Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PaperPrinting(cid: plist[index]['c_id'], 
+                                ccode: plist[index]['c_code'], 
+                                coursename: plist[index]['c_title'],
+                                pid: plist[index]['p_id'],
+                                )))
+                        },
                           title: Text(
                             plist[index]['c_title'],
                             style: const TextStyle(fontWeight: FontWeight.bold),
@@ -129,8 +142,16 @@ class _ApprovedState extends State<Approved> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              customElevatedButton(
-                                  onPressed: () {}, buttonText: 'Print')
+                             IconButton(onPressed: (){
+                                Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PaperPrinting(cid: plist[index]['c_id'], 
+                                ccode: plist[index]['c_code'], 
+                                coursename: plist[index]['c_title'],
+                                pid: plist[index]['p_id'],
+                                )));
+                             }, icon: const Icon(Icons.remove_red_eye))
                             ],
                           ),
                         ),

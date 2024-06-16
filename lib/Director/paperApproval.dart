@@ -54,6 +54,8 @@ class _PaperApprovalState extends State<PaperApproval> {
   List<int> missingcloss = [];
   List<dynamic> paperGridWeightageOfTerm = [];
   List<int> cloIdsShouldbeAddedList = [];
+    List<int> cloWeightageCheck=[];
+
 
   @override
   void initState() {
@@ -86,35 +88,59 @@ class _PaperApprovalState extends State<PaperApproval> {
         }
       }
       loadCloListsForQuestions();
+      checksFunction();
     }
-
-    List<List<String>> allCloLists = [];
-    for (var question in qlist) {
-      int qid = question['q_id'];
-      List<String> cloListForQuestion = await loadClosofSpecificQuestion(qid);
-      allCloLists.add(cloListForQuestion);
-    }
-
-    cloIdsShouldbeAddedList.clear();
-    for (var item in paperGridWeightageOfTerm) {
-      try {
-        cloIdsShouldbeAddedList.add(int.parse(item['clonumber']));
-      } catch (e) {
-        print('Error parsing clonumber: ${item['clonumber']}');
-      }
-    }
-    print(' CLOs should be added: $cloIdsShouldbeAddedList');
-
-    List<int> selectedQuestionIds = qlist
-        .where((question) => question['q_status'] == 'uploaded')
-        .map<int>((question) => question['q_id'] as int)
-        .toList();
-    missingcloss =
-        await findMissingCLOs(selectedQuestionIds, cloIdsShouldbeAddedList);
-
-    print('Missing CLOs: $missingcloss');
-    print(qNoCounter);
   }
+
+ Future<void> checksFunction() async {
+      // Collect all CLOs for selected questions
+      List<List<String>> allCloLists = [];
+      for (var question in qlist) {
+        int qid = question['q_id'];
+        List<String> cloListForQuestion =
+            await loadClosofSpecificQuestion(qid);
+        allCloLists.add(cloListForQuestion);
+      }
+
+      // Deduct marks for questions already marked as uploaded
+     
+     cloIdsShouldbeAddedList.clear();
+for (var item in paperGridWeightageOfTerm) {
+  try {
+    cloIdsShouldbeAddedList.add(int.parse(item['clonumber']));
+  } catch (e) {
+    print('Error parsing clonumber: ${item['clonumber']}');
+  }
+}
+      print(' CLOs should be added: $cloIdsShouldbeAddedList');
+
+      List<int> selectedQuestionIds = qlist
+          .where((question) => question['q_status'] == 'approved')
+          .map<int>((question) => question['q_id'] as int)
+          .toList();
+       missingcloss =
+          await findMissingCLOs(selectedQuestionIds, cloIdsShouldbeAddedList);
+
+      print('Missing CLOs: $missingcloss');
+    }
+
+
+  Future<List<int>> findMissingCLOs(List<int> selectedQuestionIds, List<int> cloIdsShouldbeAddedList) async {
+    Set<int> actualCLOs = {};
+
+    for (int questionId in selectedQuestionIds) {
+      List<String> cloStrings = await loadClosofSpecificQuestion(questionId);
+      actualCLOs.addAll(cloStrings.map((clo) => int.parse(clo)));
+    }
+     Set<int> notInCloGridSpecificTerm = actualCLOs.difference(cloIdsShouldbeAddedList.toSet());
+   cloWeightageCheck=notInCloGridSpecificTerm.toList();
+     print('Dont have weightage in this term $notInCloGridSpecificTerm');
+    print('Actual $actualCLOs');
+    List<int> missingcloss =
+        cloIdsShouldbeAddedList.toSet().difference(actualCLOs).toList();
+    return missingcloss;
+  }
+
 
   Future<bool?> customConfirmationDialog(BuildContext context,
       {required String title, required String content}) {
@@ -159,19 +185,6 @@ class _PaperApprovalState extends State<PaperApproval> {
     }
   }
 
-  Future<List<int>> findMissingCLOs(
-      List<int> selectedQuestionIds, List<int> cloIdsShouldbeAddedList) async {
-    Set<int> actualCLOs = {};
-
-    for (int questionId in selectedQuestionIds) {
-      List<String> cloStrings = await loadClosofSpecificQuestion(questionId);
-      actualCLOs.addAll(cloStrings.map((clo) => int.parse(clo)));
-    }
-    print('Actual $actualCLOs');
-    List<int> missingcloss =
-        cloIdsShouldbeAddedList.toSet().difference(actualCLOs).toList();
-    return missingcloss;
-  }
 
   Future<List<String>> loadClosofSpecificQuestion(int qid) async {
     try {
@@ -328,6 +341,7 @@ class _PaperApprovalState extends State<PaperApproval> {
         if (code == 200) {
           setState(() {
             statusMap[qid] = newStatus;
+            loadQuestionsWithUploadedAndApprovedStatus(paperId);
           });
         } else {
           throw Exception('Non-200 response code code=$code');
@@ -741,6 +755,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                                     tMarks += question['q_marks'] as int;
                                     qNoCounter--;
                                       print('After approval $qNoCounter');
+                                      checksFunction();
                                   });
                                   updateQuestionStatus(qid, value!);
                                 },
@@ -778,6 +793,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                                       tMarks -= question['q_marks'] as int;
                                       qNoCounter++;
                                       print('After rejection$qNoCounter');
+                                      checksFunction();
                                     });
 
                                    //  updateQuestionStatus(qid, value!);
@@ -822,6 +838,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                         } else {
                           await addFeedbackData(commentText, widget.pid, qid, fid);
                           await loadQuestionsWithUploadedAndApprovedStatus(widget.pid);
+                          checksFunction();
                         }
                       },
                       icon: const Icon(Icons.send),
