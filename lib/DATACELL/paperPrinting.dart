@@ -2,6 +2,11 @@
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:http/http.dart' as http;
 
 class PaperPrinting extends StatefulWidget {
   final int cid;
@@ -50,7 +55,6 @@ class _PaperPrintingState extends State<PaperPrinting> {
     await loadSession();
     setState(() {});
     loadTeachers();
-
     if (sid != null) {
       loadPaperHeaderData(widget.cid, sid!);
     }
@@ -110,7 +114,6 @@ class _PaperPrintingState extends State<PaperPrinting> {
       }
     }
   }
-  
 
   Future<void> loadTeachers() async {
     try {
@@ -188,7 +191,6 @@ class _PaperPrintingState extends State<PaperPrinting> {
   Future<void> updatePaperStatus(int pid) async {
     try {
       dynamic code = await APIHandler().updatePaperStatusToApproved(pid);
-
       if (mounted) {
         if (code == 200) {
           setState(() {
@@ -232,6 +234,278 @@ class _PaperPrintingState extends State<PaperPrinting> {
     }
   }
 
+Future<void> _printPage() async {
+  final pdf = pw.Document();
+
+  // Load logo image synchronously
+  final Uint8List logoImage = (await rootBundle.load('assets/images/biit.png')).buffer.asUint8List();
+  final pdfLogoImage = pw.MemoryImage(logoImage);
+
+  // Preload images from URLs
+  final preloadedImages = await _preloadImages(qlist);
+
+  pdf.addPage(
+    pw.Page(
+      build: (pw.Context context) {
+        return pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Container(
+                  width: 90,
+                  height: 90,
+                  decoration: pw.BoxDecoration(
+                    shape: pw.BoxShape.circle,
+                    border: pw.Border.all(
+                      color: PdfColors.white,
+                      width: 1.0,
+                    ),
+                    image: pw.DecorationImage(
+                      image: pdfLogoImage,
+                      fit: pw.BoxFit.cover,
+                    ),
+                  ),
+                ),
+                pw.Text(
+                  'Barani Institute of Information Technology\n       PMAS Arid Agriculture University,\n                 Rawalpindi,Pakistan\n      ${session ?? 'Session'} ${year ?? 0} : ${term ?? ''} Term Examination',
+                  style: pw.TextStyle(
+                      fontSize: 14, fontWeight: pw.FontWeight.bold),
+                ),
+                pw.Container(
+                  width: 90,
+                  height: 90,
+                  decoration: pw.BoxDecoration(
+                    shape: pw.BoxShape.circle,
+                    border: pw.Border.all(
+                      color: PdfColors.white,
+                      width: 1.0,
+                    ),
+                    image: pw.DecorationImage(
+                      image: pdfLogoImage,
+                      fit: pw.BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 16),
+            pw.Container(
+              padding: const pw.EdgeInsets.all(8.0),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(width: 1.0, color: PdfColors.black),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Row(
+                    children: [
+                      pw.Text(
+                        'Course Title: ',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      pw.Expanded(
+                        child: pw.Text(
+                          widget.coursename,
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      pw.Text(
+                           '         Course Code: ',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      pw.Expanded(
+                        child: pw.Text(
+                          widget.ccode,
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 8),
+                  pw.Row(
+                    children: [
+                      pw.Text(
+                        'Date of Exam: ',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      pw.Expanded(
+                        child: pw.Text(
+                          '${date?.day ?? ''}/${date?.month ?? ''}/${date?.year ?? 'Loading...'}',
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      pw.Text(
+                        'Duration: ',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      pw.Expanded(
+                        child: pw.Text(
+                          duration ?? 'Loading...',
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 8),
+                  pw.Row(
+                    children: [
+                      pw.Text(
+                        'Degree Program: ',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      pw.Expanded(
+                        child: pw.Text(
+                          degree ?? 'Loading...',
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                      ),
+                      pw.Text(
+                        'Total Marks: ',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      pw.Expanded(
+                        child: pw.Text(
+                          '$tMarks',
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.SizedBox(height: 8),
+                  pw.Row(
+                    children: [
+                      pw.Text(
+                        'Teachers Name: ',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 12),
+                      ),
+                      pw.Expanded(
+                        child: pw.Text(
+                          teachers.isEmpty
+                              ? 'Loading...'
+                              : teachers
+                                  .map<String>((teacher) => teacher['f_name'] as String)
+                                  .join(', '),
+                          style: const pw.TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 16),
+            pw.ListView.builder(
+              itemCount: qlist.length,
+              itemBuilder: (context, index) {
+                final question = qlist[index];
+                final imageUrl = question['q_image'];
+                List<dynamic> cloListForQuestion =
+                    cloListsForQuestions[question['q_id']] ?? [];
+
+                return pw.Container(
+                  padding: const pw.EdgeInsets.all(8.0),
+                  margin: const pw.EdgeInsets.only(bottom: 10),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.black),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        'Question # ${index + 1}',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      pw.Text(question['q_text']),
+                      if (preloadedImages[index] != null)
+                        pw.Container(
+                          height: 150,
+                          width: 300,
+                          decoration: pw.BoxDecoration(
+                            image: pw.DecorationImage(
+                              image: pw.MemoryImage(preloadedImages[index]!),
+                              fit: pw.BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.end,
+                        children: [
+                          pw.Text('Marks: ${question['q_marks']},'),
+                          pw.Text(
+                            'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}',
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    ),
+  );
+
+  await Printing.layoutPdf(
+    onLayout: (PdfPageFormat format) async => pdf.save(),
+  );
+}
+
+// Helper function to preload images from URLs
+Future<Map<int, Uint8List?>> _preloadImages(List<dynamic> qlist) async {
+  Map<int, Uint8List?> images = {};
+  for (var i = 0; i < qlist.length; i++) {
+    final imageUrl = qlist[i]['q_image'];
+    if (imageUrl != null) {
+      images[i] = await _loadImage(imageUrl);
+    } else {
+      images[i] = null;
+    }
+  }
+  return images;
+}
+
+// Helper function to load image from URL
+Future<Uint8List?> _loadImage(String url) async {
+  try {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      return response.bodyBytes;
+    } else {
+      print('Failed to load image: $url');
+      return null;
+    }
+  } catch (e) {
+    print('Error loading image: $url - $e');
+    return null;
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -258,7 +532,7 @@ class _PaperPrintingState extends State<PaperPrinting> {
         ),
         actions: [
           IconButton(
-            onPressed: (){},
+            onPressed: _printPage,
             icon: const Icon(Icons.print),
           ),
           const SizedBox(width: 20),
@@ -298,8 +572,8 @@ class _PaperPrintingState extends State<PaperPrinting> {
                         ),
                       ),
                     ),
-                   Text(
-                  'Barani Institute of Information Technology\n       PMAS Arid Agriculture University,\n                 Rawalpindi,Pakistan\n      ${session ?? 'Session'} ${year ?? 'Loading...'} : ${term ?? ''} Term Examination',
+                    Text(
+                  'Barani Institute of Information Technology\n       PMAS Arid Agriculture University,\n                 Rawalpindi,Pakistan\n      ${session ?? 'Session'} ${year ?? 0} : ${term ?? ''} Term Examination',
                   style: const TextStyle(
                       fontSize: 11.5, fontWeight: FontWeight.bold),
                 ),
@@ -332,63 +606,71 @@ class _PaperPrintingState extends State<PaperPrinting> {
                     },
                     child: Column(
                       children: [
-                        Row(
-                          children: [
-                            const Text(
-                              'Course Title: ',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
-                            Expanded(
-                                child: Text(
-                              widget.coursename,
-                              style: const TextStyle(fontSize: 12),
-                            )),
-                            const Text(
-                              'Course Code: ',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
-                            Expanded(
-                                child: Text(
-                              widget.ccode,
-                              style: const TextStyle(fontSize: 12),
-                            )),
-                          ],
+                     Row(
+                      children: [
+                        const Text(
+                          'Course Title: ',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 12),
                         ),
-                        Row(
-                          children: [
-                            const Text(
-                              'Date of Exam: ',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
-                            Expanded(
-                              child: Text(
-                                '${date?.day ?? ''}/${date?.month ?? ''}/${date?.year ?? 'Loading...'}',
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                            ),
-                            const Text(
-                              'Duration: ',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
-                            Expanded(
-                                child: Text(
-                              duration ?? 'Loading...',
-                              style: const TextStyle(fontSize: 12),
-                            )),
-                          ],
+                        Expanded(
+                            child: Text(
+                          widget.coursename,
+                          //  overflow: TextOverflow.ellipsis, // Optionally, set overflow behavior
+                          //      maxLines: 5,
+                          style: const TextStyle(fontSize: 12),
+                        )),
+                        const Text(
+                          '         Course Code: ',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 12),
                         ),
+                        Expanded(
+                            child: Text(
+                          widget.ccode,
+                          style: const TextStyle(fontSize: 12),
+                        )),
+                      ],
+                    ),
+                       Row(
+                      children: [
+                        const Text(
+                          'Date of Exam: ',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                        Expanded(
+                          child: Text(
+                            '${date?.day ?? ''}/${date?.month ?? ''}/${date?.year ?? ''}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        const Text(
+                          'Duration: ',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                        Expanded(
+                            child: Text(
+                          duration ?? '',
+                          style: const TextStyle(fontSize: 12),
+                        )),
+                      ],
+                    ),
                         Row(
                           children: [
                             const Text(
                               'Degree Program: ',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                             Expanded(
                                 child: Text(degree ?? 'Loading...',
                                     style: const TextStyle(fontSize: 12))),
                             const Text(
                               'Total Marks: ',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                             Expanded(
                                 child: Text(
@@ -401,14 +683,16 @@ class _PaperPrintingState extends State<PaperPrinting> {
                           children: [
                             const Text(
                               'Teachers Name: ',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                             Expanded(
                               child: Text(
                                 teachers.isEmpty
                                     ? 'Loading...' // Display loading text
                                     : teachers
-                                        .map<String>((teacher) => teacher['f_name'] as String)
+                                        .map<String>(
+                                            (teacher) => teacher['f_name'] as String)
                                         .join(', '),
                                 style: const TextStyle(fontSize: 12),
                               ),
@@ -426,10 +710,8 @@ class _PaperPrintingState extends State<PaperPrinting> {
                   itemBuilder: (context, index) {
                     final question = qlist[index];
                     final imageUrl = question['q_image'];
-
                     List<dynamic> cloListForQuestion =
                         cloListsForQuestions[question['q_id']] ?? [];
-
                     return Card(
                       elevation: 5,
                       shape: RoundedRectangleBorder(
@@ -441,7 +723,8 @@ class _PaperPrintingState extends State<PaperPrinting> {
                           tileColor: Colors.white,
                           title: Text(
                             'Question # ${index + 1}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 15),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,18 +735,20 @@ class _PaperPrintingState extends State<PaperPrinting> {
                                   imageUrl,
                                   height: 150,
                                   width: 300,
-                                  loadingBuilder: (context, child, loadingProgress) {
+                                  loadingBuilder: (context, child,
+                                      loadingProgress) {
                                     if (loadingProgress == null) return child;
                                     return const CircularProgressIndicator();
                                   },
-                                  errorBuilder: (context, error, stackTrace) {
+                                  errorBuilder:
+                                      (context, error, stackTrace) {
                                     return Text('Error loading image: $error');
                                   },
                                 ),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                //  Text('${question['q_difficulty']},'),
+                                  //  Text('${question['q_difficulty']},'),
                                   Text('Marks:${question['q_marks']},'),
                                   Text(
                                       'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}'),
@@ -484,5 +769,3 @@ class _PaperPrintingState extends State<PaperPrinting> {
     );
   }
 }
-
- 
