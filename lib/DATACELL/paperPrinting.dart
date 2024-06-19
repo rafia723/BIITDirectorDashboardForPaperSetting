@@ -245,229 +245,223 @@ Future<void> _printPage() async {
   final preloadedImages = await _preloadImages(qlist);
 
   pdf.addPage(
-    pw.Page(
+    pw.MultiPage(
       build: (pw.Context context) {
-        return pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-              children: [
-                pw.Container(
-                  width: 90,
-                  height: 90,
-                  decoration: pw.BoxDecoration(
-                    shape: pw.BoxShape.circle,
-                    border: pw.Border.all(
-                      color: PdfColors.white,
-                      width: 1.0,
-                    ),
-                    image: pw.DecorationImage(
-                      image: pdfLogoImage,
-                      fit: pw.BoxFit.cover,
-                    ),
+        return [
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              pw.Container(
+                width: 90,
+                height: 90,
+                decoration: pw.BoxDecoration(
+                  shape: pw.BoxShape.circle,
+                  border: pw.Border.all(
+                    color: PdfColors.white,
+                    width: 1.0,
+                  ),
+                  image: pw.DecorationImage(
+                    image: pdfLogoImage,
+                    fit: pw.BoxFit.cover,
                   ),
                 ),
-                pw.Text(
+              ),
+ pw.Text(
                   'Barani Institute of Information Technology\n       PMAS Arid Agriculture University,\n                 Rawalpindi,Pakistan\n      ${session ?? 'Session'} ${year ?? 0} : ${term ?? ''} Term Examination',
-                  style: pw.TextStyle(
+                  style:  pw.TextStyle(
                       fontSize: 14, fontWeight: pw.FontWeight.bold),
                 ),
-                pw.Container(
-                  width: 90,
-                  height: 90,
-                  decoration: pw.BoxDecoration(
-                    shape: pw.BoxShape.circle,
-                    border: pw.Border.all(
-                      color: PdfColors.white,
-                      width: 1.0,
-                    ),
-                    image: pw.DecorationImage(
-                      image: pdfLogoImage,
-                      fit: pw.BoxFit.cover,
-                    ),
+              pw.Container(
+                width: 90,
+                height: 90,
+                decoration: pw.BoxDecoration(
+                  shape: pw.BoxShape.circle,
+                  border: pw.Border.all(
+                    color: PdfColors.white,
+                    width: 1.0,
                   ),
+                  image: pw.DecorationImage(
+                    image: pdfLogoImage,
+                    fit: pw.BoxFit.cover,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 16),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(8.0),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(width: 1.0, color: PdfColors.black),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Row(
+                  children: [
+                    pw.Text(
+                      'Course Title: ',
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        widget.coursename,
+                        style: const pw.TextStyle(fontSize: 12),
+                      ),
+                    ),
+                    pw.Text(
+ '         Course Code: ',
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        widget.ccode,
+                        style: const pw.TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 8),
+                pw.Row(
+                  children: [
+                    pw.Text(
+                      'Date of Exam: ',
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        '${date?.day ?? ''}/${date?.month ?? ''}/${date?.year ?? 'Loading...'}',
+                        style: const pw.TextStyle(fontSize: 12),
+                      ),
+                    ),
+                    pw.Text(
+                      'Duration: ',
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        duration ?? 'Loading...',
+                        style: const pw.TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 8),
+                pw.Row(
+                  children: [
+                    pw.Text(
+                      'Degree Program: ',
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        degree ?? 'Loading...',
+                        style: const pw.TextStyle(fontSize: 12),
+                      ),
+                    ),
+                    pw.Text(
+                      'Total Marks: ',
+                      style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        '$tMarks',
+                        style: const pw.TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 8),
+                pw.Row(
+                  children: [
+                    pw.Text(
+                      'Teachers Name: ',
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          fontSize: 12),
+                    ),
+                    pw.Expanded(
+                      child: pw.Text(
+                        teachers.isEmpty
+                            ? 'Loading...'
+                            : teachers
+                            .map<String>((teacher) => teacher['f_name'] as String)
+                            .join(', '),
+                        style: const pw.TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            pw.SizedBox(height: 16),
-            pw.Container(
+          ),
+          pw.SizedBox(height: 16),
+          ...List.generate(qlist.length, (index) {
+            final question = qlist[index];
+            final imageUrl = question['q_image'];
+            List<dynamic> cloListForQuestion =
+            cloListsForQuestions[question['q_id']] ?? [];
+
+            return pw.Container(
               padding: const pw.EdgeInsets.all(8.0),
+              margin: const pw.EdgeInsets.only(bottom: 10),
               decoration: pw.BoxDecoration(
-                border: pw.Border.all(width: 1.0, color: PdfColors.black),
+                border: pw.Border.all(color: PdfColors.black),
               ),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Row(
-                    children: [
-                      pw.Text(
-                        'Course Title: ',
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      pw.Expanded(
-                        child: pw.Text(
-                          widget.coursename,
-                          style: const pw.TextStyle(fontSize: 12),
-                        ),
-                      ),
-                      pw.Text(
-                           '         Course Code: ',
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      pw.Expanded(
-                        child: pw.Text(
-                          widget.ccode,
-                          style: const pw.TextStyle(fontSize: 12),
-                        ),
-                      ),
-                    ],
+                  pw.Text(
+                    'Question # ${index + 1}',
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
-                  pw.SizedBox(height: 8),
+                  pw.Text(question['q_text']),
+                  if (preloadedImages[index] != null)
+                    pw.Container(
+                      height: 150,
+                      width: 300,
+                      decoration: pw.BoxDecoration(
+                        image: pw.DecorationImage(
+                          image: pw.MemoryImage(preloadedImages[index]!),
+                          fit: pw.BoxFit.cover,
+                        ),
+                      ),
+                    ),
                   pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.end,
                     children: [
+                      pw.Text('Marks: ${question['q_marks']},'),
                       pw.Text(
-                        'Date of Exam: ',
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      pw.Expanded(
-                        child: pw.Text(
-                          '${date?.day ?? ''}/${date?.month ?? ''}/${date?.year ?? 'Loading...'}',
-                          style: const pw.TextStyle(fontSize: 12),
-                        ),
-                      ),
-                      pw.Text(
-                        'Duration: ',
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      pw.Expanded(
-                        child: pw.Text(
-                          duration ?? 'Loading...',
-                          style: const pw.TextStyle(fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 8),
-                  pw.Row(
-                    children: [
-                      pw.Text(
-                        'Degree Program: ',
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      pw.Expanded(
-                        child: pw.Text(
-                          degree ?? 'Loading...',
-                          style: const pw.TextStyle(fontSize: 12),
-                        ),
-                      ),
-                      pw.Text(
-                        'Total Marks: ',
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                      pw.Expanded(
-                        child: pw.Text(
-                          '$tMarks',
-                          style: const pw.TextStyle(fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                  pw.SizedBox(height: 8),
-                  pw.Row(
-                    children: [
-                      pw.Text(
-                        'Teachers Name: ',
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 12),
-                      ),
-                      pw.Expanded(
-                        child: pw.Text(
-                          teachers.isEmpty
-                              ? 'Loading...'
-                              : teachers
-                                  .map<String>((teacher) => teacher['f_name'] as String)
-                                  .join(', '),
-                          style: const pw.TextStyle(fontSize: 12),
-                        ),
+                        'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}',
                       ),
                     ],
                   ),
                 ],
               ),
-            ),
-            pw.SizedBox(height: 16),
-            pw.ListView.builder(
-              itemCount: qlist.length,
-              itemBuilder: (context, index) {
-                final question = qlist[index];
-                final imageUrl = question['q_image'];
-                List<dynamic> cloListForQuestion =
-                    cloListsForQuestions[question['q_id']] ?? [];
-
-                return pw.Container(
-                  padding: const pw.EdgeInsets.all(8.0),
-                  margin: const pw.EdgeInsets.only(bottom: 10),
-                  decoration: pw.BoxDecoration(
-                    border: pw.Border.all(color: PdfColors.black),
-                  ),
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        'Question # ${index + 1}',
-                        style: pw.TextStyle(
-                          fontWeight: pw.FontWeight.bold,
-                          fontSize: 15,
-                        ),
-                      ),
-                      pw.Text(question['q_text']),
-                      if (preloadedImages[index] != null)
-                        pw.Container(
-                          height: 150,
-                          width: 300,
-                          decoration: pw.BoxDecoration(
-                            image: pw.DecorationImage(
-                              image: pw.MemoryImage(preloadedImages[index]!),
-                              fit: pw.BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.end,
-                        children: [
-                          pw.Text('Marks: ${question['q_marks']},'),
-                          pw.Text(
-                            'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}',
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        );
+            );
+          }),
+        ];
       },
     ),
   );
@@ -476,6 +470,7 @@ Future<void> _printPage() async {
     onLayout: (PdfPageFormat format) async => pdf.save(),
   );
 }
+
 
 // Helper function to preload images from URLs
 Future<Map<int, Uint8List?>> _preloadImages(List<dynamic> qlist) async {
