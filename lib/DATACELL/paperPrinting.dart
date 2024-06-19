@@ -525,7 +525,15 @@ Future<Uint8List?> _loadImage(String url) async {
         ),
         actions: [
           IconButton(
-            onPressed: _printPage,
+            onPressed:()async{
+              _printPage();
+             int code= await APIHandler().updatePaperStatusToPrinted(paperId);
+             setState(() {
+               if(code!=200){
+                showErrorDialog(context, 'Error while printing');
+               }
+             });
+            } ,
             icon: const Icon(Icons.print),
           ),
           const SizedBox(width: 20),

@@ -425,7 +425,8 @@ Future<void> loadClosWithApprovedStatus(int cid) async {
                                                 await APIHandler()
                                                     .loadClosMappedWithTopic(
                                                         selectedTopicID!);
-                                            setState(() {
+                                                        if(mounted){
+setState(() {
                                               cloCheckBoxes =
                                                   clolist.map((clo) {
                                                 // Check if the current CLO is associated with the topic
@@ -435,6 +436,8 @@ Future<void> loadClosWithApprovedStatus(int cid) async {
                                                         clo['clo_id']);
                                               }).toList();
                                             });
+                                                        }
+                                            
                                           },
                                           icon: const Icon(
                                             Icons.edit,

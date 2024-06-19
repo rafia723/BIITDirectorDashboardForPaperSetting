@@ -355,7 +355,10 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                                   }
                                   subTopicCheckState[tid]?.updateAll((key, value) => false);
                                 }
-                                setState(() {}); // Ensure the state is updated after async operations
+                                if(mounted){
+                             setState(() {}); // Ensure the state is updated after async operations
+                                }
+                         
                               },
                             ),
                             Text(topiclist[index]['t_name']),

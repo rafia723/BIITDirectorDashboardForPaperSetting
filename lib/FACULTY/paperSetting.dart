@@ -487,6 +487,8 @@ class _PaperSettingState extends State<PaperSetting> {
                             //   selectedTopicId!,
                             paperId,
                             widget.fid,
+                            widget.cid!,
+                            sid
                           );
 
                           if (response != null && response['status'] == 200) {
@@ -505,7 +507,12 @@ class _PaperSettingState extends State<PaperSetting> {
                               selectedTopicIds.clear();
                               loadQuestion(paperId);
                             });
-                          } else {
+                          } else if( response['status'] == 409){
+                            if (mounted) {
+                              showErrorDialog(context, 'Similar question already exists');
+                            }
+                          }
+                          else {
                             if (mounted) {
                               showErrorDialog(context, 'Error');
                             }

@@ -484,7 +484,9 @@ class _QuestionEditState extends State<QuestionEdit> {
                                   dropdownValue,
                                   'uploaded',
                                   paperId,
-                                  widget.fid);
+                                  widget.fid,
+                                  widget.cid!,
+                                  sid);
                           if (response == 200) {
                             if (selectedTopicIds.isNotEmpty) {
                               await APIHandler().updateTopicQuestionMapping(
@@ -502,8 +504,10 @@ class _QuestionEditState extends State<QuestionEdit> {
                               selectedTopicIds.clear();
                               loadQuestionData();
                             });
-                          } else {
-                            showErrorDialog(context, 'Error $response');
+                          } else if(response==409){
+                            showErrorDialog(context, 'Similar Question already exists, try changing the question');
+                          }else{
+                            showErrorDialog(context, 'Error');
                           }
                         } catch (e) {
                           showErrorDialog(
@@ -543,7 +547,10 @@ class _QuestionEditState extends State<QuestionEdit> {
                 ),
               Row(
                 children: [
-                  const Text('Difficulty:  '),
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text('Difficulty:  '),
+                  ),
                   DropdownButton<String>(
                     value: dropdownValue,
                     onChanged: (String? newValue) {

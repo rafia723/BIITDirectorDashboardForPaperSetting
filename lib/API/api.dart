@@ -811,7 +811,7 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
 
 
 
-Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid) async {
+Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid,int cid, int sid) async {
   String url = "${apiUrl}Question/addQuestion";
 
   // Prepare the multipart request
@@ -825,6 +825,8 @@ Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qm
    // 't_id': tid.toString(),
     'p_id': pid.toString(),
     'f_id': fid.toString(),
+     'c_id': cid.toString(), 
+    's_id': sid.toString(),
   });
   if (qimage != null) {
     // Attach the image file to the request
@@ -847,7 +849,7 @@ Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qm
   return {'status': statusCode, 'q_id': qId};
 }
 
-Future<int> updateQuestionOfSpecificQid(int qid, String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid) async {
+Future<int> updateQuestionOfSpecificQid(int qid, String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid,int cid,int sid) async {
   String url = "${apiUrl}Question/updateQuestionOfSpecificQid/$qid";
 
   // Prepare the multipart request
@@ -861,6 +863,8 @@ Future<int> updateQuestionOfSpecificQid(int qid, String qtext, Uint8List? qimage
    // 't_id': tid.toString(),
     'p_id': pid.toString(),
     'f_id': fid.toString(),
+    'c_id': cid.toString(),
+    's_id': sid.toString(),
   
   });
 
@@ -1175,7 +1179,19 @@ Future<List<dynamic>> loadUnUploadedPapers() async {
   }
  }
 
-
+ Future<int> updatePaperStatusToPrinted(int id) async {
+   
+    Uri url = Uri.parse('${apiUrl}Paper/editPaperStatusToPrinted/$id');
+    try {
+      var response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+      );
+     return response.statusCode;
+      } catch (error) {
+    throw Exception('Error: $error');
+  }
+ }
 
 
 ////////////////////////////////////////////////////////Question//////////////////////////////////////////////////////////////////////////
@@ -1254,7 +1270,10 @@ Future<int> updateQuestionStatusToUploaded(int id) async {   //Additional Questi
 Future<int> updateQuestionText(int qid, String qText) async {
     Uri url = Uri.parse('${apiUrl}Question/editQuestionText/$qid');
     try {
-      var questionJson = jsonEncode({'q_text': qText});
+      var questionJson = jsonEncode(
+        {
+          'q_text': qText,
+        });
       var response = await http.put(
         url,
         body: questionJson,
