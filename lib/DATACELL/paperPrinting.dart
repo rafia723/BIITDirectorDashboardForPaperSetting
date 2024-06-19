@@ -416,10 +416,8 @@ Future<void> _printPage() async {
           pw.SizedBox(height: 16),
           ...List.generate(qlist.length, (index) {
             final question = qlist[index];
-            final imageUrl = question['q_image'];
             List<dynamic> cloListForQuestion =
             cloListsForQuestions[question['q_id']] ?? [];
-
             return pw.Container(
               padding: const pw.EdgeInsets.all(8.0),
               margin: const pw.EdgeInsets.only(bottom: 10),

@@ -1250,6 +1250,23 @@ Future<int> updateQuestionStatusToUploaded(int id) async {   //Additional Questi
  }
 
 
+ 
+Future<int> updateQuestionText(int qid, String qText) async {
+    Uri url = Uri.parse('${apiUrl}Question/editQuestionText/$qid');
+    try {
+      var questionJson = jsonEncode({'q_text': qText});
+      var response = await http.put(
+        url,
+        body: questionJson,
+        headers: {"Content-Type": "application/json"},
+      );
+      return response.statusCode;
+    } catch (error) {
+      throw Exception('Error: $error');
+    }
+  }
+
+
 
 //////////////////////////////////////////////////////////Feedback///////////////////////////////////////////////////////////////////////
 

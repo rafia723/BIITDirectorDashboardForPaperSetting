@@ -55,6 +55,8 @@ class _PaperApprovalState extends State<PaperApproval> {
   List<dynamic> paperGridWeightageOfTerm = [];
   List<int> cloIdsShouldbeAddedList = [];
     List<int> cloWeightageCheck=[];
+     Map<int, bool> editingModeMap = {}; // Map to track editing mode for each question
+     Map<int, TextEditingController> textEditingControllers = {}; // Controllers for each TextFormField
 
 
   @override
@@ -495,6 +497,13 @@ for (var item in paperGridWeightageOfTerm) {
     }
   }
 
+   @override
+  void dispose() {
+    // Dispose of each TextEditingController to free resources
+    textEditingControllers.forEach((_, controller) => controller.dispose());
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -698,24 +707,61 @@ for (var item in paperGridWeightageOfTerm) {
                 List<dynamic> cloListForQuestion =
                     cloListsForQuestions[question['q_id']] ?? [];
 
-                return Card(
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  color: Colors.white.withOpacity(0.8),
-                  child: GestureDetector(
-                    child: ListTile(
-                      tileColor: Colors.white,
-                      title: Text(
-                        'Question # ${index + 1}',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 15),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(question['q_text']),
+                      // Determine if currently in edit mode
+          bool isEditing = editingModeMap.containsKey(qid) ? editingModeMap[qid]! : false;
+ final TextEditingController controller = textEditingControllers[qid] ??= TextEditingController(text: question['q_text']);
+
+                       return Card(
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
+            ),
+            color: Colors.white.withOpacity(0.8),
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  // Toggle editing mode
+                  editingModeMap[qid] = !isEditing;
+                });
+              },
+              child: ListTile(
+                tileColor: Colors.white,
+                title: Text(
+                  'Question # ${index + 1}',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Display either text or text form field based on editing mode
+                    isEditing
+                        ? TextFormField(
+                            controller: controller,
+                            onChanged: (newValue) async {
+                              // Update local state with new value
+                              setState(() {
+                                question['q_text'] = newValue;
+                              });
+
+                              // Handle immediate submission of new value to update database
+                              int statusCode = await APIHandler().updateQuestionText(qid, newValue);
+                              if (statusCode != 200) {
+                                if(mounted){
+                                   ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Failed to update question text')),
+                                );
+                                }
+                               
+                              }
+                            },
+                            onFieldSubmitted: (newValue) {
+                              // Exit editing mode when done
+                              setState(() {
+                                editingModeMap[qid] = false;
+                              });
+                            },
+                          )
+                        : Text(question['q_text']),
                           if (imageUrl != null)
                             Image.network(
                               imageUrl,
