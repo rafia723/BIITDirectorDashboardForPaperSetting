@@ -123,7 +123,7 @@ class _NotificationsState extends State<Notifications> {
                                           Column(
                                             children: [
                                               // Display c_code from the database
-                                              Text('${item['c_code']}|', style: const TextStyle(fontSize: 15)),
+                                              Text('${item['c_code']} | ', style: const TextStyle(fontSize: 15)),
                                             ],
                                           ),
                                           Column(

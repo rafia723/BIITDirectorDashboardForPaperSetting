@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/Model/DifficultyModel.dart';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.5:3000/';
+  String apiUrl='http://192.168.10.8:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -503,17 +503,21 @@ return response.statusCode;
   }
 }
 
-Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
-  List<dynamic> list=[];
+Future<List<int>> loadClosMappedWithTopic(int tid) async {
+  List<int> list=[];
     try {
       Uri uri = Uri.parse('${apiUrl}Clo_Topic_Mapping/getClosMappedWithTopic/$tid');
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {
-        list = jsonDecode(response.body);
-       
+        var decodedBody = jsonDecode(response.body);
+        if(decodedBody is List){
+          list = List<int>.from(decodedBody);
       } else {
-        throw Exception('Error....');
+        throw Exception('Unexpected response format');
+        }
+      } else {
+        throw Exception('Error....${response.statusCode}');
       }
        return list;
     } 
@@ -523,40 +527,25 @@ Future<List<dynamic>> loadClosMappedWithTopic(int tid) async {
    
   }
 
-//   Future<List<dynamic>> loadClosMappedWithTopicsList(List<int> tids) async {
-//   List<dynamic> list = [];
-//   try {
-//     // Construct the API endpoint URL
-//     Uri uri = Uri.parse('${apiUrl}Clo_Topic_Mapping/getClosMappedWithTopicList');
+  Future<int> updateCloTopicMapping(int tId, List<int> cloIds) async {
+    Uri url = Uri.parse('${apiUrl}Clo_Topic_Mapping/updateCloTopicMapping');
+    try {
+      var body = jsonEncode({
+        "t_id": tId,
+        "cloIds": cloIds,
+      });
+      var response = await http.put(
+        url,
+        body: body,
+        headers: {"Content-Type": "application/json"},
+      );
+      return response.statusCode;
+    } catch (error) {
+      throw Exception('Error: $error');
+    }
+  }
 
-//     // Prepare the request body containing the list of t_id
-//     Map<String, dynamic> requestBody = {'t_ids': tids};
 
-//     // Make a POST request with the request body
-//     var response = await http.post(
-//       uri,
-//       headers: <String, String>{
-//         'Content-Type': 'application/json; charset=UTF-8',
-//       },
-//       body: jsonEncode(requestBody),
-//     );
-
-//     // Check if the response is successful
-//     if (response.statusCode == 200) {
-//       // Decode the response body and store it in the list variable
-//       list = jsonDecode(response.body);
-//     } else {
-//       // Throw an exception if the response is not successful
-//       throw Exception('Error: ${response.statusCode}');
-//     }
-
-//     // Return the list of CLOs mapped with the topics
-//     return list;
-//   } catch (e) {
-//     // Throw an exception if there's an error during the process
-//     throw Exception('Failed to load CLOs mapped with topics: $e');
-//   }
-// }
 
   ///////////////////////////////////////////////////////////SubTopics/////////////////////////////////////////////////////////////////////////////
  
@@ -909,17 +898,23 @@ Future<int> addTopicOfQuestion(int qid, List<int> topicIds) async {
 Future<List<int>> loadTopicIdMappedWithQuestion(int qid) async {
   List<int> list = [];
   try {
-    Uri uri = Uri.parse('${apiUrl}QuestionTopic/getTopicMappedWithQuestion/$qid');
+    Uri uri = Uri.parse('${apiUrl}QuestionTopic/getTopicIdMappedWithQuestion/$qid');
     var response = await http.get(uri);
-
     if (response.statusCode == 200) {
-      list = jsonDecode(response.body);
+     var decodedBody = jsonDecode(response.body);
+      if (decodedBody is List) {
+        list = List<int>.from(decodedBody);
+      } else {
+        throw Exception('Unexpected response format');
+      }
     } else {
-      throw Exception('Error....');
+      throw Exception('Error: ${response.statusCode}');
     }
     return list;
+
   } catch (e) {
-    throw Exception('Failed to load CLOs mapped with question');
+    print('Exception: $e');
+    throw Exception('Failed to load Topic ids mapped with question');
   }
 }
 
@@ -936,7 +931,7 @@ Future<List<dynamic>> loadTopicsDataMappedWithQuestion(int qid) async {
     }
     return list;
   } catch (e) {
-    throw Exception('Failed to load CLOs mapped with question');
+    throw Exception('Failed to load Topics data mapped with question');
   }
 }
 
@@ -1047,6 +1042,7 @@ Future<Map<String, dynamic>> loginFaculty(String username, String password) asyn
   }
 
 
+
  Future<List<dynamic>> loadCommentsforQuestion(int fid) async {
     List<dynamic> list=[];
     try {
@@ -1066,7 +1062,22 @@ Future<Map<String, dynamic>> loginFaculty(String username, String password) asyn
     return list;
   }
 
+Future<int> loadSeniorTeacherFidofSpecificCourse(int cid) async {
+  try {
+    Uri uri = Uri.parse("${apiUrl}AssignedCourses/getSeniorTeacherId/$cid"); // Assuming endpoint accepts c_id
+    var response = await http.get(uri);
 
+    if (response.statusCode == 200) {
+      dynamic decodedResponse = jsonDecode(response.body);
+      int fid = decodedResponse; // Since response is just a number
+      return fid;
+    } else {
+      throw Exception('Failed to load fid');
+    }
+  } catch (e) {
+    throw Exception('Error: $e');
+  }
+}
  
 
 //////////////////////////////////////////////////////////Director Module/////////////////////////////////////////////////////////////////////////

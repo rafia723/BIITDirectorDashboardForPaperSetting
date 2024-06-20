@@ -5,6 +5,7 @@ import 'package:biit_directors_dashbooard/Director/AdditionalQuestions.dart';
 import 'package:biit_directors_dashbooard/Director/ApprovedPapersList.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 
 class PaperApproval extends StatefulWidget {
@@ -43,7 +44,8 @@ class _PaperApprovalState extends State<PaperApproval> {
   bool isChecked = false;
   bool acceptAllChecked = false; // State variable for "Accept All" checkbox
   Map<int, List<dynamic>> cloMap = {};
-   Map<int, TextEditingController> commentControllers = {}; // Map for controllers
+  Map<int, TextEditingController> commentControllers =
+      {}; // Map for controllers
   Map<int, String> statusMap = {};
   int acceptCount = 0;
   int rejectCount = 0;
@@ -54,10 +56,11 @@ class _PaperApprovalState extends State<PaperApproval> {
   List<int> missingcloss = [];
   List<dynamic> paperGridWeightageOfTerm = [];
   List<int> cloIdsShouldbeAddedList = [];
-    List<int> cloWeightageCheck=[];
-     Map<int, bool> editingModeMap = {}; // Map to track editing mode for each question
-     Map<int, TextEditingController> textEditingControllers = {}; // Controllers for each TextFormField
-
+  List<int> cloWeightageCheck = [];
+  Map<int, bool> editingModeMap =
+      {}; // Map to track editing mode for each question
+  Map<int, TextEditingController> textEditingControllers =
+      {}; // Controllers for each TextFormField
 
   @override
   void initState() {
@@ -76,7 +79,7 @@ class _PaperApprovalState extends State<PaperApproval> {
     }
     await loadQuestionsWithUploadedAndApprovedStatus(widget.pid);
     if (qlist.isNotEmpty) {
-           for (var question in qlist) {
+      for (var question in qlist) {
         if (question['q_status'] == 'approved') {
           int qMarks = question['q_marks'];
           if (mounted) {
@@ -94,55 +97,54 @@ class _PaperApprovalState extends State<PaperApproval> {
     }
   }
 
- Future<void> checksFunction() async {
-      // Collect all CLOs for selected questions
-      List<List<String>> allCloLists = [];
-      for (var question in qlist) {
-        int qid = question['q_id'];
-        List<String> cloListForQuestion =
-            await loadClosofSpecificQuestion(qid);
-        allCloLists.add(cloListForQuestion);
-      }
-
-      // Deduct marks for questions already marked as uploaded
-     
-     cloIdsShouldbeAddedList.clear();
-for (var item in paperGridWeightageOfTerm) {
-  try {
-    cloIdsShouldbeAddedList.add(int.parse(item['clonumber']));
-  } catch (e) {
-    print('Error parsing clonumber: ${item['clonumber']}');
-  }
-}
-      print(' CLOs should be added: $cloIdsShouldbeAddedList');
-
-      List<int> selectedQuestionIds = qlist
-          .where((question) => question['q_status'] == 'approved')
-          .map<int>((question) => question['q_id'] as int)
-          .toList();
-       missingcloss =
-          await findMissingCLOs(selectedQuestionIds, cloIdsShouldbeAddedList);
-
-      print('Missing CLOs: $missingcloss');
+  Future<void> checksFunction() async {
+    // Collect all CLOs for selected questions
+    List<List<String>> allCloLists = [];
+    for (var question in qlist) {
+      int qid = question['q_id'];
+      List<String> cloListForQuestion = await loadClosofSpecificQuestion(qid);
+      allCloLists.add(cloListForQuestion);
     }
 
+    // Deduct marks for questions already marked as uploaded
 
-  Future<List<int>> findMissingCLOs(List<int> selectedQuestionIds, List<int> cloIdsShouldbeAddedList) async {
+    cloIdsShouldbeAddedList.clear();
+    for (var item in paperGridWeightageOfTerm) {
+      try {
+        cloIdsShouldbeAddedList.add(int.parse(item['clonumber']));
+      } catch (e) {
+        print('Error parsing clonumber: ${item['clonumber']}');
+      }
+    }
+    print(' CLOs should be added: $cloIdsShouldbeAddedList');
+
+    List<int> selectedQuestionIds = qlist
+        .where((question) => question['q_status'] == 'approved')
+        .map<int>((question) => question['q_id'] as int)
+        .toList();
+    missingcloss =
+        await findMissingCLOs(selectedQuestionIds, cloIdsShouldbeAddedList);
+
+    print('Missing CLOs: $missingcloss');
+  }
+
+  Future<List<int>> findMissingCLOs(
+      List<int> selectedQuestionIds, List<int> cloIdsShouldbeAddedList) async {
     Set<int> actualCLOs = {};
 
     for (int questionId in selectedQuestionIds) {
       List<String> cloStrings = await loadClosofSpecificQuestion(questionId);
       actualCLOs.addAll(cloStrings.map((clo) => int.parse(clo)));
     }
-     Set<int> notInCloGridSpecificTerm = actualCLOs.difference(cloIdsShouldbeAddedList.toSet());
-   cloWeightageCheck=notInCloGridSpecificTerm.toList();
-     print('Dont have weightage in this term $notInCloGridSpecificTerm');
+    Set<int> notInCloGridSpecificTerm =
+        actualCLOs.difference(cloIdsShouldbeAddedList.toSet());
+    cloWeightageCheck = notInCloGridSpecificTerm.toList();
+    print('Dont have weightage in this term $notInCloGridSpecificTerm');
     print('Actual $actualCLOs');
     List<int> missingcloss =
         cloIdsShouldbeAddedList.toSet().difference(actualCLOs).toList();
     return missingcloss;
   }
-
 
   Future<bool?> customConfirmationDialog(BuildContext context,
       {required String title, required String content}) {
@@ -186,7 +188,6 @@ for (var item in paperGridWeightageOfTerm) {
       }
     }
   }
-
 
   Future<List<String>> loadClosofSpecificQuestion(int qid) async {
     try {
@@ -297,43 +298,43 @@ for (var item in paperGridWeightageOfTerm) {
   }
 
   Future<void> loadQuestionsWithUploadedAndApprovedStatus(int pid) async {
-  try {
-    qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
-    if (qlist.isNotEmpty) {
-      await loadCloListsForQuestions();
-    }
-    List<dynamic> allCloLists = []; // List to store CLOs of all questions
-    for (var question in qlist) {
-      int qid = question['q_id'];
-      List<dynamic> cloListForQuestion = await APIHandler()
-          .loadClosofSpecificQuestion(qid); // Load CLOs for each question
-      allCloLists.add(cloListForQuestion); // Add CLOs to the list
-      
-      // Check if commentControllers contains the qid
-      if (!commentControllers.containsKey(qid)) {
-        // Add a TextEditingController to the commentControllers map if it doesn't exist
-        commentControllers[qid] = TextEditingController();
+    try {
+      qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
+      if (qlist.isNotEmpty) {
+        await loadCloListsForQuestions();
       }
-         // Set the initial status of each question in the statusMap
+      List<dynamic> allCloLists = []; // List to store CLOs of all questions
+      for (var question in qlist) {
+        int qid = question['q_id'];
+        List<dynamic> cloListForQuestion = await APIHandler()
+            .loadClosofSpecificQuestion(qid); // Load CLOs for each question
+        allCloLists.add(cloListForQuestion); // Add CLOs to the list
+
+        // Check if commentControllers contains the qid
+        if (!commentControllers.containsKey(qid)) {
+          // Add a TextEditingController to the commentControllers map if it doesn't exist
+          commentControllers[qid] = TextEditingController();
+        }
+        // Set the initial status of each question in the statusMap
         statusMap[qid] = question['q_status'];
-    }
-    setState(() {
-      listOfClos = allCloLists; // Assign the list of CLOs to listOfClos
-    });
-  } catch (e) {
-    if (mounted) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Error'),
-            content: Text(e.toString()),
-          );
-        },
-      );
+      }
+      setState(() {
+        listOfClos = allCloLists; // Assign the list of CLOs to listOfClos
+      });
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
     }
   }
-}
 
   Future<void> updateQuestionStatus(int qid, String newStatus) async {
     try {
@@ -432,14 +433,14 @@ for (var item in paperGridWeightageOfTerm) {
 
   Future<void> updateAllStatuses(String newStatus) async {
     try {
-      qNoCounter=noOfQuestions;
-       tMarks=0;
+      qNoCounter = noOfQuestions;
+      tMarks = 0;
       for (var question in qlist) {
         int qid = question['q_id'];
-       int qmarks = question['q_marks'];
-       
-       tMarks += qmarks;
-       qNoCounter--;
+        int qmarks = question['q_marks'];
+
+        tMarks += qmarks;
+        qNoCounter--;
         await updateQuestionStatus(qid, newStatus);
       }
       setState(() {
@@ -466,13 +467,13 @@ for (var item in paperGridWeightageOfTerm) {
 
   Future<void> revertAllStatuses() async {
     try {
-      qNoCounter=0;
+      qNoCounter = 0;
       for (var question in qlist) {
         int qid = question['q_id'];
 
-       int qmarks = question['q_marks'];
-       tMarks -= qmarks;
-       qNoCounter++;
+        int qmarks = question['q_marks'];
+        tMarks -= qmarks;
+        qNoCounter++;
         await updateQuestionStatus(qid, 'uploaded');
       }
       setState(() {
@@ -480,7 +481,7 @@ for (var item in paperGridWeightageOfTerm) {
           int qid = question['q_id'];
           statusMap[qid] = 'uploaded';
         }
-          print('hehe all reject $qNoCounter');
+        print('hehe all reject $qNoCounter');
       });
     } catch (e) {
       if (mounted) {
@@ -497,7 +498,7 @@ for (var item in paperGridWeightageOfTerm) {
     }
   }
 
-   @override
+  @override
   void dispose() {
     // Dispose of each TextEditingController to free resources
     textEditingControllers.forEach((_, controller) => controller.dispose());
@@ -673,28 +674,28 @@ for (var item in paperGridWeightageOfTerm) {
               ),
             ),
           ),
-        if(qNoCounter==0)
-          Row(
-            children: [
-              const SizedBox(
-                width: 280,
-              ),
-              const Text('Accept All'),
-              Checkbox(
-                value: acceptAllChecked,
-                onChanged: (value) {
-                  setState(() {
-                    acceptAllChecked = value ?? false;
-                    if (acceptAllChecked) {
-                      updateAllStatuses('approved');
-                    } else {
-                      revertAllStatuses(); // Reset or handle as needed
-                    }
-                  });
-                },
-              ),
-            ],
-          ),
+          if (qNoCounter == 0)
+            Row(
+              children: [
+                const SizedBox(
+                  width: 280,
+                ),
+                const Text('Accept All'),
+                Checkbox(
+                  value: acceptAllChecked,
+                  onChanged: (value) {
+                    setState(() {
+                      acceptAllChecked = value ?? false;
+                      if (acceptAllChecked) {
+                        updateAllStatuses('approved');
+                      } else {
+                        revertAllStatuses(); // Reset or handle as needed
+                      }
+                    });
+                  },
+                ),
+              ],
+            ),
           Expanded(
             child: ListView.builder(
               itemCount: qlist.length,
@@ -707,216 +708,231 @@ for (var item in paperGridWeightageOfTerm) {
                 List<dynamic> cloListForQuestion =
                     cloListsForQuestions[question['q_id']] ?? [];
 
-                      // Determine if currently in edit mode
-          bool isEditing = editingModeMap.containsKey(qid) ? editingModeMap[qid]! : false;
- final TextEditingController controller = textEditingControllers[qid] ??= TextEditingController(text: question['q_text']);
+                // Determine if currently in edit mode
+                bool isEditing = editingModeMap.containsKey(qid)
+                    ? editingModeMap[qid]!
+                    : false;
+                final TextEditingController controller =
+                    textEditingControllers[qid] ??=
+                        TextEditingController(text: question['q_text']);
 
-                       return Card(
-            elevation: 5,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15.0),
-            ),
-            color: Colors.white.withOpacity(0.8),
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  // Toggle editing mode
-                  editingModeMap[qid] = !isEditing;
-                });
-              },
-              child: ListTile(
-                tileColor: Colors.white,
-                title: Text(
-                  'Question # ${index + 1}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Display either text or text form field based on editing mode
-                    isEditing
-                        ? TextFormField(
-                            controller: controller,
-                            onChanged: (newValue) async {
-                              // Update local state with new value
-                              setState(() {
-                                question['q_text'] = newValue;
-                              });
+                return Card(
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  color: Colors.white.withOpacity(0.8),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        // Toggle editing mode
+                        editingModeMap[qid] = !isEditing;
+                      });
+                    },
+                    child: SingleChildScrollView(
+                      child: ListTile(
+                        tileColor: Colors.white,
+                        title: Text(
+                          'Question # ${index + 1}',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Display either text or text form field based on editing mode
+                            isEditing
+                                ? TextFormField(
+                                    controller: controller,
+                                    onChanged: (newValue) async {
+                                      // Update local state with new value
+                                      setState(() {
+                                        question['q_text'] = newValue;
+                                      });
 
-                              // Handle immediate submission of new value to update database
-                              int statusCode = await APIHandler().updateQuestionText(qid, newValue);
-                              if (statusCode != 200) {
-                                if(mounted){
-                                   ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Failed to update question text')),
-                                );
-                                }
-                               
-                              }
-                            },
-                            onFieldSubmitted: (newValue) {
-                              // Exit editing mode when done
-                              setState(() {
-                                editingModeMap[qid] = false;
-                              });
-                            },
-                          )
-                        : Text(question['q_text']),
-                          if (imageUrl != null)
-                            Image.network(
-                              imageUrl,
-                              height: 150,
-                              width: 300,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return const CircularProgressIndicator();
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Text('Error loading image: $error');
-                              },
-                            ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text('${question['q_difficulty']},'),
-                              Text('${question['q_marks']},'),
-                              Text(
-                                  'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}'),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const SizedBox(
-                                width: 170,
-                              ),
-                              const Text('Accept'),
-                              Radio(
-                                value: 'approved',
-                                groupValue: statusMap[qid],
-                                onChanged: (value) {
-                                  setState(() {
-                                    statusMap[qid] = value!;
-
-                                    tMarks += question['q_marks'] as int;
-                                    qNoCounter--;
-                                      print('After approval $qNoCounter');
-                                      checksFunction();
-                                  });
-                                  updateQuestionStatus(qid, value!);
+                                      // Handle immediate submission of new value to update database
+                                      int statusCode = await APIHandler()
+                                          .updateQuestionText(qid, newValue);
+                                      if (statusCode != 200) {
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                                content: Text(
+                                                    'Failed to update question text')),
+                                          );
+                                        }
+                                      }
+                                    },
+                                    onFieldSubmitted: (newValue) {
+                                      // Exit editing mode when done
+                                      setState(() {
+                                        editingModeMap[qid] = false;
+                                      });
+                                    },
+                                  )
+                                : Text(question['q_text']),
+                            if (imageUrl != null)
+                              Image.network(
+                                imageUrl,
+                                height: 150,
+                                width: 300,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return const CircularProgressIndicator();
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Text('Error loading image: $error');
                                 },
                               ),
-                              const Text('Reject'),
-                              Radio(
-                                value: 'rejected',
-                                groupValue: statusMap[qid],
-                                onChanged: (value) async {
-                                  bool? confirmation =
-                                      await customConfirmationDialog(
-                                    context,
-                                    title: 'Confirmation',
-                                    content:
-                                        'Do you want to replace this question?',
-                                  );
-                                  if (confirmation == true) {
-                                    await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            AdditionlQuestions(
-                                          pid: paperId,
-                                          ccode: widget.ccode,
-                                          cid: widget.cid,
-                                          coursename: widget.coursename,
-                                          qdifficulty: qDifficulty,
-                                          qid: qid,
-                                        ),
-                                      ),
-                                    );
-                                  } else {
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text('${question['q_difficulty']},'),
+                                Text('${question['q_marks']},'),
+                                Text(
+                                    'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}'),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                const SizedBox(
+                                  width: 170,
+                                ),
+                                const Text('Accept'),
+                                Radio(
+                                  value: 'approved',
+                                  groupValue: statusMap[qid],
+                                  onChanged: (value) {
                                     setState(() {
                                       statusMap[qid] = value!;
-                                      tMarks -= question['q_marks'] as int;
-                                      qNoCounter++;
-                                      print('After rejection$qNoCounter');
+
+                                      tMarks += question['q_marks'] as int;
+                                      qNoCounter--;
+                                      print('After approval $qNoCounter');
                                       checksFunction();
                                     });
+                                    updateQuestionStatus(qid, value!);
+                                  },
+                                ),
+                                const Text('Reject'),
+                                Radio(
+                                  value: 'rejected',
+                                  groupValue: statusMap[qid],
+                                  onChanged: (value) async {
+                                    bool? confirmation =
+                                        await customConfirmationDialog(
+                                      context,
+                                      title: 'Confirmation',
+                                      content:
+                                          'Do you want to replace this question?',
+                                    );
+                                    if (confirmation == true) {
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              AdditionlQuestions(
+                                            pid: paperId,
+                                            ccode: widget.ccode,
+                                            cid: widget.cid,
+                                            coursename: widget.coursename,
+                                            qdifficulty: qDifficulty,
+                                            qid: qid,
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      setState(() {
+                                        statusMap[qid] = value!;
+                                        tMarks -= question['q_marks'] as int;
+                                        qNoCounter++;
+                                        print('After rejection$qNoCounter');
+                                        checksFunction();
+                                      });
 
-                                   //  updateQuestionStatus(qid, value!);
-                                  //   loadQuestionsWithUploadedStatus(paperId);
-                                     setState(() {
-                                       
-                                     });
-                                  }
-                                },
-                              )
-                            ],
-                          ),
-                          statusMap[qid] == 'rejected'
-                              ? Row(
-                                  children: <Widget>[
-                                    Container(
-                                      constraints: const BoxConstraints(
-                                        minWidth: 100,
-                                        maxWidth:
-                                            260, // Maximum width constraint
-                                      ),
-                                      child: TextFormField(
-                                        controller: commentControllers[qid],
-                                        decoration: const InputDecoration(
-                                          labelText: 'Comment',
-                                          labelStyle: TextStyle(
-                                              color: Colors.grey, fontSize: 14),
-                                          floatingLabelBehavior:
-                                              FloatingLabelBehavior.never,
-                                          contentPadding: EdgeInsets.symmetric(
-                                              vertical: 5, horizontal: 8),
+                                      //  updateQuestionStatus(qid, value!);
+                                      //   loadQuestionsWithUploadedStatus(paperId);
+                                      setState(() {});
+                                    }
+                                  },
+                                )
+                              ],
+                            ),
+                            statusMap[qid] == 'rejected'
+                                ? Row(
+                                    children: <Widget>[
+                                      Container(
+                                        constraints: const BoxConstraints(
+                                          minWidth: 100,
+                                          maxWidth:
+                                              260, // Maximum width constraint
+                                        ),
+                                        child: TextFormField(
+                                          controller: commentControllers[qid],
+                                          decoration: const InputDecoration(
+                                            labelText: 'Comment',
+                                            labelStyle: TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 14),
+                                            floatingLabelBehavior:
+                                                FloatingLabelBehavior.never,
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    vertical: 5, horizontal: 8),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                   IconButton(
-                      onPressed: () async {
-                        String commentText = commentControllers[qid]?.text ?? '';
-                        if (commentText.isEmpty) {
-                          if (mounted) {
-                            showErrorDialog(context, 'Enter comment first');
-                          }
-                        } else {
-                          await addFeedbackData(commentText, widget.pid, qid, fid);
-                          await loadQuestionsWithUploadedAndApprovedStatus(widget.pid);
-                          checksFunction();
-                        }
-                      },
-                      icon: const Icon(Icons.send),
-                    ),
-                                    IconButton(
-                                      onPressed: () async {
-                                        await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                AdditionlQuestions(
-                                              pid: paperId,
-                                              ccode: widget.ccode,
-                                              cid: widget.cid,
-                                              coursename: widget.coursename,
-                                              qdifficulty: qDifficulty,
-                                              qid: qid,
+                                      IconButton(
+                                        onPressed: () async {
+                                          String commentText =
+                                              commentControllers[qid]?.text ??
+                                                  '';
+                                          if (commentText.isEmpty) {
+                                            if (mounted) {
+                                              showErrorDialog(context,
+                                                  'Enter comment first');
+                                            }
+                                          } else {
+                                            await addFeedbackData(commentText,
+                                                widget.pid, qid, fid);
+                                            await loadQuestionsWithUploadedAndApprovedStatus(
+                                                widget.pid);
+                                            checksFunction();
+                                          }
+                                        },
+                                        icon: const Icon(Icons.send),
+                                      ),
+                                      IconButton(
+                                        onPressed: () async {
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  AdditionlQuestions(
+                                                pid: paperId,
+                                                ccode: widget.ccode,
+                                                cid: widget.cid,
+                                                coursename: widget.coursename,
+                                                qdifficulty: qDifficulty,
+                                                qid: qid,
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                        setState(() {
-                                          loadQuestionsWithUploadedAndApprovedStatus(
-                                              widget.pid);
-                                        });
-                                      },
-                                      icon:
-                                          const Icon(Icons.find_replace_sharp),
-                                    ),
-                                  ],
-                                )
-                              : const SizedBox(),
-                        ],
+                                          );
+                                          setState(() {
+                                            loadQuestionsWithUploadedAndApprovedStatus(
+                                                widget.pid);
+                                          });
+                                        },
+                                        icon: const Icon(
+                                            Icons.find_replace_sharp),
+                                      ),
+                                    ],
+                                  )
+                                : const SizedBox(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -924,31 +940,56 @@ for (var item in paperGridWeightageOfTerm) {
               },
             ),
           ),
-         if(acceptAllChecked) 
-               customElevatedButton(
-                  onPressed: () async {
-                    //    await initializeData();
-                    //  if(qNoCounter==0){
-                    if (missingcloss.isNotEmpty) {
-                      showErrorDialog(context, 'Missing Clos! $missingcloss');
-                    } else {
-                      updatePaperStatus(widget.pid);
-                      Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const DRTApprovedPapers()));
-                      setState(() {
-                        loadApprovedPapersData();
-                      });
-                    }
+          if (acceptAllChecked)
+            customElevatedButton(
+                onPressed: () async {
+                  //    await initializeData();
+                  //  if(qNoCounter==0){
+                  if (missingcloss.isNotEmpty) {
+                    showErrorDialog(context, 'Missing Clos! $missingcloss');
+                  } 
+                  else if(cloWeightageCheck.isNotEmpty){
+
+                        if (mounted) {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+
+                            return AlertDialog(
+                              title:  const Text('Clo Weightage Error'),
+                              content:
+                                   Text('CLO-$cloWeightageCheck has no weightage in $term'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                        }
+                         }
+                  else {
+                    updatePaperStatus(widget.pid);
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const DRTApprovedPapers()));
+                    setState(() {
+                      loadApprovedPapersData();
+                    });
                   }
-                  // else{
-                  //   showErrorDialog(context, 'Number of approved questions should be $noOfQuestions');
-                  // }
-                  //  },
-                  ,
-                  buttonText: 'Approve')
-             // : const SizedBox(),
+                }
+                // else{
+                //   showErrorDialog(context, 'Number of approved questions should be $noOfQuestions');
+                // }
+                //  },
+                ,
+                buttonText: 'Approve')
+          // : const SizedBox(),
         ]),
       ]),
     );

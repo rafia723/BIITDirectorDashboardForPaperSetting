@@ -21,8 +21,13 @@ class Faculty extends StatefulWidget {
 }
 
 class _FacultyState extends State<Faculty> {
-
+  int overallCount=0;
+int questionNotificationsCount = 0;
+int headerNotificationsCount=0;
   List<dynamic> aclist = [];
+ List<dynamic> list = [];
+  List<dynamic> feedbackList= [];
+
   Future<void> loadAssignedCourses(int id) async {
     try {
       aclist=await APIHandler().loadAssignedCourses(id);
@@ -32,6 +37,40 @@ class _FacultyState extends State<Faculty> {
       if(mounted){
   showErrorDialog(context, e.toString());
       }
+    }
+  }
+
+  
+  Future<void> loadNotifications() async {
+    try {
+      list = await APIHandler().loadCommentsforQuestion(widget.fid);
+      setState(() {
+        for(int i=0;i<list.length;i++){
+        questionNotificationsCount++;
+        overallCount+=questionNotificationsCount;
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
+    }
+  }
+
+   Future<void> loadFeedback() async {
+    try {
+      feedbackList = await APIHandler().loadCommentsForPaperHeaderOnlyifSenior(widget.fid);
+      setState(() {
+          for(int i=0;i<feedbackList.length;i++){
+       headerNotificationsCount++;
+       overallCount+=headerNotificationsCount;
+        }
+      });
+    } catch (e) {
+      if(mounted){
+  showErrorDialog(context, e.toString());
+      }
+   
     }
   }
 
@@ -83,6 +122,7 @@ class _FacultyState extends State<Faculty> {
   @override
   void initState() {
     loadAssignedCourses(widget.fid);
+    loadNotifications();
     super.initState();
   }
 
@@ -109,20 +149,53 @@ class _FacultyState extends State<Faculty> {
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.message,
-            ), 
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>  Notifications(facultyname: widget.facultyname,fid: widget.fid,),
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.message),
+                iconSize: 30.0,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Notifications(
+                        facultyname: widget.facultyname,
+                        fid: widget.fid,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              if (overallCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 15,
+                      minHeight: 15,
+                    ),
+                    child: Text(
+                      '$overallCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ),
-              );
-            },
+            ],
           ),
+      
+        
           IconButton(
+               iconSize: 30.0,
             icon: const Icon(
               Icons.timer,
             ), 

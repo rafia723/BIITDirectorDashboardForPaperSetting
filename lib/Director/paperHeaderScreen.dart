@@ -46,11 +46,13 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
   DateTime? date;
   List<dynamic> teachers = [];
   dynamic sid;
+  int? fid;
 
   @override
   void initState() {
     super.initState();
     initializeData();
+    loadFidofCourse();
   }
 
   Future<void> initializeData() async {
@@ -135,6 +137,27 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
     }
   }
 
+  Future<void> loadFidofCourse()async{
+  try {
+     fid=await APIHandler().loadSeniorTeacherFidofSpecificCourse(widget.cid);
+   setState(() {
+     
+   });
+  } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error..'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
+  }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -197,6 +220,7 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
                                         ccode: widget.ccode,
                                         coursename: widget.coursename,
                                         pid: paperId,
+                                        fid: fid,
                                       )));
                                        }
                         },

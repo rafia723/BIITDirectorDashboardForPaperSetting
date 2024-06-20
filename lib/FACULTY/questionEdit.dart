@@ -56,7 +56,7 @@ class _QuestionEditState extends State<QuestionEdit> {
   Uint8List? selectedImage;
   List<dynamic> topicList = [];
   List<bool> isCheckedList = [];
-  int? selectedTopicId;
+ // int? selectedTopicId;
 
   List<int> selectedTopicIds = [];
   List<dynamic> cloList = [];
@@ -71,7 +71,7 @@ class _QuestionEditState extends State<QuestionEdit> {
     super.initState();
     loadTeachers();
     initializeData();
-    loadTopics();
+    loadCommonTopics();
   }
 
   Future<void> initializeData() async {
@@ -84,12 +84,14 @@ class _QuestionEditState extends State<QuestionEdit> {
     }
     if (paperId != null) {
       await loadQuestionData();
+      await loadTopicId();
       for (var marks in qlist) {
         tMarks += (marks['q_marks'] as int);
       }
       questionController.text = fetchedQText;
       marksController.text = fetchedQMarks.toString();
       dropdownValue = fetchedQDifficulty;
+
 
 
       if (mounted) {
@@ -180,7 +182,24 @@ class _QuestionEditState extends State<QuestionEdit> {
     }
   }
 
-  Future<void> loadTopics() async {
+   Future<void> loadTopicId() async {
+    try {
+      selectedTopicIds = await APIHandler().loadTopicIdMappedWithQuestion(widget.qid);
+      setState(() {
+          for (int i = 0; i < topicList.length; i++) {
+          if (selectedTopicIds.contains(topicList[i]['t_id'])) {
+            isCheckedList[i] = true;
+          }
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> loadCommonTopics() async {
     try {
       topicList = await APIHandler().loadCommonTopics(widget.cid!);
       setState(() {
