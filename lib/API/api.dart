@@ -798,8 +798,6 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
   } 
 }
 
-
-
 Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid,int cid, int sid) async {
   String url = "${apiUrl}Question/addQuestion";
 
@@ -876,6 +874,53 @@ Future<int> updateQuestionOfSpecificQid(int qid, String qtext, Uint8List? qimage
   return statusCode;
 }
 
+///////////////////////////////////////////////////////////SubQuestion////////////////////////////////////////////////////////////////
+Future<Map<String, dynamic>> addSubQuestion(String sqtext, Uint8List? sqimage, int qid,int cid,int sid) async {
+  String url = "${apiUrl}SubQuestions/addSubQuestion";
+
+  // Prepare the multipart request
+  var request = http.MultipartRequest('POST', Uri.parse(url));
+  //request.headers.addAll({"Content-Type": "application/json; charset=UTF-8"});
+  request.fields.addAll({
+    'sq_text': sqtext,
+    'q_id': qid.toString(),
+      'c_id': cid.toString(), 
+    's_id': sid.toString(),
+  });
+  if (sqimage != null) {
+    request.files.add(http.MultipartFile.fromBytes('sq_image', sqimage, filename: 'image.jpg',)); // Set a filename for the image
+  }
+  // Send the request and await the response
+  var response = await request.send();
+
+  // Parse the response
+  var responseBody = await response.stream.bytesToString();
+  var parsedResponse = jsonDecode(responseBody);
+
+  // Get the status code
+  var statusCode = response.statusCode;
+
+  // Get the q_id from the response if available
+  var sqId = parsedResponse['sq_id'];
+
+  // Return the status code and q_id
+  return {'status': statusCode, 'sq_id': sqId};
+}
+
+   Future<List<dynamic>> loadSubQuestionOfSpecificQid(int qid) async {
+  List<dynamic> sqlist=[];
+    try {
+      Uri uri = Uri.parse("${apiUrl}SubQuestions/getSubQuestionbyQID/$qid");
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+          sqlist = jsonDecode(response.body);
+      } 
+      return sqlist;
+    } catch (e) {
+     throw Exception('Error: $e');
+    }
+  }
 
 ///////////////////////////////////////TOPCQUESTION////////////////////////////////////////////////////////////////////////////////////
 

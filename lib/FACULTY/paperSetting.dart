@@ -1,7 +1,10 @@
 import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/FACULTY/questionEdit.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 
 class PaperSetting extends StatefulWidget {
@@ -24,6 +27,7 @@ class PaperSetting extends StatefulWidget {
 
 class _PaperSettingState extends State<PaperSetting> {
   TextEditingController questionController = TextEditingController();
+  TextEditingController subquestionController = TextEditingController();
   TextEditingController marksController = TextEditingController();
   String dropdownValue = 'Easy';
   dynamic paperId;
@@ -54,11 +58,11 @@ class _PaperSettingState extends State<PaperSetting> {
   List<bool> isCheckedList = [];
   int? selectedTopicId;
   Map<int, List<dynamic>> cloListsForQuestions = {};
-  // Map<int, List<dynamic>> topicListsForQuestions = {};
-  //Map<int, List<dynamic>> cloMap = {};
   List<int> selectedTopicIds = [];
-
+  List<dynamic> subqlist = [];
   List<dynamic> cloList = [];
+  Map<int, bool> dialogVisibility = {};
+  Map<int, List<dynamic>> subQuestions = {};
 
   @override
   void initState() {
@@ -108,6 +112,112 @@ class _PaperSettingState extends State<PaperSetting> {
     }
   }
 
+  // Custom dialog widget
+  Widget _buildCustomDialog(int qId, int qNo) {
+    return AlertDialog(
+      title: Text(
+        'Add Parts of Question # $qNo',
+        style: const TextStyle(fontSize: 20),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          TextFormField(
+            controller: subquestionController,
+            decoration: const InputDecoration(
+              hintText: 'Enter Question...',
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              IconButton(
+                onPressed: () {
+                  _selectImage();
+                },
+                icon: const Icon(Icons.photo_library),
+              ),
+              IconButton(
+                onPressed: () async {
+                  if (subquestionController.text.isEmpty) {
+                    showErrorDialog(
+                        context, 'Please Enter required information');
+                  } else {
+                    dynamic response = await APIHandler().addSubQuestion(
+                        subquestionController.text, selectedImage, qId,widget.cid!,sid);
+
+                    if (response != null && response['status'] == 200) {
+                      setState(() {
+                        showSuccesDialog(context, 'Inserted');
+                        subquestionController.clear();
+                        checksFunction();
+                      });
+                    } else if (response['status'] == 409) {
+                      if (mounted) {
+                        showErrorDialog(
+                            context, 'Similar question already exists');
+                      }
+                    } else {
+                      if (mounted) {
+                        showErrorDialog(context, 'Error');
+                      }
+                    }
+                  }
+                },
+                icon: const Icon(Icons.add),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              const SizedBox(height: 10),
+              if (selectedImage != null)
+                Stack(
+                  children: [
+                    Image.memory(
+                      selectedImage!,
+                      width: 200,
+                      height: 200,
+                    ),
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            selectedImage = null; // Remove the selected image
+                          });
+                        },
+                        child: Container(
+                          color: Colors.red,
+                          padding: const EdgeInsets.all(5),
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+          child: const Text('Close'),
+          onPressed: () {
+            setState(() {
+              dialogVisibility[qId] = false;
+            });
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    );
+  }
+
   Future<void> loadFacultyName(int facultyid) async {
     try {
       fname = await APIHandler().loadFacultyName(facultyid);
@@ -129,17 +239,6 @@ class _PaperSettingState extends State<PaperSetting> {
       setState(() {});
     }
   }
-
-// Future<void> loadTopicListsForQuestions() async {
-//   for (var question in qlist) {
-//     int qid = question['q_id'];
-//     List<dynamic> topicListForQuestion = await APIHandler().loadTopicsDataMappedWithQuestion(qid);
-//     topicListForQuestion[qid] = topicListForQuestion;
-//   }
-//  if(mounted){
-//   setState(() {});
-//  }
-// }
 
   Future<void> _selectImage() async {
     final picker = ImagePicker();
@@ -203,21 +302,31 @@ class _PaperSettingState extends State<PaperSetting> {
       List<dynamic> allCloLists = []; // List to store CLOs of all questions
       //  List<dynamic> allTopicLists = []; // List to store topic of all questions
       for (var question in qlist) {
-        facultyId = question['f_id'];
+        int fId = question['f_id'];
         int qid = question['q_id'];
+
+        await loadSubQuestionData(question['q_id']);
         List<dynamic> cloListForQuestion = await APIHandler()
             .loadClosofSpecificQuestion(qid); // Load CLOs for each question
         allCloLists.add(cloListForQuestion); // Add CLOs to the list
         loadCloListsForQuestions(qid);
-
-        //  List<dynamic> topicListForQuestion = await APIHandler().loadTopicsDataMappedWithQuestion(qid); // Load topics for each question
-        // allTopicLists.add(topicListForQuestion); // Add topics to the list
-        if (facultyId != null) {
-          await loadFacultyName(facultyId!);
-        }
+        await loadFacultyName(fId);
       }
       setState(() {
         cloList = allCloLists; // Assign the list of CLOs to cloList
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> loadSubQuestionData(int qid) async {
+    try {
+      subqlist = await APIHandler().loadSubQuestionOfSpecificQid(qid);
+      setState(() {
+        subQuestions[qid] = subqlist;
       });
     } catch (e) {
       if (mounted) {
@@ -469,7 +578,7 @@ class _PaperSettingState extends State<PaperSetting> {
                     IconButton(
                       onPressed: () async {
                         //    initializeData();
-                        checksFunction();
+
                         //2 selectedTopicIds.clear();
                         // if (selectedTopicId == null ||
                         if (selectedTopicIds.isEmpty ||
@@ -479,17 +588,16 @@ class _PaperSettingState extends State<PaperSetting> {
                               'Please select required information Topic,Difficulty and marks');
                         } else {
                           dynamic response = await APIHandler().addQuestion(
-                            questionController.text,
-                            selectedImage,
-                            int.parse(marksController.text),
-                            dropdownValue,
-                            'pending',
-                            //   selectedTopicId!,
-                            paperId,
-                            widget.fid,
-                            widget.cid!,
-                            sid
-                          );
+                              questionController.text,
+                              selectedImage,
+                              int.parse(marksController.text),
+                              dropdownValue,
+                              'pending',
+                              //   selectedTopicId!,
+                              paperId,
+                              widget.fid,
+                              widget.cid!,
+                              sid);
 
                           if (response != null && response['status'] == 200) {
                             int qId = response['q_id'];
@@ -507,17 +615,18 @@ class _PaperSettingState extends State<PaperSetting> {
                               selectedTopicIds.clear();
                               loadQuestion(paperId);
                             });
-                          } else if( response['status'] == 409){
+                          } else if (response['status'] == 409) {
                             if (mounted) {
-                              showErrorDialog(context, 'Similar question already exists');
+                              showErrorDialog(
+                                  context, 'Similar question already exists');
                             }
-                          }
-                          else {
+                          } else {
                             if (mounted) {
                               showErrorDialog(context, 'Error');
                             }
                           }
                         }
+                        checksFunction();
                       },
                       icon: const Icon(Icons.add),
                     ),
@@ -684,15 +793,13 @@ class _PaperSettingState extends State<PaperSetting> {
                     final imageUrl = question['q_image'];
                     facultyId = question['f_id'];
                     final facultyName = facultyNames[facultyId] ?? 'Loading...';
-
-                    // Get CLOs for this question from the preloaded map
                     List<dynamic> cloListForQuestion =
                         cloListsForQuestions[question['q_id']] ?? [];
+                    List<dynamic> sqlist = subQuestions[question['q_id']] ?? [];
                     print(
-                        'CLOs for Question #${index + 1}: $cloListForQuestion'); // Debug print
+                        'CLOs for Question #${index + 1}: $cloListForQuestion');
+                    int qno = index + 1;
 
-                    //    List<dynamic> topicListForQuestion = topicListsForQuestions[question['q_id']] ?? [];
-                    //  print('topic for Question #${index + 1}: $topicListForQuestion'); // Debug print
                     return Card(
                       elevation: 5,
                       shape: RoundedRectangleBorder(
@@ -701,14 +808,57 @@ class _PaperSettingState extends State<PaperSetting> {
                       color: Colors.white.withOpacity(0.8),
                       child: ListTile(
                         tileColor: Colors.white,
-                        title: Text(
-                          'Question # ${index + 1}',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Question # ${index + 1}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    '${question['q_text']}',
+                                    maxLines: 10,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (facultyId == widget.fid)
+                              IconButton(
+                                onPressed: () {
+                                   Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => QuestionEdit(fid: widget.fid,cid: widget.cid,ccode: widget.ccode,coursename: widget.coursename,qid: question['q_id'],),
+                                ),
+                              );
+                                },
+                                icon: const Icon(Icons.edit,size: 22,),
+                              ),
+                            if (facultyId == widget.fid)
+                              IconButton(
+                                onPressed: () {
+                                  dialogVisibility[question['q_id']] = true;
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return _buildCustomDialog(
+                                          question['q_id'], qno);
+                                    },
+                                  );
+                                },
+                                icon: const Icon(Icons.add,size: 22,),
+                              ),
+                          ],
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(question['q_text']),
                             if (imageUrl != null)
                               Image.network(
                                 imageUrl,
@@ -722,6 +872,62 @@ class _PaperSettingState extends State<PaperSetting> {
                                 errorBuilder: (context, error, stackTrace) {
                                   return Text('Error loading image: $error');
                                 },
+                              ),
+                            if (sqlist.isNotEmpty)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ...sqlist.asMap().entries.map((entry) {
+                                    int idx = entry.key;
+                                    var subQuestion = entry.value;
+                                    return Column(
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                      '   ${String.fromCharCode(97 + idx)}.  ${subQuestion['sq_text']}'),
+                                                ),
+                                           if(facultyId==widget.fid)
+                                                IconButton(
+                                                  onPressed: () {},
+                                                  icon: const Icon(
+                                                    Icons.edit,
+                                                    size: 18,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            if (subQuestion['sq_image'] != null)
+                                              Image.network(
+                                                subQuestion['sq_image'],
+                                                height: 150,
+                                                width: 300,
+                                                loadingBuilder: (context, child,
+                                                    loadingProgress) {
+                                                  if (loadingProgress == null) {
+                                                    return child;
+                                                  }
+                                                  return const CircularProgressIndicator();
+                                                },
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return Text(
+                                                      'Error loading image: $error');
+                                                },
+                                              ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ],
                               ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
