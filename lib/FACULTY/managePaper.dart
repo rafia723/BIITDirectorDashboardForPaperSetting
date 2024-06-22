@@ -40,7 +40,7 @@ class _ManagePaperState extends State<ManagePaper> {
   dynamic counter;
   dynamic qNoCounter;
   dynamic fname;
-  dynamic fid;
+  dynamic facultyid;
   Map<int, String> facultyNames = {}; // Store faculty names here
   int easyCount = 0;
   int mediumCount = 0;
@@ -53,6 +53,8 @@ class _ManagePaperState extends State<ManagePaper> {
    List<int> missingcloss = [];
      Map<int, List<dynamic>> cloListsForQuestions = {};
      List<int> cloWeightageCheck=[];
+       Map<int, List<dynamic>> subQuestions = {};
+         List<dynamic> subqlist = [];
 
   @override
   void initState() {
@@ -177,6 +179,18 @@ Future<void> loadCloListsForQuestions() async {
       }
     }
   }
+  Future<void> loadSubQuestionData(int qid) async {
+    try {
+      subqlist = await APIHandler().loadSubQuestionOfSpecificQid(qid);
+      setState(() {
+        subQuestions[qid] = subqlist;
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
+    }
+  }
 
   Future<void> loadPaperHeaderData(int cid, int sid) async {
     try {
@@ -282,12 +296,13 @@ Future<void> loadCloListsForQuestions() async {
     qlist = await APIHandler().loadQuestion(pid);
     List<dynamic> allCloLists = []; // List to store CLOs of all questions
     for (var question in qlist) {
-      fid = question['f_id'];
+      facultyid = question['f_id'];
       int qid = question['q_id'];
+         await loadSubQuestionData(question['q_id']);
       List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid); // Load CLOs for each question
       allCloLists.add(cloListForQuestion); // Add CLOs to the list
-      if (fid != null) {
-        await loadFacultyName(fid!);
+      if (facultyid != null) {
+        await loadFacultyName(facultyid!);
       }
     }
     setState(() {
@@ -568,11 +583,12 @@ Future<List<int>> loadTopicsMappedWithQuestion(int qid) async {
     itemBuilder: (context, index) {
       final question = qlist[index];
       final imageUrl = question['q_image'];
-      fid = question['f_id'];
+      int fid = question['f_id'];
       final facultyName = facultyNames[fid] ?? 'Loading...';
-
-      // Get CLOs for this question from the preloaded map
       List<dynamic> cloListForQuestion = cloListsForQuestions[question['q_id']] ?? [];
+        List<dynamic> sqlist = subQuestions[question['q_id']] ?? [];
+         
+
 
       return Card(
         elevation: 5,
@@ -675,6 +691,55 @@ Future<List<int>> loadTopicsMappedWithQuestion(int qid) async {
                       return Text('Error loading image: $error');
                     },
                   ),
+                   if (sqlist.isNotEmpty)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ...sqlist.asMap().entries.map((entry) {
+                                    int idx = entry.key;
+                                    var subQuestion = entry.value;
+                                    return Column(
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                      '   ${String.fromCharCode(97 + idx)}.  ${subQuestion['sq_text']}'),
+                                                ),
+                                             
+                                              ],
+                                            ),
+                                            if (subQuestion['sq_image'] != null)
+                                              Image.network(
+                                                subQuestion['sq_image'],
+                                                height: 150,
+                                                width: 300,
+                                                loadingBuilder: (context, child,
+                                                    loadingProgress) {
+                                                  if (loadingProgress == null) {
+                                                    return child;
+                                                  }
+                                                  return const CircularProgressIndicator();
+                                                },
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return Text(
+                                                      'Error loading image: $error');
+                                                },
+                                              ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ],
+                              ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [

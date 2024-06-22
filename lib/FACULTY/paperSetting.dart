@@ -2,10 +2,9 @@ import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/questionEdit.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 class PaperSetting extends StatefulWidget {
   final int? cid;
@@ -63,6 +62,10 @@ class _PaperSettingState extends State<PaperSetting> {
   List<dynamic> cloList = [];
   Map<int, bool> dialogVisibility = {};
   Map<int, List<dynamic>> subQuestions = {};
+  Map<int, bool> dialogSubQuestionVisibility = {};
+
+  dynamic fetchedSQText;
+  dynamic fetchedSQImgUrl;
 
   @override
   void initState() {
@@ -144,7 +147,10 @@ class _PaperSettingState extends State<PaperSetting> {
                         context, 'Please Enter required information');
                   } else {
                     dynamic response = await APIHandler().addSubQuestion(
-                        subquestionController.text, selectedImage, qId,widget.cid!,sid);
+                        subquestionController.text,
+                        selectedImage,
+                        qId,
+                        widget.cid!);
 
                     if (response != null && response['status'] == 200) {
                       setState(() {
@@ -210,6 +216,7 @@ class _PaperSettingState extends State<PaperSetting> {
           onPressed: () {
             setState(() {
               dialogVisibility[qId] = false;
+              subquestionController.clear();
             });
             Navigator.of(context).pop();
           },
@@ -217,6 +224,148 @@ class _PaperSettingState extends State<PaperSetting> {
       ],
     );
   }
+
+  Future<Uint8List?> _selectImage2() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      return await image.readAsBytes();
+    }
+    return null;
+  }
+
+Widget _buildCustomUpdateDialog(int sqId) {
+  return AlertDialog(
+    title: const Text(
+      'Update Question',
+      style: TextStyle(fontSize: 20),
+    ),
+    content: StatefulBuilder(
+      builder: (context, setState) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          TextFormField(
+            controller: subquestionController,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              IconButton(
+                onPressed: () async {
+                  final selectedImage = await _selectImage2();
+                  setState(() {
+                    this.selectedImage = selectedImage;
+                    fetchedSQImgUrl = null;
+                  });
+                },
+                icon: const Icon(Icons.photo_library),
+              ),
+              IconButton(
+                onPressed: () async {
+                  try {
+                    // Validate necessary fields
+                    if (subquestionController.text.isEmpty) {
+                      showErrorDialog(
+                        context,
+                        'Please provide necessary information',
+                      );
+                      return;
+                    }
+                    
+                    // Handle image retrieval
+                    Uint8List? sqimage;
+                    if (fetchedSQImgUrl != null) {
+                      var response = await http.get(Uri.parse(fetchedSQImgUrl!));
+                      if (response.statusCode == 200) {
+                        sqimage = Uint8List.fromList(response.bodyBytes);
+                      } else {
+                        if (mounted) {
+                          showErrorDialog(context, 'Error downloading image');
+                        }
+                      }
+                    }
+
+                    // Perform update operation
+                    int response = await APIHandler().updateSubQuestionOfSpecificSQid(
+                      sqId,
+                      subquestionController.text,
+                      selectedImage ?? sqimage,
+                      widget.cid!,
+                    );
+
+                    // Handle response
+                    if (response == 200) {
+                      showSuccesDialog(context, 'Updated');
+                      setState(() {
+                        subquestionController.clear();
+                        selectedImage = null;
+                        fetchedSQImgUrl = null;
+                        checksFunction();
+                      });
+                    } else if (response == 409) {
+                      showErrorDialog(context, 'Similar Question already exists, try changing the question');
+                    } else {
+                      showErrorDialog(context, 'Error');
+                    }
+                  } catch (e) {
+                    showErrorDialog(context, 'An unexpected error occurred: $e');
+                  }
+                },
+                icon: const Icon(Icons.add),
+              ),
+            ],
+          ),
+          if (fetchedSQImgUrl != null || selectedImage != null)
+            Stack(
+              key: UniqueKey(), // Key added for forced rebuild
+              children: [
+                fetchedSQImgUrl != null
+                    ? Image.network(
+                        fetchedSQImgUrl!,
+                        width: 200,
+                        height: 200,
+                      )
+                    : Image.memory(
+                        selectedImage!,
+                        width: 200,
+                        height: 200,
+                      ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        fetchedSQImgUrl = null;
+                        selectedImage = null;
+                      });
+                    },
+                    child: Container(
+                      color: Colors.red,
+                      padding: const EdgeInsets.all(5),
+                      child: const Icon(Icons.close, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    ),
+    actions: <Widget>[
+      TextButton(
+        child: const Text('Close'),
+        onPressed: () {
+          setState(() {
+            dialogSubQuestionVisibility[sqId] = false;
+               subquestionController.clear();
+          });
+          Navigator.of(context).pop(true);
+        },
+      ),
+    ],
+  );
+}
 
   Future<void> loadFacultyName(int facultyid) async {
     try {
@@ -325,6 +474,11 @@ class _PaperSettingState extends State<PaperSetting> {
   Future<void> loadSubQuestionData(int qid) async {
     try {
       subqlist = await APIHandler().loadSubQuestionOfSpecificQid(qid);
+      for (var subquestion in subqlist) {
+        fetchedSQText = subquestion['sq_text'];
+        fetchedSQImgUrl = subquestion['sq_image'];
+        print('fetchedurl $fetchedSQImgUrl');
+      }
       setState(() {
         subQuestions[qid] = subqlist;
       });
@@ -577,10 +731,6 @@ class _PaperSettingState extends State<PaperSetting> {
                         icon: const Icon(Icons.photo_library)),
                     IconButton(
                       onPressed: () async {
-                        //    initializeData();
-
-                        //2 selectedTopicIds.clear();
-                        // if (selectedTopicId == null ||
                         if (selectedTopicIds.isEmpty ||
                             dropdownValue.isEmpty ||
                             marksController.text.isEmpty) {
@@ -588,16 +738,15 @@ class _PaperSettingState extends State<PaperSetting> {
                               'Please select required information Topic,Difficulty and marks');
                         } else {
                           dynamic response = await APIHandler().addQuestion(
-                              questionController.text,
-                              selectedImage,
-                              int.parse(marksController.text),
-                              dropdownValue,
-                              'pending',
-                              //   selectedTopicId!,
-                              paperId,
-                              widget.fid,
-                              widget.cid!,
-                              sid);
+                            questionController.text,
+                            selectedImage,
+                            int.parse(marksController.text),
+                            dropdownValue,
+                            'pending',
+                            paperId,
+                            widget.fid,
+                            widget.cid!,
+                          );
 
                           if (response != null && response['status'] == 200) {
                             int qId = response['q_id'];
@@ -831,14 +980,28 @@ class _PaperSettingState extends State<PaperSetting> {
                             if (facultyId == widget.fid)
                               IconButton(
                                 onPressed: () {
-                                   Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => QuestionEdit(fid: widget.fid,cid: widget.cid,ccode: widget.ccode,coursename: widget.coursename,qid: question['q_id'],),
-                                ),
-                              );
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => QuestionEdit(
+                                        fid: widget.fid,
+                                        cid: widget.cid,
+                                        ccode: widget.ccode,
+                                        coursename: widget.coursename,
+                                        qid: question['q_id'],
+                                      ),
+                                    ),
+                                  ).then((_) {
+                                    // This block will be executed when the QuestionEdit screen is popped
+                                    setState(() {
+                                      loadQuestion(paperId);
+                                    });
+                                  });
                                 },
-                                icon: const Icon(Icons.edit,size: 22,),
+                                icon: const Icon(
+                                  Icons.edit,
+                                  size: 22,
+                                ),
                               ),
                             if (facultyId == widget.fid)
                               IconButton(
@@ -852,7 +1015,10 @@ class _PaperSettingState extends State<PaperSetting> {
                                     },
                                   );
                                 },
-                                icon: const Icon(Icons.add,size: 22,),
+                                icon: const Icon(
+                                  Icons.add,
+                                  size: 22,
+                                ),
                               ),
                           ],
                         ),
@@ -894,14 +1060,32 @@ class _PaperSettingState extends State<PaperSetting> {
                                                   child: Text(
                                                       '   ${String.fromCharCode(97 + idx)}.  ${subQuestion['sq_text']}'),
                                                 ),
-                                           if(facultyId==widget.fid)
-                                                IconButton(
-                                                  onPressed: () {},
-                                                  icon: const Icon(
-                                                    Icons.edit,
-                                                    size: 18,
+                                                if (facultyId == widget.fid)
+                                                  IconButton(
+                                                    onPressed: () async {
+                                                      await loadSubQuestionData(
+                                                          question['q_id']);
+                                                   subquestionController.text=fetchedSQText;
+                                                      dialogSubQuestionVisibility[
+                                                          subQuestion[
+                                                              'sq_id']] = true;
+                                                      if (mounted) {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (BuildContext
+                                                              context) {
+                                                            return _buildCustomUpdateDialog(
+                                                                subQuestion[
+                                                                    'sq_id']);
+                                                          },
+                                                        );
+                                                      }
+                                                    },
+                                                    icon: const Icon(
+                                                      Icons.edit,
+                                                      size: 18,
+                                                    ),
                                                   ),
-                                                ),
                                               ],
                                             ),
                                             if (subQuestion['sq_image'] != null)

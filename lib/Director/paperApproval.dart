@@ -60,6 +60,8 @@ class _PaperApprovalState extends State<PaperApproval> {
       {}; // Map to track editing mode for each question
   Map<int, TextEditingController> textEditingControllers =
       {}; // Controllers for each TextFormField
+             Map<int, List<dynamic>> subQuestions = {};
+         List<dynamic> subqlist = [];
 
   @override
   void initState() {
@@ -301,15 +303,16 @@ class _PaperApprovalState extends State<PaperApproval> {
       qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
       if (qlist.isNotEmpty) {
         await loadCloListsForQuestions();
+        
       }
       List<dynamic> allCloLists = []; // List to store CLOs of all questions
       for (var question in qlist) {
         int qid = question['q_id'];
-        List<dynamic> cloListForQuestion = await APIHandler()
-            .loadClosofSpecificQuestion(qid); // Load CLOs for each question
+           await loadSubQuestionData(question['q_id']);
+        List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid); // Load CLOs for each question
         allCloLists.add(cloListForQuestion); // Add CLOs to the list
 
-        // Check if commentControllers contains the qid
+      
         if (!commentControllers.containsKey(qid)) {
           // Add a TextEditingController to the commentControllers map if it doesn't exist
           commentControllers[qid] = TextEditingController();
@@ -331,6 +334,19 @@ class _PaperApprovalState extends State<PaperApproval> {
             );
           },
         );
+      }
+    }
+  }
+
+    Future<void> loadSubQuestionData(int qid) async {
+    try {
+      subqlist = await APIHandler().loadSubQuestionOfSpecificQid(qid);
+      setState(() {
+        subQuestions[qid] = subqlist;
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
       }
     }
   }
@@ -706,6 +722,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                 final fid = question['f_id'];
                 List<dynamic> cloListForQuestion =
                     cloListsForQuestions[question['q_id']] ?? [];
+                      List<dynamic> sqlist = subQuestions[question['q_id']] ?? [];
 
                 // Determine if currently in edit mode
                 bool isEditing = editingModeMap.containsKey(qid)
@@ -785,6 +802,55 @@ class _PaperApprovalState extends State<PaperApproval> {
                                   return Text('Error loading image: $error');
                                 },
                               ),
+                               if (sqlist.isNotEmpty)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ...sqlist.asMap().entries.map((entry) {
+                                    int idx = entry.key;
+                                    var subQuestion = entry.value;
+                                    return Column(
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                      '   ${String.fromCharCode(97 + idx)}.  ${subQuestion['sq_text']}'),
+                                                ),
+                                             
+                                              ],
+                                            ),
+                                            if (subQuestion['sq_image'] != null)
+                                              Image.network(
+                                                subQuestion['sq_image'],
+                                                height: 150,
+                                                width: 300,
+                                                loadingBuilder: (context, child,
+                                                    loadingProgress) {
+                                                  if (loadingProgress == null) {
+                                                    return child;
+                                                  }
+                                                  return const CircularProgressIndicator();
+                                                },
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return Text(
+                                                      'Error loading image: $error');
+                                                },
+                                              ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ],
+                              ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
@@ -850,9 +916,6 @@ class _PaperApprovalState extends State<PaperApproval> {
                                         print('After rejection$qNoCounter');
                                         checksFunction();
                                       });
-
-                                      //  updateQuestionStatus(qid, value!);
-                                      //   loadQuestionsWithUploadedStatus(paperId);
                                       setState(() {});
                                     }
                                   },
@@ -942,8 +1005,7 @@ class _PaperApprovalState extends State<PaperApproval> {
           if (acceptAllChecked)
             customElevatedButton(
                 onPressed: () async {
-                  //    await initializeData();
-                  //  if(qNoCounter==0){
+                 
                   if (missingcloss.isNotEmpty) {
                     showErrorDialog(context, 'Missing Clos! $missingcloss');
                   } 

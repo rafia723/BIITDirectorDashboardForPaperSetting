@@ -1,6 +1,7 @@
 import 'package:biit_directors_dashbooard/DATACELL/approved.dart';
 import 'package:biit_directors_dashbooard/DATACELL/courseList.dart';
 import 'package:biit_directors_dashbooard/DATACELL/facultyList.dart';
+import 'package:biit_directors_dashbooard/DATACELL/papersHistoryScreen.dart';
 import 'package:biit_directors_dashbooard/DATACELL/printed.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,7 @@ class _DatacellState extends State<Datacell> {
                     style:
                         TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 80),
+                  const SizedBox(height: 60),
                   SingleChildScrollView(
                     child: Column(
                       children: [
@@ -128,6 +129,27 @@ class _DatacellState extends State<Datacell> {
                             ),
                           ),
                           child: const Text('Printed Papers',
+                              style: TextStyle(color: Colors.black)),
+                        ),
+                         const SizedBox(height: 30),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PapersHistory(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: customButtonColor,
+                            minimumSize: const Size(160, 80),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              side: const BorderSide(color: Colors.black),
+                            ),
+                          ),
+                          child: const Text('Papers History',
                               style: TextStyle(color: Colors.black)),
                         ),
                       ],

@@ -139,9 +139,14 @@ class _ApprovedState extends State<Approved> {
                             plist[index]['c_title'],
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
+                          trailing:   Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                 Text(
+                                  plist[index]['c_code'],
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
                              IconButton(onPressed: (){
                                 Navigator.pushReplacement(
                             context,

@@ -449,8 +449,7 @@ class _QuestionEditState extends State<QuestionEdit> {
                     ),
                     IconButton(
                       onPressed: () async {
-                        // Implement your image selection logic here
-                        // For example, using an image picker package
+                      
                         final selectedImage = await _selectImage();
                         setState(() {
                           this.selectedImage = selectedImage;
@@ -505,7 +504,7 @@ class _QuestionEditState extends State<QuestionEdit> {
                                   paperId,
                                   widget.fid,
                                   widget.cid!,
-                                  sid);
+                                  );
                           if (response == 200) {
                             if (selectedTopicIds.isNotEmpty) {
                               await APIHandler().updateTopicQuestionMapping(

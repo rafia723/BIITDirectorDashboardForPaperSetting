@@ -245,6 +245,38 @@ String url="${apiUrl}Course/addCourse";
     }
   }
 
+  
+Future<List<dynamic>> loadPrintedPapersWithSessionYearAndTerm(int year, String session, String term) async {
+  List<dynamic> plist = [];
+  try {
+    Uri uri = Uri.parse('${apiUrl}Paper/getPrintedPapersWithSessionYearAndTerm?year=$year&session=$session&term=$term');
+    var response = await http.get(uri);
+    if (response.statusCode == 200) {
+      plist = jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load Printed Papers');
+    }
+    return plist;
+  } catch (e) {
+    throw Exception('Error: $e');
+  }
+}
+   Future<List<dynamic>> searchPrintedPapersWithSessionTermAndYear(String courseTitle,String session, String term,int year) async {  //Datacell &Director
+      List<dynamic>plist=[];
+  try {
+      Uri uri = Uri.parse('${apiUrl}Paper/SearchPrintedPapersWithSessionTermAndYear?courseTitle=$courseTitle&session=$session&term=$term&year=$year');
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+        plist = jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to load printed Papers');
+      }
+      return plist;
+  } catch (e) {
+    throw Exception('Error $e');
+  }
+}
+
    Future<List<dynamic>> searchPrintedPapers(String courseTitle) async {  //Datacell &Director
       List<dynamic>plist=[];
   try {
@@ -798,7 +830,7 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
   } 
 }
 
-Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid,int cid, int sid) async {
+Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid,int cid) async {
   String url = "${apiUrl}Question/addQuestion";
 
   // Prepare the multipart request
@@ -813,7 +845,6 @@ Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qm
     'p_id': pid.toString(),
     'f_id': fid.toString(),
      'c_id': cid.toString(), 
-    's_id': sid.toString(),
   });
   if (qimage != null) {
     // Attach the image file to the request
@@ -836,7 +867,7 @@ Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qm
   return {'status': statusCode, 'q_id': qId};
 }
 
-Future<int> updateQuestionOfSpecificQid(int qid, String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid,int cid,int sid) async {
+Future<int> updateQuestionOfSpecificQid(int qid, String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid,int cid) async {
   String url = "${apiUrl}Question/updateQuestionOfSpecificQid/$qid";
 
   // Prepare the multipart request
@@ -851,7 +882,7 @@ Future<int> updateQuestionOfSpecificQid(int qid, String qtext, Uint8List? qimage
     'p_id': pid.toString(),
     'f_id': fid.toString(),
     'c_id': cid.toString(),
-    's_id': sid.toString(),
+    'q_id':qid.toString()
   
   });
 
@@ -875,7 +906,7 @@ Future<int> updateQuestionOfSpecificQid(int qid, String qtext, Uint8List? qimage
 }
 
 ///////////////////////////////////////////////////////////SubQuestion////////////////////////////////////////////////////////////////
-Future<Map<String, dynamic>> addSubQuestion(String sqtext, Uint8List? sqimage, int qid,int cid,int sid) async {
+Future<Map<String, dynamic>> addSubQuestion(String sqtext, Uint8List? sqimage, int qid,int cid) async {
   String url = "${apiUrl}SubQuestions/addSubQuestion";
 
   // Prepare the multipart request
@@ -885,7 +916,6 @@ Future<Map<String, dynamic>> addSubQuestion(String sqtext, Uint8List? sqimage, i
     'sq_text': sqtext,
     'q_id': qid.toString(),
       'c_id': cid.toString(), 
-    's_id': sid.toString(),
   });
   if (sqimage != null) {
     request.files.add(http.MultipartFile.fromBytes('sq_image', sqimage, filename: 'image.jpg',)); // Set a filename for the image
@@ -921,6 +951,38 @@ Future<Map<String, dynamic>> addSubQuestion(String sqtext, Uint8List? sqimage, i
      throw Exception('Error: $e');
     }
   }
+
+  Future<int> updateSubQuestionOfSpecificSQid(int sqid, String sqtext, Uint8List? sqimage,int cid) async {
+  String url = "${apiUrl}SubQuestions/updateSubQuestionOfSpecificsQid/$sqid";
+
+  // Prepare the multipart request
+  var request = http.MultipartRequest('PUT', Uri.parse(url));
+  request.headers.addAll({"Content-Type": "application/json; charset=UTF-8"});
+  request.fields.addAll({
+    'sq_text': sqtext,
+    'c_id': cid.toString(),
+    'sq_id':sqid.toString()
+  
+  });
+
+  if (sqimage != null) {
+    // Attach the image file to the request
+    request.files.add(http.MultipartFile.fromBytes('sq_image', sqimage, filename: 'image.jpg')); // Set a filename for the image
+  }
+
+  // Send the request and await the response
+  var response = await request.send();
+
+  // Parse the response
+  var responseBody = await response.stream.bytesToString();
+  var parsedResponse = jsonDecode(responseBody);
+
+  // Get the status code
+  var statusCode = response.statusCode;
+
+  // Return the status code
+  return statusCode;
+}
 
 ///////////////////////////////////////TOPCQUESTION////////////////////////////////////////////////////////////////////////////////////
 

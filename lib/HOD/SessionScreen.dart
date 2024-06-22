@@ -11,11 +11,10 @@ class SessionScreen extends StatefulWidget {
 
 class _SessionScreenState extends State<SessionScreen> {
   final TextEditingController sessionNameController = TextEditingController();
-  final TextEditingController sessionYearController = TextEditingController();
   List<dynamic> list = [];
   bool isPressed = false;
   dynamic sid;
-
+int _selectedYear = DateTime.now().year;
   String activeSession = '';
 
   Future<void> loadSession() async {
@@ -100,7 +99,7 @@ class _SessionScreenState extends State<SessionScreen> {
                   controller: sessionNameController,
                   maxLines: 1,
                 ),
-                const Padding(
+               const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Align(
                     alignment: Alignment.topLeft,
@@ -110,25 +109,29 @@ class _SessionScreenState extends State<SessionScreen> {
                     ),
                   ),
                 ),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    focusColor: Colors.black,
-                    fillColor: Colors.white70,
-                    filled: true,
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                 Padding(
+                   padding: const EdgeInsets.all(8.0),
+                   child: DropdownButton<int>(
+                      value: _selectedYear,
+                      isExpanded: true,
+                      onChanged: (int? newValue) {
+                        setState(() {
+                          _selectedYear = newValue!;
+                        });
+                      },
+                      items: List.generate(
+                        2051 - 2000,
+                        (index) => DropdownMenuItem<int>(
+                          value: 2000 + index,
+                          child: Text((2000 + index).toString()),
+                        ),
+                      ),
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    ),
-                  ),
-                  controller: sessionYearController,
-                  maxLines: 1,
-                ),
+                 ),
                 customElevatedButton(
                   onPressed: () async {
                     if (!isPressed) {
-                      int code = await APIHandler().addSession(sessionNameController.text, int.parse(sessionYearController.text), 'inactive');
+                      int code = await APIHandler().addSession(sessionNameController.text, _selectedYear, 'inactive');
                       if (code == 200) {
                         if (mounted) {
                           showSuccesDialog(context, 'Session Added');
@@ -137,11 +140,11 @@ class _SessionScreenState extends State<SessionScreen> {
                           loadSession();
                           isPressed = false;
                           sessionNameController.clear();
-                          sessionYearController.clear();
+                          _selectedYear=DateTime.now().year;
                         });
                       }
                     } else {
-                      int code = await APIHandler().updateSession(sid, sessionNameController.text, int.parse(sessionYearController.text));
+                      int code = await APIHandler().updateSession(sid, sessionNameController.text, _selectedYear);
                       if (code == 200) {
                         if (mounted) {
                           showSuccesDialog(context, 'Updated');
@@ -149,7 +152,7 @@ class _SessionScreenState extends State<SessionScreen> {
                             loadSession();
                             isPressed = false;
                             sessionNameController.clear();
-                            sessionYearController.clear();
+                            _selectedYear=DateTime.now().year;
                           });
                         }
                       }
@@ -193,7 +196,7 @@ class _SessionScreenState extends State<SessionScreen> {
                               onPressed: () {
                                 isPressed = true;
                                 sessionNameController.text = list[index]['s_name'];
-                                sessionYearController.text = list[index]['year'].toString();
+                               _selectedYear = list[index]['year'];
                                 sid = list[index]['s_id'];
                                 setState(() {});
                               },

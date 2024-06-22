@@ -1,19 +1,30 @@
 
 
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/DATACELL/paperViewHistoryIndividual.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
 
-class Printed extends StatefulWidget {
-  const Printed({super.key});
+class PrintedPapersHistory extends StatefulWidget {
+
+  final int year;
+  final String session;
+  final String term;
+  const PrintedPapersHistory({
+    Key? key,
+     required this.year,
+      required this.session,
+       required this.term,
+  }) : super(key: key);
   @override
-  State<Printed> createState() => _PrintedState();
+  State<PrintedPapersHistory> createState() => _PrintedPapersHistoryState();
 }
 
-class _PrintedState extends State<Printed> {
+class _PrintedPapersHistoryState extends State<PrintedPapersHistory> {
     List<dynamic> pplist = [];
   TextEditingController search = TextEditingController();
+
 
     @override
   void initState() {
@@ -23,7 +34,7 @@ class _PrintedState extends State<Printed> {
 
   Future<void> loadPrintedPapersData() async {
    try {
-     pplist=await APIHandler().loadPrintedPapers();
+     pplist=await APIHandler().loadPrintedPapersWithSessionYearAndTerm(widget.year,widget.session,widget.term);
      setState(() {
        
      });
@@ -42,13 +53,13 @@ class _PrintedState extends State<Printed> {
    }
   }
 
-  Future<void> searchPrintedPapers(String courseTitle) async {
+  Future<void> searchPrintedPapersData(String courseTitle) async {
   try {
     if (courseTitle.isEmpty) { 
       loadPrintedPapersData();
       return;
     }
-     pplist=await APIHandler().searchPrintedPapers(courseTitle);
+     pplist=await APIHandler().searchPrintedPapersWithSessionTermAndYear(courseTitle,widget.session,widget.term,widget.year);
       setState(() {
      });
   } catch (e) {
@@ -98,7 +109,7 @@ class _PrintedState extends State<Printed> {
                     child: TextField(
                       controller: search,
                       onChanged: (value) async{
-                        searchPrintedPapers(value);
+                        searchPrintedPapersData(value);
                       },
                       decoration: const InputDecoration(
                         floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -122,13 +133,27 @@ class _PrintedState extends State<Printed> {
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         color: Colors.white.withOpacity(0.8),
-                        child: ListTile(
-                          title: Text(
-                            pplist[index]['c_title'],
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          // subtitle: Text(plist[index]['status']),
-                         trailing:   Row(
+                        child: GestureDetector(
+                          onTap: (){
+                              Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PaperViewHistory(
+                                 cid: pplist[index]['c_id'],
+                                 ccode:  pplist[index]['c_code'],
+                                 coursename:  pplist[index]['c_title'],
+                                 pid:  pplist[index]['p_id'],
+                                )
+                            )
+                      );
+                          },
+                          child: ListTile(
+                            title: Text(
+                              pplist[index]['c_title'],
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            // subtitle: Text(plist[index]['status']),
+                            trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                  Text(
@@ -136,9 +161,24 @@ class _PrintedState extends State<Printed> {
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),
-                                const SizedBox(width: 10,),
-                              Text(pplist[index]['status']),
-                            ],
+                                IconButton(
+                                  onPressed: () {
+                                     Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PaperViewHistory(
+                                 cid: pplist[index]['c_id'],
+                                 ccode:  pplist[index]['c_code'],
+                                 coursename:  pplist[index]['c_title'],
+                                 pid:  pplist[index]['p_id'],
+                                )
+                            )
+                      );
+                                  },
+                                  icon: const Icon(Icons.check),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );
