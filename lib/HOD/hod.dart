@@ -1,4 +1,5 @@
 import 'package:biit_directors_dashbooard/HOD/SessionScreen.dart';
+import 'package:biit_directors_dashbooard/HOD/assignedCoursesHistoryScreen.dart';
 import 'package:biit_directors_dashbooard/HOD/manageDifficulty.dart';
 import 'package:flutter/material.dart';
 import 'package:biit_directors_dashbooard/HOD/AssignRole.dart';
@@ -207,14 +208,40 @@ class _HODState extends State<HOD> {
 
                          
                          const SizedBox(height: 20),
-                        SizedBox(
+                        Row(
+                          children: [
+                            SizedBox(
+                               height: 80,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const SessionScreen(),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: customButtonColor,
+                                  minimumSize: const Size(160, 80),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    side: const BorderSide(color: Colors.black),
+                                  ),
+                                ),
+                                child: const Text('Manage \nSessions',
+                                    style: TextStyle(color: Colors.black)),
+                              ),
+                            ),
+                              const SizedBox(width: 20),
+                              SizedBox(
                            height: 80,
                           child: ElevatedButton(
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const SessionScreen(),
+                                  builder: (context) => const AssignedCoursesHistory(),
                                 ),
                               );
                             },
@@ -226,10 +253,14 @@ class _HODState extends State<HOD> {
                                 side: const BorderSide(color: Colors.black),
                               ),
                             ),
-                            child: const Text('Manage \nSessions',
+                            child: const Text('Assigned \n Courses \n  History',
                                 style: TextStyle(color: Colors.black)),
                           ),
                         ),
+                          ],
+                        ),
+                         
+                      
                       ],
                     ),
                   ),

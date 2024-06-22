@@ -1750,6 +1750,43 @@ Future<List<dynamic>>loadFacultyWithEnabledStatus() async {
   }
   return list;
 }
+Future<List<dynamic>> loadAssignedCoursesOFSessionAndYear(String session, int year) async {
+  List<dynamic> list = [];
+  try {
+    Uri uri = Uri.parse('${APIHandler().apiUrl}AssignedCourses/getAssignedCoursesOfSessionAndYear?session=$session&year=$year');
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+    } else if (response.statusCode == 404) {
+    // throw Exception('Failed to load assigned courses. Status code: ${response.statusCode}');
+    }
+     else {
+      throw Exception('Failed to load assigned courses. Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Error occurred: ${e.toString()}');
+  }
+  return list;
+}
+Future<List<dynamic>> searchAssignedCoursesOfSessionAndYear(
+    String query, String session, int year) async {
+  List<dynamic> list = [];
+  try {
+    Uri uri = Uri.parse(
+        '${APIHandler().apiUrl}AssignedCourses/SearchAssignedCoursesOfSessionAndYear?session=$session&year=$year&courseTitle=$query');
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to load courses. Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Error occurred: ${e.toString()}');
+  }
+  return list;
+}
 
 //////////////////////////////////////////////////////////////Difficulty////////////////////////////////////////////////////////////////
 
