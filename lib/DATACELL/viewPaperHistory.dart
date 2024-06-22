@@ -2,24 +2,27 @@ import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
-class PaperViewHistory extends StatefulWidget {
-  final int cid;
+class PaperView extends StatefulWidget {
+   final int cid;
   final String coursename;
   final String ccode;
   final int pid;
 
-  const PaperViewHistory({
+  const PaperView({
     Key? key,
     required this.cid,
     required this.ccode,
     required this.coursename,
     required this.pid,
   }) : super(key: key);
+
+
   @override
-  State<PaperViewHistory> createState() => _PaperViewHistoryState();
+  State<PaperView> createState() => _PaperViewState();
 }
-class _PaperViewHistoryState extends State<PaperViewHistory> {
-  List<dynamic> plist = [];
+
+class _PaperViewState extends State<PaperView> {
+   List<dynamic> plist = [];
   List<dynamic> aplist = [];
   List<dynamic> qlist = [];
   dynamic paperId;
@@ -31,7 +34,7 @@ class _PaperViewHistoryState extends State<PaperViewHistory> {
   int? year;
   DateTime? date;
   List<dynamic> teachers = [];
-  dynamic sid;
+
   Map<int, String> statusMap = {};
   Map<int, List<dynamic>> cloListsForQuestions = {};
   List<dynamic> listOfClos = [];
@@ -46,12 +49,11 @@ class _PaperViewHistoryState extends State<PaperViewHistory> {
   }
 
   Future<void> initializeData() async {
-    await loadSession();
-    setState(() {});
-    loadTeachers();
-    if (sid != null) {
-      loadPaperHeaderData(widget.cid, sid!);
-    }
+   
+    await loadTeachers();
+    
+     await loadPaperHeaderData();
+    
     await loadQuestionsWithUploadedAndApprovedStatus(widget.pid);
     if (qlist.isNotEmpty) {
       for (var question in qlist) {
@@ -80,9 +82,9 @@ class _PaperViewHistoryState extends State<PaperViewHistory> {
     }
   }
 
-  Future<void> loadPaperHeaderData(int cid, int sid) async {
+  Future<void> loadPaperHeaderData() async {
     try {
-      plist = await APIHandler().loadPaperHeaderIfTermMidAndApproved(cid, sid);
+      plist = await APIHandler().loadPaperHeaderOfSpecificPid(widget.pid);
       setState(() {
         if (plist.isNotEmpty) {
           paperId = plist[0]['p_id'];
@@ -131,24 +133,7 @@ class _PaperViewHistoryState extends State<PaperViewHistory> {
     }
   }
 
-  Future<void> loadSession() async {
-    try {
-      sid = await APIHandler().loadFirstSessionId();
-      setState(() {});
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: Text(e.toString()),
-            );
-          },
-        );
-      }
-    }
-  }
+ 
 
   Future<void> loadQuestionsWithUploadedAndApprovedStatus(int pid) async {
     try {
@@ -243,9 +228,7 @@ class _PaperViewHistoryState extends State<PaperViewHistory> {
     }
   }
 
-
-
-
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -270,21 +253,6 @@ class _PaperViewHistoryState extends State<PaperViewHistory> {
             Navigator.pop(context);
           },
         ),
-        actions: [
-          IconButton(
-            onPressed: () async {
-            //  _printPage();
-            //  int code = await APIHandler().updatePaperStatusToPrinted(paperId);
-            //   setState(() {
-            //     if (code != 200) {
-            //       showErrorDialog(context, 'Error while printing');
-            //     }
-            //   });
-            },
-            icon: const Icon(Icons.print),
-          ),
-          const SizedBox(width: 20),
-        ],
       ),
       body: Stack(
         children: [
@@ -298,6 +266,7 @@ class _PaperViewHistoryState extends State<PaperViewHistory> {
               ),
             ),
           ),
+      
           Column(
             children: [
               Padding(

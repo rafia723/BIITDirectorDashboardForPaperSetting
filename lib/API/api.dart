@@ -728,6 +728,21 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
     }
   }
 
+  Future<List<dynamic>> loadPaperHeaderOfSpecificPid(int pid) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri =
+          Uri.parse("${apiUrl}Paper/getPaperHeaderWithPId/$pid");
+      var response = await http.get(uri);
+      if (response.statusCode == 200) {
+      list=jsonDecode(response.body);
+      
+    } return list;
+    }catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
   Future<List<dynamic>> loadPaperHeaderIfTermMidAndApproved(int cid, int sid) async {
   List<dynamic> list=[];
     try {
@@ -742,6 +757,7 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
       throw Exception('Error: $e');
     }
   }
+  
 
   Future<int> updateHeader(int cid, Map<String, dynamic> HeaderData) async {
   Uri url = Uri.parse('${apiUrl}Paper/UpdatePaper'); // Append cid as a query parameter
@@ -779,6 +795,7 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
       throw Exception('Error: $e');
     }
   }
+  
 
   
 

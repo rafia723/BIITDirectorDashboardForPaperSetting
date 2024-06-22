@@ -1,7 +1,7 @@
 
 
 import 'package:biit_directors_dashbooard/API/api.dart';
-import 'package:biit_directors_dashbooard/DATACELL/paperViewHistoryIndividual.dart';
+import 'package:biit_directors_dashbooard/DATACELL/viewPaperHistory.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
@@ -24,17 +24,20 @@ class PrintedPapersHistory extends StatefulWidget {
 class _PrintedPapersHistoryState extends State<PrintedPapersHistory> {
     List<dynamic> pplist = [];
   TextEditingController search = TextEditingController();
+  dynamic sid;
 
 
     @override
   void initState() {
     super.initState();
     loadPrintedPapersData();
+   
   }
 
   Future<void> loadPrintedPapersData() async {
    try {
      pplist=await APIHandler().loadPrintedPapersWithSessionYearAndTerm(widget.year,widget.session,widget.term);
+     
      setState(() {
        
      });
@@ -138,11 +141,12 @@ class _PrintedPapersHistoryState extends State<PrintedPapersHistory> {
                               Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => PaperViewHistory(
+                                builder: (context) => PaperView(
                                  cid: pplist[index]['c_id'],
                                  ccode:  pplist[index]['c_code'],
                                  coursename:  pplist[index]['c_title'],
                                  pid:  pplist[index]['p_id'],
+                                 
                                 )
                             )
                       );
@@ -166,11 +170,12 @@ class _PrintedPapersHistoryState extends State<PrintedPapersHistory> {
                                      Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => PaperViewHistory(
+                                builder: (context) => PaperView(
                                  cid: pplist[index]['c_id'],
                                  ccode:  pplist[index]['c_code'],
                                  coursename:  pplist[index]['c_title'],
                                  pid:  pplist[index]['p_id'],
+                                 
                                 )
                             )
                       );
