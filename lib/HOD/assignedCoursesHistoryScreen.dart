@@ -192,6 +192,9 @@ showErrorDialog(context, e.toString());
                           courseTitle: clist[index]['c_title'],
                           ccode: clist[index]['c_code'],
                           cid: clist[index]['c_id'],
+                          sid: clist[index]['s_id'],
+                          session: _selectedSession,
+                          year: _selectedYear
                         ),
                       ),
                     );
@@ -219,6 +222,9 @@ showErrorDialog(context, e.toString());
                         courseTitle: clist[index]['c_title'],
                         ccode: clist[index]['c_code'],
                          cid: clist[index]['c_id'],
+                            sid: clist[index]['s_id'],
+                            session: _selectedSession,
+                          year: _selectedYear
                         ),
                       ),
                     );

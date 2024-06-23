@@ -33,15 +33,7 @@ class _AssignedtoDetailsState extends State<AssignedtoDetails> {
         }
     } catch (e) {
       if(mounted){
- showDialog(
-        context: context,
-        builder: (context) {
-          return  AlertDialog(
-            title: const Text('Error:'),
-            content: Text(e.toString()),
-          );
-        },
-      );
+ showErrorDialog(context, '$e');
       }
      
     }

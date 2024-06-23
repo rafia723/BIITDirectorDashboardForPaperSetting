@@ -6,11 +6,18 @@ class AssignedToFacultyNamesHistory extends StatefulWidget {
   final String courseTitle;
   final String ccode;
   final int cid;
+   final int sid;
+    final String session;
+     final int year;
   const AssignedToFacultyNamesHistory(
       {Key? key,
       required this.courseTitle,
       required this.ccode,
-      required this.cid})
+      required this.cid,
+       required this.sid,
+        required this.session,
+         required this.year
+       })
       : super(key: key);
 
   @override
@@ -20,9 +27,9 @@ class AssignedToFacultyNamesHistory extends StatefulWidget {
 class _AssignedToFacultyNamesHistoryState extends State<AssignedToFacultyNamesHistory> {
   List<dynamic> atlist = [];
 
-  Future<void> loadCourseAssignedToFacultyNames(int cid) async {
+  Future<void> loadCourseAssignedToFacultyNames() async {
     try {
-     atlist=await APIHandler().loadCourseAssignedToFacultyNames(cid);
+     atlist=await APIHandler().loadAssignedCoursesToFacultyInSpecificSessionAndYear(widget.cid,widget.session,widget.year,widget.sid);
         setState(() {});
         if(atlist.isEmpty){
           throw Exception('No data found for the given id');
@@ -45,7 +52,7 @@ class _AssignedToFacultyNamesHistoryState extends State<AssignedToFacultyNamesHi
 
   @override
   void initState() {
-    loadCourseAssignedToFacultyNames(widget.cid);
+    loadCourseAssignedToFacultyNames();
     super.initState();
   }
 

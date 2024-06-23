@@ -142,6 +142,8 @@ int _selectedYear = DateTime.now().year;
                           sessionNameController.clear();
                           _selectedYear=DateTime.now().year;
                         });
+                      }else if(code==400){
+                        showErrorDialog(context, 'Another session with the same name and year already exists');
                       }
                     } else {
                       int code = await APIHandler().updateSession(sid, sessionNameController.text, _selectedYear);
@@ -155,6 +157,10 @@ int _selectedYear = DateTime.now().year;
                             _selectedYear=DateTime.now().year;
                           });
                         }
+                      }else if(code==400){
+                        showErrorDialog(context, 'Another session with the same name and year already exists');
+                      }else{
+                        showErrorDialog(context, 'Error');
                       }
                     }
                   },

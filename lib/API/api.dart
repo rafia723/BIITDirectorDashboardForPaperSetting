@@ -1788,6 +1788,26 @@ Future<List<dynamic>> searchAssignedCoursesOfSessionAndYear(
   return list;
 }
 
+Future<List<dynamic>> loadAssignedCoursesToFacultyInSpecificSessionAndYear(int cid, String session, int year, int sid) async {
+  List<dynamic> list = [];
+  try {
+    Uri uri = Uri.parse('${APIHandler().apiUrl}AssignedCourses/getAssignedCoursesToFacultyInSpecificSessionAndYear/$cid?session=$session&year=$year&s_id=$sid');
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      list = jsonDecode(response.body);
+    } else if (response.statusCode == 404) {
+      throw Exception('No assigned courses found for the given parameters.');
+    } else {
+      throw Exception('Failed to load assigned courses. Status code: ${response.statusCode}');
+    }
+  } catch (e) {
+    // Handle any errors that occur during the request
+    throw Exception('Error occurred: ${e.toString()}');
+  }
+  // Return the list of assigned courses
+  return list;
+}
 //////////////////////////////////////////////////////////////Difficulty////////////////////////////////////////////////////////////////
 
 Future<int> updateDifficulty(Difficulty difficulty) async {
