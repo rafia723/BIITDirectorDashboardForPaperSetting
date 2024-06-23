@@ -16,6 +16,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
         theme: ThemeData(
         // Define your custom focus color here
+        
         primaryColor: Colors.black, // Example: Blue color
         listTileTheme: const ListTileThemeData(
        //  tileColor: Colors.white,

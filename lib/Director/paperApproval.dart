@@ -60,8 +60,9 @@ class _PaperApprovalState extends State<PaperApproval> {
       {}; // Map to track editing mode for each question
   Map<int, TextEditingController> textEditingControllers =
       {}; // Controllers for each TextFormField
-             Map<int, List<dynamic>> subQuestions = {};
-         List<dynamic> subqlist = [];
+  Map<int, List<dynamic>> subQuestions = {};
+  List<dynamic> subqlist = [];
+  List<dynamic> topicsInPaperList = [];
 
   @override
   void initState() {
@@ -303,16 +304,15 @@ class _PaperApprovalState extends State<PaperApproval> {
       qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
       if (qlist.isNotEmpty) {
         await loadCloListsForQuestions();
-        
       }
       List<dynamic> allCloLists = []; // List to store CLOs of all questions
       for (var question in qlist) {
         int qid = question['q_id'];
-           await loadSubQuestionData(question['q_id']);
-        List<dynamic> cloListForQuestion = await APIHandler().loadClosofSpecificQuestion(qid); // Load CLOs for each question
+        await loadSubQuestionData(question['q_id']);
+        List<dynamic> cloListForQuestion = await APIHandler()
+            .loadClosofSpecificQuestion(qid); // Load CLOs for each question
         allCloLists.add(cloListForQuestion); // Add CLOs to the list
 
-      
         if (!commentControllers.containsKey(qid)) {
           // Add a TextEditingController to the commentControllers map if it doesn't exist
           commentControllers[qid] = TextEditingController();
@@ -338,7 +338,7 @@ class _PaperApprovalState extends State<PaperApproval> {
     }
   }
 
-    Future<void> loadSubQuestionData(int qid) async {
+  Future<void> loadSubQuestionData(int qid) async {
     try {
       subqlist = await APIHandler().loadSubQuestionOfSpecificQid(qid);
       setState(() {
@@ -722,7 +722,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                 final fid = question['f_id'];
                 List<dynamic> cloListForQuestion =
                     cloListsForQuestions[question['q_id']] ?? [];
-                      List<dynamic> sqlist = subQuestions[question['q_id']] ?? [];
+                List<dynamic> sqlist = subQuestions[question['q_id']] ?? [];
 
                 // Determine if currently in edit mode
                 bool isEditing = editingModeMap.containsKey(qid)
@@ -802,7 +802,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                                   return Text('Error loading image: $error');
                                 },
                               ),
-                               if (sqlist.isNotEmpty)
+                            if (sqlist.isNotEmpty)
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -823,7 +823,6 @@ class _PaperApprovalState extends State<PaperApproval> {
                                                   child: Text(
                                                       '   ${String.fromCharCode(97 + idx)}.  ${subQuestion['sq_text']}'),
                                                 ),
-                                             
                                               ],
                                             ),
                                             if (subQuestion['sq_image'] != null)
@@ -1002,46 +1001,78 @@ class _PaperApprovalState extends State<PaperApproval> {
               },
             ),
           ),
-        
-            Row(
-              children: [
-                  if (acceptAllChecked)
+
+          Row(
+            children: [
+              const SizedBox(
+                width: 20,
+              ),
+              customElevatedButton(
+                  onPressed: () async {
+                    topicsInPaperList =
+                        await APIHandler().loadTopicsOfSpecificPaper(paperId);
+                    if (mounted) {
+                      showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Topics Included',style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold),),
+                              content: SingleChildScrollView(
+                                child: ListBody(
+                                  children: topicsInPaperList
+                                      .map((topic) => Text(topic))
+                                      .toList(),
+                                ),
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: const Text('Close'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          });
+                    }
+                  },
+                  buttonText: 'Topics'),
+              const SizedBox(
+                width: 170,
+              ),
+              if (acceptAllChecked)
                 customElevatedButton(
                     onPressed: () async {
-                     
                       if (missingcloss.isNotEmpty) {
                         showErrorDialog(context, 'Missing Clos! $missingcloss');
-                      } 
-                      else if(cloWeightageCheck.isNotEmpty){
-                
-                            if (mounted) {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                
-                                return AlertDialog(
-                                  title:  const Text('Clo Weightage Error'),
-                                  content:
-                                       Text('CLO-$cloWeightageCheck has no weightage in $term'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                            }
-                             }
-                      else {
+                      } else if (cloWeightageCheck.isNotEmpty) {
+                        if (mounted) {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text('Clo Weightage Error'),
+                                content: Text(
+                                    'CLO-$cloWeightageCheck has no weightage in $term'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text('OK'),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        }
+                      } else {
                         updatePaperStatus(widget.pid);
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const DRTApprovedPapers()));
+                                builder: (context) =>
+                                    const DRTApprovedPapers()));
                         setState(() {
                           loadApprovedPapersData();
                         });
@@ -1053,16 +1084,8 @@ class _PaperApprovalState extends State<PaperApproval> {
                     //  },
                     ,
                     buttonText: 'Approve'),
-                    const SizedBox(width: 30,),
-                     customElevatedButton(
-                    onPressed: () async {
-                     
-                     
-                    },
-                    buttonText: 'Topics'),
-
-              ],
-            )
+            ],
+          )
           // : const SizedBox(),
         ]),
       ]),

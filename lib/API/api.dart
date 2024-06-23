@@ -1221,6 +1221,22 @@ Future<List<dynamic>> loadUploadedPapers() async {
     return list;
   }
 
+    Future<List<dynamic>> loadTopicsOfSpecificPaper(int pid) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri =
+          Uri.parse("${apiUrl}Paper/getTopicsofSpecificPid/$pid");
+      var response = await http.get(uri);
+    if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        list = List<String>.from(jsonResponse.map((item) => item['t_name'])); // Assuming the API response is a list of maps with 't_name' key
+      }
+      return list;
+    }catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
   Future<List<dynamic>> searchUploadedPapers(String courseTitle) async {
     List<dynamic> list=[];
       Uri uri = Uri.parse('${apiUrl}Paper/SearchUploadedPapers?courseTitle=$courseTitle');
