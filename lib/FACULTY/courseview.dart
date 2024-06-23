@@ -257,8 +257,14 @@ setState(() {
                                 ),
                               );
                                }
-                               else if(status==null && term==null){ 
-                                showErrorDialog(context, 'Its time for final term, First create final term header');
+                               else if(list.isNotEmpty){ 
+                                if(status==null && term==null){
+                               showErrorDialog(context, 'Its time for final term, First create final term header');
+                                }
+                               
+                               }
+                                else if(list.isEmpty){ 
+                                showErrorDialog(context, 'First create Header of Paper');
                                }
                                else{
                                 showErrorDialog(context, 'The $term term paper is $status');

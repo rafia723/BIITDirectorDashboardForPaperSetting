@@ -127,6 +127,8 @@ class _LoginFacultyState extends State<LoginFaculty> {
                 ElevatedButton(
                   onPressed: () {
                     loginFaculty();
+                    // password.clear();
+                    // username.clear();
                   },
                   style:  ButtonStyle(backgroundColor:MaterialStatePropertyAll(customButtonColor)),
                   child: const Text('Login',style: TextStyle(color: Colors.white),),

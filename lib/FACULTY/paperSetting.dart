@@ -988,7 +988,7 @@ Widget _buildCustomUpdateDialog(int sqId) {
                                         cid: widget.cid,
                                         ccode: widget.ccode,
                                         coursename: widget.coursename,
-                                        qid: question['q_id'],
+                                        qid: question['q_id']
                                       ),
                                     ),
                                   ).then((_) {

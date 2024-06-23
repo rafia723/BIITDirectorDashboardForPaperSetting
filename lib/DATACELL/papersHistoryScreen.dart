@@ -65,10 +65,10 @@ class _PapersHistoryState extends State<PapersHistory> {
                         }
                       },
                       items: List.generate(
-                        2051 - 2000,
+                        2025 - 2023,
                         (index) => DropdownMenuItem<int>(
-                          value: 2000 + index,
-                          child: Text((2000 + index).toString()),
+                          value: 2023 + index,
+                          child: Text((2023 + index).toString()),
                         ),
                       ),
                     ),

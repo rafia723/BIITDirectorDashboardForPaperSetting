@@ -29,6 +29,7 @@ class QuestionEdit extends StatefulWidget {
 class _QuestionEditState extends State<QuestionEdit> {
   TextEditingController questionController = TextEditingController();
   TextEditingController marksController = TextEditingController();
+   TextEditingController subquestionController = TextEditingController();
   String dropdownValue = 'Easy';
   dynamic paperId;
   dynamic sid;
@@ -65,6 +66,13 @@ class _QuestionEditState extends State<QuestionEdit> {
   dynamic fetchedQDifficulty;
   dynamic fetchedQMarks;
   dynamic fetchedImgUrl;
+   Map<int, bool> dialogVisibility = {};
+  Map<int, List<dynamic>> subQuestions = {};
+  Map<int, bool> dialogSubQuestionVisibility = {};
+  List<dynamic> subqlist = [];
+  dynamic fetchedSQText;
+  dynamic fetchedSQImgUrl;
+
 
   @override
   void initState() {
@@ -164,6 +172,8 @@ class _QuestionEditState extends State<QuestionEdit> {
         fetchedQDifficulty = question['q_difficulty'];
         fetchedImgUrl = question['q_image'];
         print('fetchedurl $fetchedImgUrl');
+
+          await loadSubQuestionData(question['q_id']);
         List<dynamic> cloListForQuestion = await APIHandler()
             .loadClosofSpecificQuestion(
                 widget.qid); // Load CLOs for each question
@@ -174,6 +184,24 @@ class _QuestionEditState extends State<QuestionEdit> {
       }
       setState(() {
         cloList = allCloLists; // Assign the list of CLOs to cloList
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
+    }
+  }
+
+    Future<void> loadSubQuestionData(int qid) async {
+    try {
+      subqlist = await APIHandler().loadSubQuestionOfSpecificQid(qid);
+      for (var subquestion in subqlist) {
+        fetchedSQText = subquestion['sq_text'];
+        fetchedSQImgUrl = subquestion['sq_image'];
+        print('fetchedurl $fetchedSQImgUrl');
+      }
+      setState(() {
+        subQuestions[qid] = subqlist;
       });
     } catch (e) {
       if (mounted) {
@@ -198,6 +226,139 @@ class _QuestionEditState extends State<QuestionEdit> {
       }
     }
   }
+
+  Widget _buildCustomUpdateDialog(int sqId) {
+  return AlertDialog(
+    title: const Text(
+      'Update Question',
+      style: TextStyle(fontSize: 20),
+    ),
+    content: StatefulBuilder(
+      builder: (context, setState) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          TextFormField(
+            controller: subquestionController,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              IconButton(
+                onPressed: () async {
+                  final selectedImage = await _selectImage();
+                  setState(() {
+                    this.selectedImage = selectedImage;
+                    fetchedSQImgUrl = null;
+                  });
+                },
+                icon: const Icon(Icons.photo_library),
+              ),
+              IconButton(
+                onPressed: () async {
+                  try {
+                    // Validate necessary fields
+                    if (subquestionController.text.isEmpty) {
+                      showErrorDialog(
+                        context,
+                        'Please provide necessary information',
+                      );
+                      return;
+                    }
+                    
+                    // Handle image retrieval
+                    Uint8List? sqimage;
+                    if (fetchedSQImgUrl != null) {
+                      var response = await http.get(Uri.parse(fetchedSQImgUrl!));
+                      if (response.statusCode == 200) {
+                        sqimage = Uint8List.fromList(response.bodyBytes);
+                      } else {
+                        if (mounted) {
+                          showErrorDialog(context, 'Error downloading image');
+                        }
+                      }
+                    }
+
+                    // Perform update operation
+                    int response = await APIHandler().updateSubQuestionOfSpecificSQid(
+                      sqId,
+                      subquestionController.text,
+                      selectedImage ?? sqimage,
+                      widget.cid!,
+                    );
+
+                    // Handle response
+                    if (response == 200) {
+                      showSuccesDialog(context, 'Updated');
+                      setState(() {
+                        subquestionController.clear();
+                        selectedImage = null;
+                        fetchedSQImgUrl = null;
+                        loadQuestionData();
+                      });
+                    } else if (response == 409) {
+                      showErrorDialog(context, 'Similar Question already exists, try changing the question');
+                    } else {
+                      showErrorDialog(context, 'Error');
+                    }
+                  } catch (e) {
+                    showErrorDialog(context, 'An unexpected error occurred: $e');
+                  }
+                },
+                icon: const Icon(Icons.add),
+              ),
+            ],
+          ),
+          if (fetchedSQImgUrl != null || selectedImage != null)
+            Stack(
+              key: UniqueKey(), // Key added for forced rebuild
+              children: [
+                fetchedSQImgUrl != null
+                    ? Image.network(
+                        fetchedSQImgUrl!,
+                        width: 200,
+                        height: 200,
+                      )
+                    : Image.memory(
+                        selectedImage!,
+                        width: 200,
+                        height: 200,
+                      ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        fetchedSQImgUrl = null;
+                        selectedImage = null;
+                      });
+                    },
+                    child: Container(
+                      color: Colors.red,
+                      padding: const EdgeInsets.all(5),
+                      child: const Icon(Icons.close, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    ),
+    actions: <Widget>[
+      TextButton(
+        child: const Text('Close'),
+        onPressed: () {
+          setState(() {
+            dialogSubQuestionVisibility[sqId] = false;
+               subquestionController.clear();
+          });
+          Navigator.of(context).pop(true);
+        },
+      ),
+    ],
+  );
+}
 
   Future<void> loadCommonTopics() async {
     try {
@@ -673,6 +834,7 @@ class _QuestionEditState extends State<QuestionEdit> {
                     final imageUrl = question['q_image'];
                     facultyId = question['f_id'];
                     final facultyName = facultyNames[facultyId] ?? 'Loading...';
+                    List<dynamic> sqlist = subQuestions[question['q_id']] ?? [];
 
                     // Load cloList for each question
                     Future<List<dynamic>> loadCloList() async {
@@ -732,6 +894,80 @@ class _QuestionEditState extends State<QuestionEdit> {
                                               'Error loading image: $error');
                                         },
                                       ),
+                                      if (sqlist.isNotEmpty)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ...sqlist.asMap().entries.map((entry) {
+                                    int idx = entry.key;
+                                    var subQuestion = entry.value;
+                                    return Column(
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                      '   ${String.fromCharCode(97 + idx)}.  ${subQuestion['sq_text']}'),
+                                                ),
+                                                if (facultyId == widget.fid)
+                                                  IconButton(
+                                                    onPressed: () async {
+                                                      await loadSubQuestionData(
+                                                          question['q_id']);
+                                                   subquestionController.text=fetchedSQText;
+                                                      dialogSubQuestionVisibility[
+                                                          subQuestion[
+                                                              'sq_id']] = true;
+                                                      if (mounted) {
+                                                        showDialog(
+                                                          context: context,
+                                                          builder: (BuildContext
+                                                              context) {
+                                                            return _buildCustomUpdateDialog(
+                                                                subQuestion[
+                                                                    'sq_id']);
+                                                          },
+                                                        );
+                                                      }
+                                                    },
+                                                    icon: const Icon(
+                                                      Icons.edit,
+                                                      size: 18,
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                            if (subQuestion['sq_image'] != null)
+                                              Image.network(
+                                                subQuestion['sq_image'],
+                                                height: 150,
+                                                width: 300,
+                                                loadingBuilder: (context, child,
+                                                    loadingProgress) {
+                                                  if (loadingProgress == null) {
+                                                    return child;
+                                                  }
+                                                  return const CircularProgressIndicator();
+                                                },
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return Text(
+                                                      'Error loading image: $error');
+                                                },
+                                              ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ],
+                              ),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [

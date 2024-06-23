@@ -13,7 +13,9 @@ class _SessionScreenState extends State<SessionScreen> {
   final TextEditingController sessionNameController = TextEditingController();
   List<dynamic> list = [];
   bool isPressed = false;
+    String _selectedSession = 'Spring'; 
   dynamic sid;
+    List<String> sessionList = ['Spring', 'Summer', 'Fall'];
 int _selectedYear = DateTime.now().year;
   String activeSession = '';
 
@@ -84,54 +86,31 @@ int _selectedYear = DateTime.now().year;
                     ),
                   ),
                 ),
-                TextFormField(
-                  decoration: const InputDecoration(
-                    focusColor: Colors.black,
-                    fillColor: Colors.white70,
-                    filled: true,
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    ),
-                  ),
-                  controller: sessionNameController,
-                  maxLines: 1,
-                ),
-               const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Text(
-                      'Session Year',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  ),
-                ),
-                 Padding(
-                   padding: const EdgeInsets.all(8.0),
-                   child: DropdownButton<int>(
-                      value: _selectedYear,
+                Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: DropdownButton<String>(
+                      value: _selectedSession,
                       isExpanded: true,
-                      onChanged: (int? newValue) {
-                        setState(() {
-                          _selectedYear = newValue!;
-                        });
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            _selectedSession = newValue;
+                          });
+                        }
                       },
-                      items: List.generate(
-                        2051 - 2000,
-                        (index) => DropdownMenuItem<int>(
-                          value: 2000 + index,
-                          child: Text((2000 + index).toString()),
-                        ),
-                      ),
+                      items: sessionList.map((String session) {
+                        return DropdownMenuItem<String>(
+                          value: session,
+                          child: Text(session),
+                        );
+                      }).toList(),
                     ),
-                 ),
+                  ),
+             
                 customElevatedButton(
                   onPressed: () async {
                     if (!isPressed) {
-                      int code = await APIHandler().addSession(sessionNameController.text, _selectedYear, 'inactive');
+                      int code = await APIHandler().addSession(_selectedSession, _selectedYear, 'inactive');
                       if (code == 200) {
                         if (mounted) {
                           showSuccesDialog(context, 'Session Added');
@@ -197,16 +176,16 @@ int _selectedYear = DateTime.now().year;
                                 child: Text(isActive ? 'Active' : 'Set Active'),
                               ),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () {
-                                isPressed = true;
-                                sessionNameController.text = list[index]['s_name'];
-                               _selectedYear = list[index]['year'];
-                                sid = list[index]['s_id'];
-                                setState(() {});
-                              },
-                            ),
+                            // IconButton(
+                            //   icon: const Icon(Icons.edit),
+                            //   onPressed: () {
+                            //     isPressed = true;
+                            //     sessionNameController.text = list[index]['s_name'];
+                            //    _selectedYear = list[index]['year'];
+                            //     sid = list[index]['s_id'];
+                            //     setState(() {});
+                            //   },
+                            // ),
                           ],
                         ),
                       );

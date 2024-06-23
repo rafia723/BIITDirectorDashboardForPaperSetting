@@ -82,12 +82,24 @@ class _LoginDirectorState extends State<LoginDirector> {
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacement(
+                     if (username.text == 'director@biit.com' &&
+                          password.text == '12345678') {
+                        Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>  const Director(),
                       ),
                     );
+                      } else {
+                        if (username.text == '' || password.text == '') {
+                          showErrorDialog(
+                              context, 'Please enter username or password');
+                        } else {
+                          showErrorDialog(
+                              context, 'Invalid username or password');
+                        }
+                      }
+                  
                   },
                   style:  ButtonStyle(backgroundColor:MaterialStatePropertyAll(customButtonColor)),
                   child: const Text('Login',style: TextStyle(color: Colors.white),),

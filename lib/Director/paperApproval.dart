@@ -1002,54 +1002,67 @@ class _PaperApprovalState extends State<PaperApproval> {
               },
             ),
           ),
-          if (acceptAllChecked)
-            customElevatedButton(
-                onPressed: () async {
-                 
-                  if (missingcloss.isNotEmpty) {
-                    showErrorDialog(context, 'Missing Clos! $missingcloss');
-                  } 
-                  else if(cloWeightageCheck.isNotEmpty){
-
-                        if (mounted) {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-
-                            return AlertDialog(
-                              title:  const Text('Clo Weightage Error'),
-                              content:
-                                   Text('CLO-$cloWeightageCheck has no weightage in $term'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text('OK'),
-                                ),
-                              ],
+        
+            Row(
+              children: [
+                  if (acceptAllChecked)
+                customElevatedButton(
+                    onPressed: () async {
+                     
+                      if (missingcloss.isNotEmpty) {
+                        showErrorDialog(context, 'Missing Clos! $missingcloss');
+                      } 
+                      else if(cloWeightageCheck.isNotEmpty){
+                
+                            if (mounted) {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                
+                                return AlertDialog(
+                                  title:  const Text('Clo Weightage Error'),
+                                  content:
+                                       Text('CLO-$cloWeightageCheck has no weightage in $term'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                );
+                              },
                             );
-                          },
-                        );
-                        }
-                         }
-                  else {
-                    updatePaperStatus(widget.pid);
-                    Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const DRTApprovedPapers()));
-                    setState(() {
-                      loadApprovedPapersData();
-                    });
-                  }
-                }
-                // else{
-                //   showErrorDialog(context, 'Number of approved questions should be $noOfQuestions');
-                // }
-                //  },
-                ,
-                buttonText: 'Approve')
+                            }
+                             }
+                      else {
+                        updatePaperStatus(widget.pid);
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const DRTApprovedPapers()));
+                        setState(() {
+                          loadApprovedPapersData();
+                        });
+                      }
+                    }
+                    // else{
+                    //   showErrorDialog(context, 'Number of approved questions should be $noOfQuestions');
+                    // }
+                    //  },
+                    ,
+                    buttonText: 'Approve'),
+                    const SizedBox(width: 30,),
+                     customElevatedButton(
+                    onPressed: () async {
+                     
+                     
+                    },
+                    buttonText: 'Topics'),
+
+              ],
+            )
           // : const SizedBox(),
         ]),
       ]),

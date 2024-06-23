@@ -1,4 +1,3 @@
-
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/FACULTY/courseview.dart';
 import 'package:biit_directors_dashbooard/FACULTY/notification.dart';
@@ -6,48 +5,42 @@ import 'package:biit_directors_dashbooard/FACULTY/paperStatusScreen.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 
-
 class Faculty extends StatefulWidget {
   final String facultyname;
   final int fid;
 
-  const Faculty({
-    Key? key, 
-    required this.facultyname, 
-    required this.fid})
+  const Faculty({Key? key, required this.facultyname, required this.fid})
       : super(key: key);
   @override
   State<Faculty> createState() => _FacultyState();
 }
 
 class _FacultyState extends State<Faculty> {
-  int overallCount=0;
-int questionNotificationsCount = 0;
-int headerNotificationsCount=0;
+  int overallCount = 0;
+  int questionNotificationsCount = 0;
+  int headerNotificationsCount = 0;
   List<dynamic> aclist = [];
- List<dynamic> list = [];
-  List<dynamic> feedbackList= [];
+  List<dynamic> list = [];
+  List<dynamic> feedbackList = [];
 
   Future<void> loadAssignedCourses(int id) async {
     try {
-      aclist=await APIHandler().loadAssignedCourses(id);
-        setState(() {});
-      
+      aclist = await APIHandler().loadAssignedCourses(id);
+      setState(() {});
     } catch (e) {
-      if(mounted){
-  showErrorDialog(context, e.toString());
+      if (mounted) {
+        showErrorDialog(context, e.toString());
       }
     }
   }
 
-  
   Future<void> loadNotifications() async {
     try {
       list = await APIHandler().loadCommentsforQuestion(widget.fid);
       setState(() {
-        for(int i=0;i<list.length;i++){
-        questionNotificationsCount++;
-        overallCount+=questionNotificationsCount;
+        for (int i = 0; i < list.length; i++) {
+          questionNotificationsCount++;
+          overallCount += questionNotificationsCount;
         }
       });
     } catch (e) {
@@ -57,20 +50,20 @@ int headerNotificationsCount=0;
     }
   }
 
-   Future<void> loadFeedback() async {
+  Future<void> loadFeedback() async {
     try {
-      feedbackList = await APIHandler().loadCommentsForPaperHeaderOnlyifSenior(widget.fid);
+      feedbackList =
+          await APIHandler().loadCommentsForPaperHeaderOnlyifSenior(widget.fid);
       setState(() {
-          for(int i=0;i<feedbackList.length;i++){
-       headerNotificationsCount++;
-       overallCount+=headerNotificationsCount;
+        for (int i = 0; i < feedbackList.length; i++) {
+          headerNotificationsCount++;
+          overallCount += headerNotificationsCount;
         }
       });
     } catch (e) {
-      if(mounted){
-  showErrorDialog(context, e.toString());
+      if (mounted) {
+        showErrorDialog(context, e.toString());
       }
-   
     }
   }
 
@@ -93,10 +86,8 @@ int headerNotificationsCount=0;
               ),
             );
           },
-        
           style: ElevatedButton.styleFrom(
             backgroundColor: customButtonColor,
-       
             fixedSize: const Size(170, 100),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10.0),
@@ -105,16 +96,17 @@ int headerNotificationsCount=0;
           ),
           child: Text(
             course['c_title'] ?? 'No Title Available',
-          style: const TextStyle(color: Colors.black),
+            style: const TextStyle(color: Colors.black),
             textAlign: TextAlign.center,
           ),
         ),
         Text(
           course['c_code'] ?? 'No Title Available',
-         
           textAlign: TextAlign.center,
         ),
-         const SizedBox(height: 20,),
+        const SizedBox(
+          height: 20,
+        ),
       ],
     );
   }
@@ -131,19 +123,22 @@ int headerNotificationsCount=0;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: customAppBarColor,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.only(
-        bottomLeft: Radius.circular(30),
-        bottomRight: Radius.circular(30),
-      ),
-    ),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(30),
+            bottomRight: Radius.circular(30),
+          ),
+        ),
         title: const Text(
           'Faculty Dashboard',
-          style: TextStyle(
-              fontSize: 21.0, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold),
         ),
-       leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+        leading: IconButton(
+          icon: Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()..scale(-1.0, 1.0),
+            child: const Icon(Icons.logout),
+          ),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -192,18 +187,18 @@ int headerNotificationsCount=0;
                 ),
             ],
           ),
-      
-        
           IconButton(
-               iconSize: 30.0,
+            iconSize: 30.0,
             icon: const Icon(
               Icons.timer,
-            ), 
+            ),
             onPressed: () {
-               Navigator.push(
+              Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>  PaperStatusScreen(fid: widget.fid,),
+                  builder: (context) => PaperStatusScreen(
+                    fid: widget.fid,
+                  ),
                 ),
               );
             },
@@ -227,9 +222,9 @@ int headerNotificationsCount=0;
                 Text(
                   'Welcome, ${widget.facultyname}!',
                   style: const TextStyle(
-                      fontSize: 18.0,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Container(height: 80),
                 Expanded(
@@ -249,18 +244,14 @@ int headerNotificationsCount=0;
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             _buildCourseButton(aclist[firstIndex]),
-                           
                             if (hasSecond)
                               _buildCourseButton(aclist[secondIndex]),
-                              
                           ],
                         );
-                        
                       },
                     ),
                   ),
                 ),
-                
               ],
             ),
           ),

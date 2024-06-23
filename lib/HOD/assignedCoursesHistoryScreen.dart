@@ -62,7 +62,7 @@ showErrorDialog(context, e.toString());
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: customAppBar(context: context, title: "Paper's History"),
+      appBar: customAppBar(context: context, title: "Assigned Courses History"),
       body: Stack(
         children: [
           // Background Image (Replace with your image)
@@ -107,10 +107,10 @@ showErrorDialog(context, e.toString());
                         }
                       },
                       items: List.generate(
-                        2051 - 2000,
+                        2025 - 2023,
                         (index) => DropdownMenuItem<int>(
-                          value: 2000 + index,
-                          child: Text((2000 + index).toString()),
+                          value: 2023 + index,
+                          child: Text((2023 + index).toString()),
                         ),
                       ),
                     ),

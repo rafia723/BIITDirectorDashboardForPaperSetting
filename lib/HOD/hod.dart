@@ -21,7 +21,28 @@ class _HODState extends State<HOD> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: customAppBar(context: context, title: 'HOD Dashboard'),
+      appBar: AppBar(
+        backgroundColor: customAppBarColor,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(30),
+            bottomRight: Radius.circular(30),
+          ),
+        ),
+        title: const Text(
+          'HOD Dashboard',
+          style: TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()..scale(-1.0, 1.0),
+            child: const Icon(Icons.logout),
+          ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        )),
       body: Stack(
         children: [
           Positioned.fill(
