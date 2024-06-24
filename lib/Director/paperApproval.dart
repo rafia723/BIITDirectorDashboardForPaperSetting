@@ -1011,29 +1011,44 @@ class _PaperApprovalState extends State<PaperApproval> {
                   onPressed: () async {
                     topicsInPaperList =
                         await APIHandler().loadTopicsOfSpecificPaper(paperId);
+                    List<dynamic> topicsNotIncluded =
+                        await APIHandler().loadTopicsNotIncludedInSpecificPaper(paperId);
                     if (mounted) {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('Topics Included',style: TextStyle(fontSize: 15,fontWeight: FontWeight.bold),),
-                              content: SingleChildScrollView(
-                                child: ListBody(
-                                  children: topicsInPaperList
-                                      .map((topic) => Text(topic))
-                                      .toList(),
-                                ),
-                              ),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: const Text('Close'),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
-                            );
-                          });
+                   showDialog(
+  context: context,
+  builder: (BuildContext context) {
+    // Create a new list that excludes topics present in topicsInPaperList
+    List filteredTopicsNotIncludedInPaperList = topicsNotIncluded
+        .where((topic) => !topicsInPaperList.contains(topic))
+        .toList();
+
+    return AlertDialog(
+      title: const Text(
+        'Topics Information',
+        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+      ),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: <Widget>[
+            const Text('Topics Included', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            ...topicsInPaperList.map((topic) => Text(topic)).toList(),
+            const SizedBox(height: 20),
+            const Text('Topics Not Included', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            ...filteredTopicsNotIncludedInPaperList.map((topic) => Text(topic)).toList(),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          child: const Text('Close'),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ],
+    );
+  }
+);
                     }
                   },
                   buttonText: 'Topics'),

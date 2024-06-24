@@ -3,6 +3,7 @@ import 'package:biit_directors_dashbooard/FACULTY/coveredTopics.dart';
 import 'package:biit_directors_dashbooard/FACULTY/progressTopics.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class CommonTopicsScreen extends StatefulWidget {
   final String coursename;
@@ -325,14 +326,17 @@ class _CommonTopicsScreenState extends State<CommonTopicsScreen> {
                         }
                       }
                       return ExpansionTile(
-                        title: Row(
-                          children: [
-                            Checkbox(
-                              value: allSubtopicsChecked,
-                              onChanged: null, // Nullify the onChanged callback for common topics
-                            ),
-                            Text(topiclist[index]['t_name']),
-                          ],
+                        title: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              Checkbox(
+                                value: allSubtopicsChecked,
+                                onChanged: null, // Nullify the onChanged callback for common topics
+                              ),
+                              Text(topiclist[index]['t_name']),
+                            ],
+                          ),
                         ),
                         initiallyExpanded: isPressedCommon,
                         onExpansionChanged: (bool expanded) {

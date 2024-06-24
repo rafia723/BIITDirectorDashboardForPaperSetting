@@ -82,23 +82,23 @@ class _LoginDatacellState extends State<LoginDatacell> {
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {
-                      if (username.text == 'datacell@biit.com' &&
-                          password.text == '12345678') {
+                      // if (username.text == 'datacell@biit.com' &&
+                      //     password.text == '12345678') {
                         Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
                         builder: (context) =>  const Datacell(),
                       ),
                     );
-                      } else {
-                        if (username.text == '' || password.text == '') {
-                          showErrorDialog(
-                              context, 'Please enter username or password');
-                        } else {
-                          showErrorDialog(
-                              context, 'Invalid username or password');
-                        }
-                      }
+                      // } else {
+                      //   if (username.text == '' || password.text == '') {
+                      //     showErrorDialog(
+                      //         context, 'Please enter username or password');
+                      //   } else {
+                      //     showErrorDialog(
+                      //         context, 'Invalid username or password');
+                      //   }
+                      // }
                    
                   },
                   style:  ButtonStyle(backgroundColor:MaterialStatePropertyAll(customButtonColor)),

@@ -816,6 +816,55 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
     }
   }
 
+
+  Future<List<Map<String, dynamic>>> loadQuestionWithMultipleImages(int p_id) async {
+  List<Map<String, dynamic>> questions = [];
+  try {
+    Uri uri = Uri.parse('${apiUrl}Question/getQuestionWithMultipleImages/$p_id');
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      var decodedBody = jsonDecode(response.body);
+      if (decodedBody is List) {
+        questions = List<Map<String, dynamic>>.from(decodedBody);
+      } else {
+        throw Exception('Unexpected response format');
+      }
+    } else {
+      throw Exception('Error: ${response.statusCode}');
+    }
+    return questions;
+
+  } catch (e) {
+    print('Exception: $e');
+    throw Exception('Failed to load questions');
+  }
+}
+
+  Future<List<Map<String, dynamic>>> loadQuestionByQidWithMultipleImages(int q_id) async {
+  List<Map<String, dynamic>> questions = [];
+  try {
+    Uri uri = Uri.parse('${apiUrl}Question/getQuestionByQIDWithMultipleImages/$q_id');
+    var response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      var decodedBody = jsonDecode(response.body);
+      if (decodedBody is List) {
+        questions = List<Map<String, dynamic>>.from(decodedBody);
+      } else {
+        throw Exception('Unexpected response format');
+      }
+    } else {
+      throw Exception('Error: ${response.statusCode}');
+    }
+    return questions;
+
+  } catch (e) {
+    print('Exception: $e');
+    throw Exception('Failed to load questions');
+  }
+}
+
    Future<List<dynamic>> loadQuestionOfSpecificQid(int qid) async {
   List<dynamic> qlist=[];
     try {
@@ -846,6 +895,57 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
    throw Exception('Error: $e');
   } 
 }
+
+Future<Map<String, dynamic>> addQuestionWithMultipleImages(
+  String qtext,
+  List<Uint8List> qimages, // List of images
+  int qmarks,
+  String qdifficulty,
+  String qstatus,
+  int pid,
+  int fid,
+  int cid,
+) async {
+  String url = "${apiUrl}Question/addQuestionWithMultipleImages";
+
+  // Prepare the multipart request
+  var request = http.MultipartRequest('POST', Uri.parse(url));
+  request.headers.addAll({"Content-Type": "application/json; charset=UTF-8"});
+  request.fields.addAll({
+    'q_text': qtext,
+    'q_marks': qmarks.toString(),
+    'q_difficulty': qdifficulty,
+    'q_status': qstatus,
+    'p_id': pid.toString(),
+    'f_id': fid.toString(),
+    'c_id': cid.toString(),
+  });
+
+  for (var i = 0; i < qimages.length; i++) {
+    request.files.add(http.MultipartFile.fromBytes(
+      'q_images', 
+      qimages[i], 
+      filename: 'image$i.jpg',
+    ));
+  }
+
+  // Send the request and await the response
+  var response = await request.send();
+
+  // Parse the response
+  var responseBody = await response.stream.bytesToString();
+  var parsedResponse = jsonDecode(responseBody);
+
+  // Get the status code
+  var statusCode = response.statusCode;
+
+  // Get the q_id from the response if available
+  var qId = parsedResponse['q_id'];
+
+  // Return the status code and q_id
+  return {'status': statusCode, 'q_id': qId};
+}
+
 
 Future<Map<String, dynamic>> addQuestion(String qtext, Uint8List? qimage, int qmarks, String qdifficulty, String qstatus, int pid, int fid,int cid) async {
   String url = "${apiUrl}Question/addQuestion";
@@ -1225,7 +1325,23 @@ Future<List<dynamic>> loadUploadedPapers() async {
   List<dynamic> list=[];
     try {
       Uri uri =
-          Uri.parse("${apiUrl}Paper/getTopicsofSpecificPid/$pid");
+          Uri.parse("${apiUrl}Paper/getTopicIncludedInPaper/$pid");
+      var response = await http.get(uri);
+    if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(response.body);
+        list = List<String>.from(jsonResponse.map((item) => item['t_name'])); // Assuming the API response is a list of maps with 't_name' key
+      }
+      return list;
+    }catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
+  Future<List<dynamic>> loadTopicsNotIncludedInSpecificPaper(int pid) async {
+  List<dynamic> list=[];
+    try {
+      Uri uri =
+          Uri.parse("${apiUrl}Paper/getTopicNotIncludedInPaper/$pid");
       var response = await http.get(uri);
     if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);

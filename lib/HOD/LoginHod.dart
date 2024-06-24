@@ -86,23 +86,23 @@ class _LoginHodState extends State<LoginHod> {
                   const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {
-                      if (username.text == 'hod@biit.com' &&
-                          password.text == '12345678') {
+                      // if (username.text == 'hod@biit.com' &&
+                      //     password.text == '12345678') {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const HOD(),
                           ),
                         );
-                      } else {
-                        if (username.text == '' || password.text == '') {
-                          showErrorDialog(
-                              context, 'Please enter username or password');
-                        } else {
-                          showErrorDialog(
-                              context, 'Invalid username or password');
-                        }
-                      }
+                      // } else {
+                      //   if (username.text == '' || password.text == '') {
+                      //     showErrorDialog(
+                      //         context, 'Please enter username or password');
+                      //   } else {
+                      //     showErrorDialog(
+                      //         context, 'Invalid username or password');
+                      //   }
+                      // }
                     },
                     style: ButtonStyle(
                         backgroundColor:

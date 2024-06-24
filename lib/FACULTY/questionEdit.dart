@@ -29,7 +29,7 @@ class QuestionEdit extends StatefulWidget {
 class _QuestionEditState extends State<QuestionEdit> {
   TextEditingController questionController = TextEditingController();
   TextEditingController marksController = TextEditingController();
-   TextEditingController subquestionController = TextEditingController();
+  TextEditingController subquestionController = TextEditingController();
   String dropdownValue = 'Easy';
   dynamic paperId;
   dynamic sid;
@@ -57,7 +57,7 @@ class _QuestionEditState extends State<QuestionEdit> {
   Uint8List? selectedImage;
   List<dynamic> topicList = [];
   List<bool> isCheckedList = [];
- // int? selectedTopicId;
+  // int? selectedTopicId;
 
   List<int> selectedTopicIds = [];
   List<dynamic> cloList = [];
@@ -66,13 +66,14 @@ class _QuestionEditState extends State<QuestionEdit> {
   dynamic fetchedQDifficulty;
   dynamic fetchedQMarks;
   dynamic fetchedImgUrl;
-   Map<int, bool> dialogVisibility = {};
+  Map<int, bool> dialogVisibility = {};
   Map<int, List<dynamic>> subQuestions = {};
   Map<int, bool> dialogSubQuestionVisibility = {};
   List<dynamic> subqlist = [];
   dynamic fetchedSQText;
   dynamic fetchedSQImgUrl;
-
+  List<Map<String, dynamic>> qilist = [];
+  Map<int, List<dynamic>> cloListsForQuestions = {};
 
   @override
   void initState() {
@@ -91,7 +92,8 @@ class _QuestionEditState extends State<QuestionEdit> {
       }
     }
     if (paperId != null) {
-      await loadQuestionData();
+        await loadQuestionData();
+    //  await loadQuestioDataWithMultipleImages();
       await loadTopicId();
       for (var marks in qlist) {
         tMarks += (marks['q_marks'] as int);
@@ -99,8 +101,6 @@ class _QuestionEditState extends State<QuestionEdit> {
       questionController.text = fetchedQText;
       marksController.text = fetchedQMarks.toString();
       dropdownValue = fetchedQDifficulty;
-
-
 
       if (mounted) {
         setState(() {});
@@ -160,6 +160,15 @@ class _QuestionEditState extends State<QuestionEdit> {
     }
   }
 
+  Future<void> loadCloListsForQuestions(int qid) async {
+    List<dynamic> cloListForQuestion =
+        await APIHandler().loadClosofSpecificQuestion(qid);
+    cloListsForQuestions[qid] = cloListForQuestion;
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   Future<void> loadQuestionData() async {
     try {
       qlist = await APIHandler().loadQuestionOfSpecificQid(widget.qid);
@@ -173,7 +182,7 @@ class _QuestionEditState extends State<QuestionEdit> {
         fetchedImgUrl = question['q_image'];
         print('fetchedurl $fetchedImgUrl');
 
-          await loadSubQuestionData(question['q_id']);
+        await loadSubQuestionData(question['q_id']);
         List<dynamic> cloListForQuestion = await APIHandler()
             .loadClosofSpecificQuestion(
                 widget.qid); // Load CLOs for each question
@@ -192,7 +201,40 @@ class _QuestionEditState extends State<QuestionEdit> {
     }
   }
 
-    Future<void> loadSubQuestionData(int qid) async {
+  Future<void> loadQuestioDataWithMultipleImages() async {
+    try {
+      qilist =
+          await APIHandler().loadQuestionByQidWithMultipleImages(widget.qid);
+      List<dynamic> allCloLists = []; // List to store CLOs of all questions
+      for (var question in qilist) {
+        facultyId = question['f_id'];
+        // int qid = question['q_id'];
+        fetchedQText = question['q_text'];
+        fetchedQMarks = question['q_marks'];
+        fetchedQDifficulty = question['q_difficulty'];
+        fetchedImgUrl = question['q_image'];
+        print('fetchedurl $fetchedImgUrl');
+
+        await loadSubQuestionData(question['q_id']);
+        List<dynamic> cloListForQuestion = await APIHandler()
+            .loadClosofSpecificQuestion(
+                widget.qid); // Load CLOs for each question
+        allCloLists.add(cloListForQuestion); // Add CLOs to the list
+        if (facultyId != null) {
+          await loadFacultyName(facultyId!);
+        }
+      }
+      setState(() {
+        cloList = allCloLists; // Assign the list of CLOs to cloList
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
+    }
+  }
+
+  Future<void> loadSubQuestionData(int qid) async {
     try {
       subqlist = await APIHandler().loadSubQuestionOfSpecificQid(qid);
       for (var subquestion in subqlist) {
@@ -210,11 +252,12 @@ class _QuestionEditState extends State<QuestionEdit> {
     }
   }
 
-   Future<void> loadTopicId() async {
+  Future<void> loadTopicId() async {
     try {
-      selectedTopicIds = await APIHandler().loadTopicIdMappedWithQuestion(widget.qid);
+      selectedTopicIds =
+          await APIHandler().loadTopicIdMappedWithQuestion(widget.qid);
       setState(() {
-          for (int i = 0; i < topicList.length; i++) {
+        for (int i = 0; i < topicList.length; i++) {
           if (selectedTopicIds.contains(topicList[i]['t_id'])) {
             isCheckedList[i] = true;
           }
@@ -228,137 +271,142 @@ class _QuestionEditState extends State<QuestionEdit> {
   }
 
   Widget _buildCustomUpdateDialog(int sqId) {
-  return AlertDialog(
-    title: const Text(
-      'Update Question',
-      style: TextStyle(fontSize: 20),
-    ),
-    content: StatefulBuilder(
-      builder: (context, setState) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          TextFormField(
-            controller: subquestionController,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              IconButton(
-                onPressed: () async {
-                  final selectedImage = await _selectImage();
-                  setState(() {
-                    this.selectedImage = selectedImage;
-                    fetchedSQImgUrl = null;
-                  });
-                },
-                icon: const Icon(Icons.photo_library),
-              ),
-              IconButton(
-                onPressed: () async {
-                  try {
-                    // Validate necessary fields
-                    if (subquestionController.text.isEmpty) {
-                      showErrorDialog(
-                        context,
-                        'Please provide necessary information',
-                      );
-                      return;
-                    }
-                    
-                    // Handle image retrieval
-                    Uint8List? sqimage;
-                    if (fetchedSQImgUrl != null) {
-                      var response = await http.get(Uri.parse(fetchedSQImgUrl!));
-                      if (response.statusCode == 200) {
-                        sqimage = Uint8List.fromList(response.bodyBytes);
-                      } else {
-                        if (mounted) {
-                          showErrorDialog(context, 'Error downloading image');
+    return AlertDialog(
+      title: const Text(
+        'Update Question',
+        style: TextStyle(fontSize: 20),
+      ),
+      content: StatefulBuilder(
+        builder: (context, setState) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            TextFormField(
+              controller: subquestionController,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                IconButton(
+                  onPressed: () async {
+                    final selectedImage = await _selectImage();
+                    setState(() {
+                      this.selectedImage = selectedImage;
+                      fetchedSQImgUrl = null;
+                    });
+                  },
+                  icon: const Icon(Icons.photo_library),
+                ),
+                IconButton(
+                  onPressed: () async {
+                    try {
+                      // Validate necessary fields
+                      if (subquestionController.text.isEmpty) {
+                        showErrorDialog(
+                          context,
+                          'Please provide necessary information',
+                        );
+                        return;
+                      }
+
+                      // Handle image retrieval
+                      Uint8List? sqimage;
+                      if (fetchedSQImgUrl != null) {
+                        var response =
+                            await http.get(Uri.parse(fetchedSQImgUrl!));
+                        if (response.statusCode == 200) {
+                          sqimage = Uint8List.fromList(response.bodyBytes);
+                        } else {
+                          if (mounted) {
+                            showErrorDialog(context, 'Error downloading image');
+                          }
                         }
                       }
-                    }
 
-                    // Perform update operation
-                    int response = await APIHandler().updateSubQuestionOfSpecificSQid(
-                      sqId,
-                      subquestionController.text,
-                      selectedImage ?? sqimage,
-                      widget.cid!,
-                    );
+                      // Perform update operation
+                      int response =
+                          await APIHandler().updateSubQuestionOfSpecificSQid(
+                        sqId,
+                        subquestionController.text,
+                        selectedImage ?? sqimage,
+                        widget.cid!,
+                      );
 
-                    // Handle response
-                    if (response == 200) {
-                      showSuccesDialog(context, 'Updated');
-                      setState(() {
-                        subquestionController.clear();
-                        selectedImage = null;
-                        fetchedSQImgUrl = null;
-                        loadQuestionData();
-                      });
-                    } else if (response == 409) {
-                      showErrorDialog(context, 'Similar Question already exists, try changing the question');
-                    } else {
-                      showErrorDialog(context, 'Error');
+                      // Handle response
+                      if (response == 200) {
+                        showSuccesDialog(context, 'Updated');
+                        setState(() {
+                          subquestionController.clear();
+                          selectedImage = null;
+                          fetchedSQImgUrl = null;
+                           loadQuestionData();
+                         // loadQuestioDataWithMultipleImages();
+                        });
+                      } else if (response == 409) {
+                        showErrorDialog(context,
+                            'Similar Question already exists, try changing the question');
+                      } else {
+                        showErrorDialog(context, 'Error');
+                      }
+                    } catch (e) {
+                      showErrorDialog(
+                          context, 'An unexpected error occurred: $e');
                     }
-                  } catch (e) {
-                    showErrorDialog(context, 'An unexpected error occurred: $e');
-                  }
-                },
-                icon: const Icon(Icons.add),
-              ),
-            ],
-          ),
-          if (fetchedSQImgUrl != null || selectedImage != null)
-            Stack(
-              key: UniqueKey(), // Key added for forced rebuild
-              children: [
-                fetchedSQImgUrl != null
-                    ? Image.network(
-                        fetchedSQImgUrl!,
-                        width: 200,
-                        height: 200,
-                      )
-                    : Image.memory(
-                        selectedImage!,
-                        width: 200,
-                        height: 200,
-                      ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        fetchedSQImgUrl = null;
-                        selectedImage = null;
-                      });
-                    },
-                    child: Container(
-                      color: Colors.red,
-                      padding: const EdgeInsets.all(5),
-                      child: const Icon(Icons.close, color: Colors.white),
-                    ),
-                  ),
+                  },
+                  icon: const Icon(Icons.add),
                 ),
               ],
             ),
-        ],
+            if (fetchedSQImgUrl != null || selectedImage != null)
+              Stack(
+                key: UniqueKey(), // Key added for forced rebuild
+                children: [
+                  fetchedSQImgUrl != null
+                      ? Image.network(
+                          fetchedSQImgUrl!,
+                          width: 200,
+                          height: 200,
+                        )
+                      : Image.memory(
+                          selectedImage!,
+                          width: 200,
+                          height: 200,
+                        ),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          fetchedSQImgUrl = null;
+                          selectedImage = null;
+                        });
+                      },
+                      child: Container(
+                        color: Colors.red,
+                        padding: const EdgeInsets.all(5),
+                        child: const Icon(Icons.close, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
       ),
-    ),
-    actions: <Widget>[
-      TextButton(
-        child: const Text('Close'),
-        onPressed: () {
-          setState(() {
-            dialogSubQuestionVisibility[sqId] = false;
-               subquestionController.clear();
-          });
-          Navigator.of(context).pop(true);
-        },
-      ),
-    ],
-  );
-}
+      actions: <Widget>[
+        TextButton(
+          child: const Text('Close'),
+          onPressed: () {
+            setState(() {
+              dialogSubQuestionVisibility[sqId] = false;
+              subquestionController.clear();
+            });
+            Navigator.of(context).pop(true);
+          },
+        ),
+      ],
+    );
+  }
 
   Future<void> loadCommonTopics() async {
     try {
@@ -610,7 +658,6 @@ class _QuestionEditState extends State<QuestionEdit> {
                     ),
                     IconButton(
                       onPressed: () async {
-                      
                         final selectedImage = await _selectImage();
                         setState(() {
                           this.selectedImage = selectedImage;
@@ -654,18 +701,18 @@ class _QuestionEditState extends State<QuestionEdit> {
                               }
                             }
                           }
-                          int response = await APIHandler()
-                              .updateQuestionOfSpecificQid(
-                                  widget.qid,
-                                  questionController.text,
-                                  selectedImage ?? (qimage),
-                                  marks,
-                                  dropdownValue,
-                                  'uploaded',
-                                  paperId,
-                                  widget.fid,
-                                  widget.cid!,
-                                  );
+                          int response =
+                              await APIHandler().updateQuestionOfSpecificQid(
+                            widget.qid,
+                            questionController.text,
+                            selectedImage ?? (qimage),
+                            marks,
+                            dropdownValue,
+                            'uploaded',
+                            paperId,
+                            widget.fid,
+                            widget.cid!,
+                          );
                           if (response == 200) {
                             if (selectedTopicIds.isNotEmpty) {
                               await APIHandler().updateTopicQuestionMapping(
@@ -676,16 +723,18 @@ class _QuestionEditState extends State<QuestionEdit> {
                               marksController.clear();
                               selectedImage = null;
                               fetchedImgUrl = null;
-                           //   selectedTopicId = null;
+                              //   selectedTopicId = null;
                               dropdownValue = 'Easy';
                               isCheckedList =
                                   List<bool>.filled(topicList.length, false);
                               selectedTopicIds.clear();
-                              loadQuestionData();
+                              // loadQuestionData();
+                              loadQuestioDataWithMultipleImages();
                             });
-                          } else if(response==409){
-                            showErrorDialog(context, 'Similar Question already exists, try changing the question');
-                          }else{
+                          } else if (response == 409) {
+                            showErrorDialog(context,
+                                'Similar Question already exists, try changing the question');
+                          } else {
                             showErrorDialog(context, 'Error');
                           }
                         } catch (e) {
@@ -989,9 +1038,194 @@ class _QuestionEditState extends State<QuestionEdit> {
                   },
                 ),
               ),
-// customElevatedButton(onPressed: (){
-//   Navigator.pop(context);
-// }, buttonText: 'Save')
+
+              /////////Show Multiple Images along with question
+              // Expanded(
+              //   child: ListView.builder(
+              //     itemCount: qilist.length,
+              //     itemBuilder: (context, index) {
+              //       final Map<String, dynamic> question = qilist[index];
+
+              //       // Ensure q_images is properly initialized or set to an empty list if null
+              //       final List<dynamic> images = question['q_images'] ?? [];
+
+              //       // Other variables from question map
+              //       int facultyId = question['f_id'];
+              //       final facultyName = facultyNames[facultyId] ?? 'Loading...';
+              //       List<dynamic> sqlist = subQuestions[question['q_id']] ?? [];
+
+              //       // Load cloList for each question
+              //       Future<List<dynamic>> loadCloList() async {
+              //         int qid = question['q_id'];
+              //         return await APIHandler().loadClosofSpecificQuestion(qid);
+              //       }
+
+              //       return FutureBuilder(
+              //         future: loadCloList(),
+              //         builder: (context, snapshot) {
+              //           if (snapshot.connectionState ==
+              //               ConnectionState.waiting) {
+              //             return const Text('');
+              //           } else if (snapshot.hasError) {
+              //             return Text('Error loading CLOs: ${snapshot.error}');
+              //           } else {
+              //             List<dynamic> cloListForQuestion =
+              //                 snapshot.data ?? [];
+
+              //             return Card(
+              //                 elevation: 5,
+              //                 shape: RoundedRectangleBorder(
+              //                   borderRadius: BorderRadius.circular(15.0),
+              //                 ),
+              //                 color: Colors.white.withOpacity(0.8),
+              //                 child: ListTile(
+              //                   tileColor: Colors.white,
+              //                   title: Row(
+              //                     mainAxisAlignment:
+              //                         MainAxisAlignment.spaceBetween,
+              //                     children: [
+              //                       Expanded(
+              //                         child: Column(
+              //                           crossAxisAlignment:
+              //                               CrossAxisAlignment.start,
+              //                           children: [
+              //                             Text(
+              //                               'Question # ${index + 1}',
+              //                               style: const TextStyle(
+              //                                   fontWeight: FontWeight.bold),
+              //                             ),
+              //                             Text(
+              //                               '${question['q_text']}',
+              //                               maxLines: 10,
+              //                               overflow: TextOverflow.ellipsis,
+              //                             ),
+              //                           ],
+              //                         ),
+              //                       ),
+              //                     ],
+              //                   ),
+              //                   subtitle: Column(
+              //                     crossAxisAlignment: CrossAxisAlignment.start,
+              //                     children: [
+              //                       // Display images if present
+              //                       if (images.isNotEmpty)
+              //                         Column(
+              //                           children: images.map((image) {
+              //                             return Image.network(
+              //                               image, // Use image directly as a string
+              //                               height: 150,
+              //                               width: 300,
+              //                               loadingBuilder: (context, child,
+              //                                   loadingProgress) {
+              //                                 if (loadingProgress == null)
+              //                                   return child;
+              //                                 return const CircularProgressIndicator();
+              //                               },
+              //                               errorBuilder:
+              //                                   (context, error, stackTrace) {
+              //                                 return Text(
+              //                                     'Error loading image: $error');
+              //                               },
+              //                             );
+              //                           }).toList(),
+              //                         ),
+              //                       // Display subquestions if present
+              //                       if (sqlist.isNotEmpty)
+              //                         Column(
+              //                           crossAxisAlignment:
+              //                               CrossAxisAlignment.start,
+              //                           children:
+              //                               sqlist.asMap().entries.map((entry) {
+              //                             int idx = entry.key;
+              //                             var subQuestion = entry.value;
+              //                             return Column(
+              //                               children: [
+              //                                 Row(
+              //                                   mainAxisAlignment:
+              //                                       MainAxisAlignment
+              //                                           .spaceEvenly,
+              //                                   children: [
+              //                                     Expanded(
+              //                                       child: Text(
+              //                                         '   ${String.fromCharCode(97 + idx)}.  ${subQuestion['sq_text']}',
+              //                                       ),
+              //                                     ),
+              //                                     // Edit subquestion button for faculty
+
+              //                                     IconButton(
+              //                                       onPressed: () async {
+              //                                         await loadSubQuestionData(
+              //                                             question['q_id']);
+              //                                         subquestionController
+              //                                             .text = fetchedSQText;
+              //                                         dialogSubQuestionVisibility[
+              //                                             subQuestion[
+              //                                                 'sq_id']] = true;
+              //                                         if (mounted) {
+              //                                           showDialog(
+              //                                             context: context,
+              //                                             builder: (BuildContext
+              //                                                 context) {
+              //                                               return _buildCustomUpdateDialog(
+              //                                                   subQuestion[
+              //                                                       'sq_id']);
+              //                                             },
+              //                                           );
+              //                                         }
+              //                                       },
+              //                                       icon: const Icon(
+              //                                         Icons.edit,
+              //                                         size: 18,
+              //                                       ),
+              //                                     ),
+              //                                   ],
+              //                                 ),
+              //                                 // Display subquestion image if present
+              //                                 if (subQuestion['sq_image'] !=
+              //                                     null)
+              //                                   Image.network(
+              //                                     subQuestion['sq_image'],
+              //                                     height: 150,
+              //                                     width: 300,
+              //                                     loadingBuilder: (context,
+              //                                         child, loadingProgress) {
+              //                                       if (loadingProgress ==
+              //                                           null) {
+              //                                         return child;
+              //                                       }
+              //                                       return const CircularProgressIndicator();
+              //                                     },
+              //                                     errorBuilder: (context, error,
+              //                                         stackTrace) {
+              //                                       return Text(
+              //                                           'Error loading image: $error');
+              //                                     },
+              //                                   ),
+              //                               ],
+              //                             );
+              //                           }).toList(),
+              //                         ),
+              //                       // Display metadata (difficulty, marks, etc.)
+              //                       Row(
+              //                         mainAxisAlignment: MainAxisAlignment.end,
+              //                         children: [
+              //                           Text('${question['q_difficulty']},'),
+              //                           Text('${question['q_marks']},'),
+              //                           Text('$facultyName,'),
+              //                           Text(
+              //                             'CLOs: ${cloListForQuestion.isEmpty ? 'Loading...' : cloListForQuestion.map((entry) => entry['clo_number'] as String).join(', ')}',
+              //                           )
+              //                         ],
+              //                       ),
+              //                     ],
+              //                   ),
+              //                 ));
+              //           }
+              //         },
+              //       );
+              //     },
+              //   ),
+              // ),
             ],
           )
         ],

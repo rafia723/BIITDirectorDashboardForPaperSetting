@@ -322,47 +322,50 @@ class _CoveredTopicsState extends State<CoveredTopics> {
                       int tid = topiclist[index]['t_id'];
                       loadSubTopic(tid); // Load subtopics for each topic
                       return ExpansionTile(
-                        title: Row(
-                          children: [
-                            Checkbox(
-                              value: topicCheckState[tid] ?? false,
-                              onChanged: (bool? value) async {
-                                setState(() {
-                                  topicCheckState[tid] = value ?? false;
-                                });
-
-                                if (value == true) {
-                                  await addTopicsTaught(tid, null, widget.fid);
-                                  if (subTopicMap[tid] != null) {
-                                    for (var subTopic in subTopicMap[tid]!) {
-                                      subTopicCheckState[tid] ??= {};
-                                      subTopicCheckState[tid]![subTopic['st_id']] = true;
-                                      await addTopicsTaught(tid, subTopic['st_id'], widget.fid);
-                                    }
-                                  }
-                                } else {
-                                  if (topicTaughtidMap[tid] != null) {
-                                    await deleteTopicTaught(topicTaughtidMap[tid]!);
-                                    topicTaughtidMap[tid] = null;
-                                  }
-                                  if (subTopicTaughtidMap[tid] != null) {
-                                    for (var ttid in subTopicTaughtidMap[tid]!.values) {
-                                      if (ttid != null) {
-                                        await deleteTopicTaught(ttid);
+                        title: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              Checkbox(
+                                value: topicCheckState[tid] ?? false,
+                                onChanged: (bool? value) async {
+                                  setState(() {
+                                    topicCheckState[tid] = value ?? false;
+                                  });
+                          
+                                  if (value == true) {
+                                    await addTopicsTaught(tid, null, widget.fid);
+                                    if (subTopicMap[tid] != null) {
+                                      for (var subTopic in subTopicMap[tid]!) {
+                                        subTopicCheckState[tid] ??= {};
+                                        subTopicCheckState[tid]![subTopic['st_id']] = true;
+                                        await addTopicsTaught(tid, subTopic['st_id'], widget.fid);
                                       }
                                     }
-                                    subTopicTaughtidMap[tid] = {};
+                                  } else {
+                                    if (topicTaughtidMap[tid] != null) {
+                                      await deleteTopicTaught(topicTaughtidMap[tid]!);
+                                      topicTaughtidMap[tid] = null;
+                                    }
+                                    if (subTopicTaughtidMap[tid] != null) {
+                                      for (var ttid in subTopicTaughtidMap[tid]!.values) {
+                                        if (ttid != null) {
+                                          await deleteTopicTaught(ttid);
+                                        }
+                                      }
+                                      subTopicTaughtidMap[tid] = {};
+                                    }
+                                    subTopicCheckState[tid]?.updateAll((key, value) => false);
                                   }
-                                  subTopicCheckState[tid]?.updateAll((key, value) => false);
-                                }
-                                if(mounted){
-                             setState(() {}); // Ensure the state is updated after async operations
-                                }
-                         
-                              },
-                            ),
-                            Text(topiclist[index]['t_name']),
-                          ],
+                                  if(mounted){
+                               setState(() {}); // Ensure the state is updated after async operations
+                                  }
+                           
+                                },
+                              ),
+                              Text(topiclist[index]['t_name']),
+                            ],
+                          ),
                         ),
                         children: [
                           if (subTopicMap[topiclist[index]['t_id']] == null)

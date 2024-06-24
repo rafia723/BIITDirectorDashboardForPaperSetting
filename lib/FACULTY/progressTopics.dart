@@ -367,14 +367,17 @@ Widget build(BuildContext context) {
                         children: [
                           for (var topic in topiclist)
                             ExpansionTile(
-                              title: Row(
-                                children: [
-                                  Checkbox(
-                                    value: topicCheckState[topic['t_id']] ?? false,
-                                    onChanged: null,
-                                  ),
-                                  Text(topic['t_name']),
-                                ],
+                              title: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: [
+                                    Checkbox(
+                                      value: topicCheckState[topic['t_id']] ?? false,
+                                      onChanged: null,
+                                    ),
+                                    Text(topic['t_name']),
+                                  ],
+                                ),
                               ),
                               initiallyExpanded: isPressedProgress,
                               onExpansionChanged: (bool expanded) {
