@@ -1110,23 +1110,23 @@ Widget _buildCustomUpdateDialog(int sqId) {
                                   size: 22,
                                 ),
                               ),
-                            if (facultyId == widget.fid)
-                              IconButton(
-                                onPressed: () {
-                                  dialogVisibility[question['q_id']] = true;
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return _buildCustomDialog(
-                                          question['q_id'], qno);
-                                    },
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.add,
-                                  size: 22,
-                                ),
-                              ),
+                            // if (facultyId == widget.fid)
+                            //   IconButton(
+                            //     onPressed: () {
+                            //       dialogVisibility[question['q_id']] = true;
+                            //       showDialog(
+                            //         context: context,
+                            //         builder: (BuildContext context) {
+                            //           return _buildCustomDialog(
+                            //               question['q_id'], qno);
+                            //         },
+                            //       );
+                            //     },
+                            //     icon: const Icon(
+                            //       Icons.add,
+                            //       size: 22,
+                            //     ),
+                            //   ),
                           ],
                         ),
                         subtitle: Column(
