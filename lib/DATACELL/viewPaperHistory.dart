@@ -244,7 +244,7 @@ class _PaperViewState extends State<PaperView> {
         ),
         elevation: 0, // No shadow
         title: const Text(
-          'Paper Printing',
+          'Paper',
           style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(

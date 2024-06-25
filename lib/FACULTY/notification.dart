@@ -103,7 +103,7 @@ class _NotificationsState extends State<Notifications> {
                          Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => QuestionEdit(fid: widget.fid,cid: item['c_id'],ccode: item['c_code'],coursename: item['c_title'],qid: item['q_id'],),
+                                  builder: (context) => QuestionEdit(fid: widget.fid,cid: item['c_id'],ccode: item['c_code'],coursename: item['c_title'],qid: item['q_id'],fromCommentScreen: true,),
                                 ),
                               );
                       },

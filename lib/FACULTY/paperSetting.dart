@@ -250,13 +250,11 @@ class _PaperSettingState extends State<PaperSetting> {
 
   Future<void> pickImages() async {
   final ImagePicker pickerr = ImagePicker();
-  final List<XFile>? images = await pickerr.pickMultiImage();
+  final List<XFile> images = await pickerr.pickMultiImage();
 
-  if (images != null) {
-    for (var image in images) {
-      Uint8List imageData = await image.readAsBytes();
-      selectedImages.add(imageData);
-    }
+  for (var image in images) {
+    Uint8List imageData = await image.readAsBytes();
+    selectedImages.add(imageData);
   }
 }
 
@@ -1095,7 +1093,8 @@ Widget _buildCustomUpdateDialog(int sqId) {
                                         cid: widget.cid,
                                         ccode: widget.ccode,
                                         coursename: widget.coursename,
-                                        qid: question['q_id']
+                                        qid: question['q_id'],
+                                        fromCommentScreen: false,
                                       ),
                                     ),
                                   ).then((_) {

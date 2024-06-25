@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:biit_directors_dashbooard/Model/DifficultyModel.dart';
 import 'package:http/http.dart' as http;
 class APIHandler{
-  String apiUrl='http://192.168.10.8:3000/';
+  String apiUrl='http://192.168.171.92:3000/';
   /////////////////////////////////////////////////////////Datacell Module////////////////////////////////////////////////////////////////////////////
 
  ///////////////////////////////////////////////////////////Faculty/////////////////////////////////////////////////////////////////////////
@@ -817,10 +817,10 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
   }
 
 
-  Future<List<Map<String, dynamic>>> loadQuestionWithMultipleImages(int p_id) async {
+  Future<List<Map<String, dynamic>>> loadQuestionWithMultipleImages(int pId) async {
   List<Map<String, dynamic>> questions = [];
   try {
-    Uri uri = Uri.parse('${apiUrl}Question/getQuestionWithMultipleImages/$p_id');
+    Uri uri = Uri.parse('${apiUrl}Question/getQuestionWithMultipleImages/$pId');
     var response = await http.get(uri);
 
     if (response.statusCode == 200) {
@@ -841,10 +841,10 @@ Future<List<dynamic>> loadPaperHeader(int cid, int sid) async {
   }
 }
 
-  Future<List<Map<String, dynamic>>> loadQuestionByQidWithMultipleImages(int q_id) async {
+  Future<List<Map<String, dynamic>>> loadQuestionByQidWithMultipleImages(int qId) async {
   List<Map<String, dynamic>> questions = [];
   try {
-    Uri uri = Uri.parse('${apiUrl}Question/getQuestionByQIDWithMultipleImages/$q_id');
+    Uri uri = Uri.parse('${apiUrl}Question/getQuestionByQIDWithMultipleImages/$qId');
     var response = await http.get(uri);
 
     if (response.statusCode == 200) {

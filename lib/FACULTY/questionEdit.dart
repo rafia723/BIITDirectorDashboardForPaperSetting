@@ -12,14 +12,16 @@ class QuestionEdit extends StatefulWidget {
   final String ccode;
   final int fid;
   final int qid;
+  bool? fromCommentScreen;
 
-  const QuestionEdit({
+   QuestionEdit({
     super.key,
     required this.cid,
     required this.ccode,
     required this.coursename,
     required this.fid,
     required this.qid,
+      this.fromCommentScreen
   });
 
   @override
@@ -74,6 +76,7 @@ class _QuestionEditState extends State<QuestionEdit> {
   dynamic fetchedSQImgUrl;
   List<Map<String, dynamic>> qilist = [];
   Map<int, List<dynamic>> cloListsForQuestions = {};
+  
 
   @override
   void initState() {
@@ -708,7 +711,8 @@ class _QuestionEditState extends State<QuestionEdit> {
                             selectedImage ?? (qimage),
                             marks,
                             dropdownValue,
-                            'uploaded',
+                           widget.fromCommentScreen!?
+                            'uploaded':'pending',
                             paperId,
                             widget.fid,
                             widget.cid!,
@@ -728,8 +732,8 @@ class _QuestionEditState extends State<QuestionEdit> {
                               isCheckedList =
                                   List<bool>.filled(topicList.length, false);
                               selectedTopicIds.clear();
-                              // loadQuestionData();
-                              loadQuestioDataWithMultipleImages();
+                               loadQuestionData();
+                             // loadQuestioDataWithMultipleImages();
                             });
                           } else if (response == 409) {
                             showErrorDialog(context,

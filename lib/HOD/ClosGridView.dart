@@ -250,8 +250,10 @@ class _GridViewScreenState extends State<GridViewScreen> {
                           // Load CLOs for the selected course
                           await loadClo(selectedCourseId!);
                           await loadCourseCloWeightage(selectedCourseId!);
-                            
+                           if(mounted) {
                           setState(() {});
+                           }
+                       
                         },
                       ),
                     ),

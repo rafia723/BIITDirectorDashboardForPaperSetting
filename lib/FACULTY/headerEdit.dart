@@ -8,6 +8,7 @@ class HeaderEdit extends StatefulWidget {
   final String coursename;
   final String ccode;
 
+
  const HeaderEdit({
   Key? key,
   required this.cid,
@@ -39,6 +40,10 @@ class _HeaderEditState extends State<HeaderEdit> {
    bool midAndApproved=false;
    bool finalTerm=false;
    dynamic status;
+   dynamic fetchedDuration;
+   dynamic fetchedDegree;
+   dynamic fetchedNumberOfQuestion;
+   dynamic fetchedTerm;
 
 
    Widget customElevatedButtonForThisScreen({
@@ -69,10 +74,16 @@ class _HeaderEditState extends State<HeaderEdit> {
      
       await Future.wait([loadSession(), loadTeachers()]);
       if (sid != null) {
-        loadPaperHeader(widget.cid!, sid);
-  
+       await loadPaperHeader(widget.cid!, sid);
         setState(() {}); 
       }
+      if(list.isNotEmpty){
+ durationController.text=fetchedDuration;
+        degreeController.text=fetchedDegree;
+          noOfQuestionsController.text=fetchedNumberOfQuestion.toString();
+          selectedtermValue=fetchedTerm;
+      }
+     
     } catch (e) {
       if(mounted){
         showErrorDialog(context, e.toString());
@@ -87,6 +98,10 @@ class _HeaderEditState extends State<HeaderEdit> {
      for (var item in list) {
     String term = item['term']!.toLowerCase();
      status = item['status']!.toLowerCase();
+     fetchedDuration=item['duration'];
+     fetchedDegree=item['degree'];
+     fetchedNumberOfQuestion=item['NoOfQuestions'];
+     fetchedTerm=item['term'];
     if (term == 'mid'&&(status=='approved'||status=='printed')) {
       midAndApproved=true;
     }
