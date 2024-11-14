@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:biit_directors_dashbooard/API/api.dart';
-import 'package:biit_directors_dashbooard/Director/AdditionalQuestions.dart';
 import 'package:biit_directors_dashbooard/Director/ApprovedPapersList.dart';
+import 'package:biit_directors_dashbooard/Director/UploadedPapersList.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -13,12 +13,14 @@ class PaperApproval extends StatefulWidget {
   final String ccode;
   final String? status;
   final int pid;
-  const PaperApproval({
+    
+   const PaperApproval({
     Key? key,
     required this.cid,
     required this.ccode,
     required this.coursename,
     required this.pid,
+
     this.status,
   }) : super(key: key);
 
@@ -30,14 +32,18 @@ class _PaperApprovalState extends State<PaperApproval> {
   List<dynamic> plist = [];
   List<dynamic> aplist = [];
   List<dynamic> qlist = [];
+      List<dynamic> list=[];
+  String? rejected;
   dynamic paperId;
   String? duration;
   String? degree;
   int tMarks = 0;
   String? session;
+   int? noOfQuestions;
   String? term;
   int? year;
   DateTime? date;
+int questionCountAcceptedOrRejected=0;
   List<dynamic> teachers = [];
   dynamic sid;
   bool isChecked = false;
@@ -49,8 +55,8 @@ class _PaperApprovalState extends State<PaperApproval> {
   int acceptCount = 0;
   int rejectCount = 0;
   Map<int, List<dynamic>> cloListsForQuestions = {};
+   Map<int, List<dynamic>> rejectedQuestionFeedback = {};
   dynamic qNoCounter;
-  int? noOfQuestions;
   List<dynamic> listOfClos = [];
   List<int> missingcloss = [];
   List<dynamic> paperGridWeightageOfTerm = [];
@@ -63,22 +69,40 @@ class _PaperApprovalState extends State<PaperApproval> {
   Map<int, List<dynamic>> subQuestions = {};
   List<dynamic> subqlist = [];
   List<dynamic> topicsInPaperList = [];
+  List<dynamic> difficultyList=[];
+  int easyCount=0;
+    int mediumCount=0;
+      int hardCount=0;
+      int easySelected=0;
+      int mediumSelected=0;
+      int hardSelected=0;
+      int totalQuestion=0;
+      int? fid;
+
+     TextEditingController commentController=TextEditingController();
 
   @override
   void initState() {
     super.initState();
     initializeData();
     loadQuestionsWithUploadedAndApprovedStatus(widget.pid);
+    
+    
   }
 
   Future<void> initializeData() async {
     await loadSession();
-    setState(() {});
+    if(mounted){
+ setState(() {});
+    }
     loadTeachers();
 
     if (sid != null) {
       loadPaperHeaderData(widget.cid, sid!);
     }
+   
+        
+    
     await loadQuestionsWithUploadedAndApprovedStatus(widget.pid);
     if (qlist.isNotEmpty) {
       for (var question in qlist) {
@@ -90,12 +114,39 @@ class _PaperApprovalState extends State<PaperApproval> {
               if (qNoCounter != null) {
                 qNoCounter--;
               }
+              if(question['q_status']=='approved'&&question['q_difficulty']=='Easy'){
+      easySelected++;
+              }
+         if(question['q_status']=='approved'&&question['q_difficulty']=='Medium'){
+      mediumSelected++;
+              }
+              if(question['q_status']=='approved'&&question['q_difficulty']=='Hard'){
+      hardSelected++;
+              }
             });
           }
+          questionCountAcceptedOrRejected++;
         }
       }
       loadCloListsForQuestions();
       checksFunction();
+    }
+  }
+
+    Future<void> loadDifficulty(int noOfQuest) async {
+    try {
+      difficultyList = await APIHandler().loadDifficulty(noOfQuest);
+      setState(() {
+        if (difficultyList.isNotEmpty) {
+          easyCount = difficultyList[0]['Easy'];
+          mediumCount = difficultyList[0]['Medium'];
+          hardCount = difficultyList[0]['Hard'];
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e.toString());
+      }
     }
   }
 
@@ -130,6 +181,8 @@ class _PaperApprovalState extends State<PaperApproval> {
     print('Missing CLOs: $missingcloss');
   }
 
+
+
   Future<List<int>> findMissingCLOs(
       List<int> selectedQuestionIds, List<int> cloIdsShouldbeAddedList) async {
     Set<int> actualCLOs = {};
@@ -148,6 +201,34 @@ class _PaperApprovalState extends State<PaperApproval> {
     return missingcloss;
   }
 
+  // Future<bool?> customConfirmationDialog(BuildContext context,
+  //     {required String title, required String content}) {
+  //   return showDialog<bool>(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: Text(title),
+  //         content: Text(content),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop(false);
+  //             },
+  //             child: const Text('No'),
+  //           ),
+  //           TextButton(
+  //             onPressed: () {
+  //               Navigator.of(context).pop(true);
+  //             },
+  //             child: const Text('Yes'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
+bool? isPressed;
   Future<bool?> customConfirmationDialog(BuildContext context,
       {required String title, required String content}) {
     return showDialog<bool>(
@@ -157,23 +238,37 @@ class _PaperApprovalState extends State<PaperApproval> {
           title: Text(title),
           content: Text(content),
           actions: <Widget>[
+             TextFormField(
+            controller: commentController,
+            decoration: const InputDecoration(
+              hintText: 'Enter Comment...',
+            ),
+          ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
-              child: const Text('No'),
+              child: const Text('Continue'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(true);
+               // Navigator.of(context).pop(true);
+          isPressed==true;
+if(mounted){
+  setState(() {
+      Navigator.of(context).pop(true);
+  });
+}
               },
-              child: const Text('Yes'),
+              child: const Text('Send Immediate Feedback'),
             ),
           ],
         );
       },
     );
   }
+
+  
 
   Future<void> loadClosWeightageofSpecificCourseAndHeaderName(
       int cid, String term) async {
@@ -234,13 +329,14 @@ class _PaperApprovalState extends State<PaperApproval> {
           session = plist[0]['session'];
           term = plist[0]['term'];
           noOfQuestions = plist[0]['NoOfQuestions'];
-
-          qNoCounter = noOfQuestions;
-
+        qNoCounter = noOfQuestions;
+             totalQuestion = noOfQuestions!;
           year = plist[0]['year'];
           date = DateTime.parse(plist[0]['exam_date']);
         }
       });
+
+       await loadDifficulty(noOfQuestions!);
       await loadClosWeightageofSpecificCourseAndHeaderName(widget.cid, term!);
       setState(() {});
     } catch (e) {
@@ -380,7 +476,7 @@ class _PaperApprovalState extends State<PaperApproval> {
     }
   }
 
-  Future<void> updatePaperStatus(int pid) async {
+  Future<void> updatePaperStatusToApprovedd(int pid) async {
     try {
       dynamic code = await APIHandler().updatePaperStatusToApproved(pid);
 
@@ -446,72 +542,72 @@ class _PaperApprovalState extends State<PaperApproval> {
     }
   }
 
-  Future<void> updateAllStatuses(String newStatus) async {
-    try {
-      qNoCounter = noOfQuestions;
-      tMarks = 0;
-      for (var question in qlist) {
-        int qid = question['q_id'];
-        int qmarks = question['q_marks'];
+  // Future<void> updateAllStatuses(String newStatus) async {
+  //   try {
+  //     qNoCounter = noOfQuestions;
+  //     tMarks = 0;
+  //     for (var question in qlist) {
+  //       int qid = question['q_id'];
+  //       int qmarks = question['q_marks'];
 
-        tMarks += qmarks;
-        qNoCounter--;
-        await updateQuestionStatus(qid, newStatus);
-      }
-      setState(() {
-        for (var question in qlist) {
-          int qid = question['q_id'];
-          statusMap[qid] = newStatus;
-        }
-        print('hehe all accept $qNoCounter');
-      });
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error changing statuses of all questions'),
-              content: Text(e.toString()), // Optionally show the error message
-            );
-          },
-        );
-      }
-    }
-  }
+  //       tMarks += qmarks;
+  //       qNoCounter--;
+  //       await updateQuestionStatus(qid, newStatus);
+  //     }
+  //     setState(() {
+  //       for (var question in qlist) {
+  //         int qid = question['q_id'];
+  //         statusMap[qid] = newStatus;
+  //       }
+  //       print('hehe all accept $qNoCounter');
+  //     });
+  //   } catch (e) {
+  //     if (mounted) {
+  //       showDialog(
+  //         context: context,
+  //         builder: (context) {
+  //           return AlertDialog(
+  //             title: const Text('Error changing statuses of all questions'),
+  //             content: Text(e.toString()), // Optionally show the error message
+  //           );
+  //         },
+  //       );
+  //     }
+  //   }
+  // }
 
-  Future<void> revertAllStatuses() async {
-    try {
-      qNoCounter = 0;
-      for (var question in qlist) {
-        int qid = question['q_id'];
+  // Future<void> revertAllStatuses() async {
+  //   try {
+  //     qNoCounter = 0;
+  //     for (var question in qlist) {
+  //       int qid = question['q_id'];
 
-        int qmarks = question['q_marks'];
-        tMarks -= qmarks;
-        qNoCounter++;
-        await updateQuestionStatus(qid, 'uploaded');
-      }
-      setState(() {
-        for (var question in qlist) {
-          int qid = question['q_id'];
-          statusMap[qid] = 'uploaded';
-        }
-        print('hehe all reject $qNoCounter');
-      });
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return AlertDialog(
-              title: const Text('Error reverting statuses of all questions'),
-              content: Text(e.toString()), // Optionally show the error message
-            );
-          },
-        );
-      }
-    }
-  }
+  //       int qmarks = question['q_marks'];
+  //       tMarks -= qmarks;
+  //       qNoCounter++;
+  //       await updateQuestionStatus(qid, 'uploaded');
+  //     }
+  //     setState(() {
+  //       for (var question in qlist) {
+  //         int qid = question['q_id'];
+  //         statusMap[qid] = 'uploaded';
+  //       }
+  //       print('hehe all reject $qNoCounter');
+  //     });
+  //   } catch (e) {
+  //     if (mounted) {
+  //       showDialog(
+  //         context: context,
+  //         builder: (context) {
+  //           return AlertDialog(
+  //             title: const Text('Error reverting statuses of all questions'),
+  //             content: Text(e.toString()), // Optionally show the error message
+  //           );
+  //         },
+  //       );
+  //     }
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -689,28 +785,64 @@ class _PaperApprovalState extends State<PaperApproval> {
               ),
             ),
           ),
-          if (qNoCounter == 0)
-            Row(
-              children: [
-                const SizedBox(
-                  width: 280,
-                ),
-                const Text('Accept All'),
-                Checkbox(
-                  value: acceptAllChecked,
-                  onChanged: (value) {
-                    setState(() {
-                      acceptAllChecked = value ?? false;
-                      if (acceptAllChecked) {
-                        updateAllStatuses('approved');
-                      } else {
-                        revertAllStatuses(); // Reset or handle as needed
-                      }
-                    });
-                  },
-                ),
-              ],
+          // if (qNoCounter == 0)
+          //   Row(
+          //     children: [
+          //       const SizedBox(
+          //         width: 280,
+          //       ),
+          //       const Text('Accept All'),
+          //       Checkbox(
+          //         value: acceptAllChecked,
+          //         onChanged: (value) {
+          //           setState(() {
+          //             acceptAllChecked = value ?? false;
+          //             if (acceptAllChecked) {
+          //               updateAllStatuses('approved');
+          //             } else {
+          //               revertAllStatuses(); // Reset or handle as needed
+          //             }
+          //           });
+          //         },
+          //       ),
+          //     ],
+          //   ),
+            Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SingleChildScrollView(
+              child: Row(
+                children: [
+                  // const SizedBox(
+                  //   width: 10,
+                  // ),
+                  Text('Questions:  $questionCountAcceptedOrRejected/$totalQuestion'),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                 
+                      Text('Easy:  $easySelected/$easyCount'),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                      Text('Medium:  $mediumSelected/$mediumCount'),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                    Text('Hard:  $hardSelected/$hardCount'),
+                  const SizedBox(
+                    width: 10,
+                  ),
+                   
+                 
+                ],
+              ),
             ),
+          ),
+          Row(
+            children: [
+              IconButton(onPressed: (){}, icon: const Icon(Icons.comment),),
+            ],
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: qlist.length,
@@ -720,6 +852,7 @@ class _PaperApprovalState extends State<PaperApproval> {
                 final qDifficulty = question['q_difficulty'];
                 final qid = question['q_id'];
                 final fid = question['f_id'];
+                
                 List<dynamic> cloListForQuestion =
                     cloListsForQuestions[question['q_id']] ?? [];
                 List<dynamic> sqlist = subQuestions[question['q_id']] ?? [];
@@ -731,7 +864,6 @@ class _PaperApprovalState extends State<PaperApproval> {
                 final TextEditingController controller =
                     textEditingControllers[qid] ??=
                         TextEditingController(text: question['q_text']);
-
                 return Card(
                   elevation: 5,
                   shape: RoundedRectangleBorder(
@@ -874,6 +1006,15 @@ class _PaperApprovalState extends State<PaperApproval> {
 
                                       tMarks += question['q_marks'] as int;
                                       qNoCounter--;
+                                      questionCountAcceptedOrRejected++;
+                                      if(question['q_difficulty']=='Easy'){
+                                        easySelected++;
+                                      }else if(question['q_difficulty']=='Medium'){
+                                          mediumSelected++;
+                                      }
+                                      else if(question['q_difficulty']=='Hard'){
+                                          hardSelected++;
+                                      }
                                       print('After approval $qNoCounter');
                                       checksFunction();
                                     });
@@ -881,117 +1022,229 @@ class _PaperApprovalState extends State<PaperApproval> {
                                   },
                                 ),
                                 const Text('Reject'),
+                                
                                 Radio(
                                   value: 'rejected',
                                   groupValue: statusMap[qid],
                                   onChanged: (value) async {
+                                    setState(() {
+                                       statusMap[qid] = value!;
+                                    });
+                                      
                                     bool? confirmation =
-                                        await customConfirmationDialog(
+                                    //     await customConfirmationDialog(
+                                    //   context,
+                                    //   title: 'Confirmation',
+                                    //   content:
+                                    //       'Do you want to replace this question?',
+                                    // );
+                                    // if (confirmation == true) {
+                                    //     List<String> closMappedWitQuestion=await APIHandler().loadClosMappedWithQuestion(qid);
+                                    //   await Navigator.push(
+                                    //     context,
+                                    //     MaterialPageRoute(
+                                    //       builder: (context) =>
+                                    //           AdditionlQuestions(
+                                    //         pid: paperId,
+                                    //         ccode: widget.ccode,
+                                    //         cid: widget.cid,
+                                    //         coursename: widget.coursename,
+                                    //         qdifficulty: qDifficulty,
+                                    //         qid: qid,
+                                    //         list: closMappedWitQuestion,
+                                    //       ),
+                                    //     ),
+                                    //   );
+                                    await customConfirmationDialog(
                                       context,
                                       title: 'Confirmation',
                                       content:
-                                          'Do you want to replace this question?',
+                                          'Click 1 button',
                                     );
                                     if (confirmation == true) {
-                                      await Navigator.push(
+                                           String comment=commentController.text.toString();
+                                          await addFeedbackData('$comment Please Remake the question with CLOS: ${question['mapped_clos']}',
+                                              widget.pid, qid, fid);
+                                             checksFunction();
+                                               await APIHandler().updatePaperStatusToPending(widget.pid);
+                                            List<dynamic> ulist=await APIHandler().loadUploadedPapers();
+                                await Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              AdditionlQuestions(
-                                            pid: paperId,
-                                            ccode: widget.ccode,
-                                            cid: widget.cid,
-                                            coursename: widget.coursename,
-                                            qdifficulty: qDifficulty,
-                                            qid: qid,
+                                               DRTUploadedPapers(
+                                           list: ulist
                                           ),
                                         ),
+                                        
                                       );
-                                    } else {
-                                      setState(() {
-                                        statusMap[qid] = value!;
-                                        tMarks -= question['q_marks'] as int;
-                                        qNoCounter++;
-                                        print('After rejection$qNoCounter');
-                                        checksFunction();
-                                      });
-                                      setState(() {});
+                                      
+                                     
+                                    // if (mounted) {
+                                    //   setState(() {});
+                                    // }
+                                    // } else {
+                                    //   setState(() {
+                                    //     statusMap[qid] = value!;
+                                    //     tMarks -= question['q_marks'] as int;
+                                    //     qNoCounter++;
+                                    //     questionCountAcceptedOrRejected--;
+                                    //         if(question['q_difficulty']=='Easy'){
+                                    //     easySelected--;
+                                        
+                                    //   }else if(question['q_difficulty']=='Medium'){
+                                    //       mediumSelected--;
+                                    //   }
+                                    //   else if(question['q_difficulty']=='Hard'){
+                                    //       hardSelected--;
+                                    //   }
+                                    //     print('After rejection$qNoCounter');
+                                    //     checksFunction();
+                                    //   });
+                                    //   setState(() {});
+                                    }else{
+                                      checksFunction();
+                                     if (missingcloss.isNotEmpty) {
+                        showErrorDialog(context, 'Missing Clos! $missingcloss');
+                      }
+                              String comment=commentController.text.toString();
+                                    
+                                 list.add({"comment":'$comment Please Remake the question with CLOS: ${question['mapped_clos']}',
+                                 "pid":widget.pid,
+                                 "qid":qid,
+                                 "fid":fid
+                                 });
+                      
+                                        // rejectedQuestionFeedback.addEntries(qid,list);
                                     }
+
                                   },
                                 )
                               ],
                             ),
-                            statusMap[qid] == 'rejected'
-                                ? Row(
-                                    children: <Widget>[
-                                      Container(
-                                        constraints: const BoxConstraints(
-                                          minWidth: 100,
-                                          maxWidth:
-                                              260, // Maximum width constraint
-                                        ),
-                                        child: TextFormField(
-                                          controller: commentControllers[qid],
-                                          decoration: const InputDecoration(
-                                            labelText: 'Comment',
-                                            labelStyle: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 14),
-                                            floatingLabelBehavior:
-                                                FloatingLabelBehavior.never,
-                                            contentPadding:
-                                                EdgeInsets.symmetric(
-                                                    vertical: 5, horizontal: 8),
-                                          ),
-                                        ),
-                                      ),
-                                      IconButton(
-                                        onPressed: () async {
-                                          String commentText =
-                                              commentControllers[qid]?.text ??
-                                                  '';
-                                          if (commentText.isEmpty) {
-                                            if (mounted) {
-                                              showErrorDialog(context,
-                                                  'Enter comment first');
-                                            }
-                                          } else {
-                                            await addFeedbackData(commentText,
-                                                widget.pid, qid, fid);
-                                            await loadQuestionsWithUploadedAndApprovedStatus(
-                                                widget.pid);
-                                            checksFunction();
-                                          }
-                                        },
-                                        icon: const Icon(Icons.send),
-                                      ),
-                                      IconButton(
-                                        onPressed: () async {
-                                          await Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  AdditionlQuestions(
-                                                pid: paperId,
-                                                ccode: widget.ccode,
-                                                cid: widget.cid,
-                                                coursename: widget.coursename,
-                                                qdifficulty: qDifficulty,
-                                                qid: qid,
-                                              ),
-                                            ),
-                                          );
-                                          setState(() {
-                                            loadQuestionsWithUploadedAndApprovedStatus(
-                                                widget.pid);
-                                          });
-                                        },
-                                        icon: const Icon(
-                                            Icons.find_replace_sharp),
-                                      ),
-                                    ],
-                                  )
-                                : const SizedBox(),
+                            // statusMap[qid] == 'rejected'
+                            //     ? Row(
+                            //         children: <Widget>[
+                            //           Container(
+                            //             constraints: const BoxConstraints(
+                            //               minWidth: 100,
+                            //               maxWidth:
+                            //                   260, // Maximum width constraint
+                            //             ),
+                            //             child: TextFormField(
+                            //               controller: commentControllers[qid],
+                            //               decoration: const InputDecoration(
+                            //                 labelText: 'Comment',
+                            //                 labelStyle: TextStyle(
+                            //                     color: Colors.grey,
+                            //                     fontSize: 14),
+                            //                 floatingLabelBehavior:
+                            //                     FloatingLabelBehavior.never,
+                            //                 contentPadding:
+                            //                     EdgeInsets.symmetric(
+                            //                         vertical: 5, horizontal: 8),
+                            //               ),
+                            //             ),
+                            //           ),
+                            //           IconButton(
+                            //             onPressed: () async {
+                            //               String commentText =
+                            //                   commentControllers[qid]?.text ??
+                            //                       '';
+                            //               if (commentText.isEmpty) {
+                            //                 if (mounted) {
+                            //                   showErrorDialog(context,
+                            //                       'Enter comment first');
+                            //                 }
+                            //               } else {
+                            //                 await addFeedbackData(commentText,
+                            //                     widget.pid, qid, fid);
+                            //                 await loadQuestionsWithUploadedAndApprovedStatus(
+                            //                     widget.pid);
+                            //                 checksFunction();
+                            //               }
+                            //             },
+                            //             icon: const Icon(Icons.send),
+                            //           ),
+                            //           IconButton(
+                            //             onPressed: () async {
+                            //               List<String> closMappedWitQuestion=await APIHandler().loadClosMappedWithQuestion(qid);
+                            //               await Navigator.push(
+                            //                 context,
+                            //                 MaterialPageRoute(
+                            //                   builder: (context) =>
+                            //                       AdditionlQuestions(
+                            //                     pid: paperId,
+                            //                     ccode: widget.ccode,
+                            //                     cid: widget.cid,
+                            //                     coursename: widget.coursename,
+                            //                     qdifficulty: qDifficulty,
+                            //                     qid: qid,
+                            //                     list: closMappedWitQuestion,
+                            //                   ),
+                            //                 ),
+                            //               );
+                            //               setState(() {
+                            //                 loadQuestionsWithUploadedAndApprovedStatus(
+                            //                     widget.pid);
+                            //               });
+                            //             },
+                            //             icon: const Icon(
+                            //                 Icons.find_replace_sharp),
+                            //           ),
+                            //         ],
+                            //       )
+                            //     : const SizedBox(),
+                              
+                                      // IconButton(
+                                      //   onPressed: () async {
+                                          // String commentText =
+                                          //     commentControllers[qid]?.text ??
+                                          //         '';
+                                          // if (commentText.isEmpty) {
+                                          //   if (mounted) {
+                                          //     showErrorDialog(context,
+                                          //         'Enter comment first');
+                                          //   }
+                                          // } else {
+                                          //   await addFeedbackData(commentText,
+                                          //       widget.pid, qid, fid);
+                                          //   await loadQuestionsWithUploadedAndApprovedStatus(
+                                          //       widget.pid);
+                                          //   checksFunction();
+                                          // }
+                                      //   },
+                                      //   icon: const Icon(Icons.send),
+                                      // ),
+                                      // IconButton(
+                                      //   onPressed: () async {
+                                      //     List<String> closMappedWitQuestion=await APIHandler().loadClosMappedWithQuestion(qid);
+                                      //     await Navigator.push(
+                                      //       context,
+                                      //       MaterialPageRoute(
+                                      //         builder: (context) =>
+                                      //             AdditionlQuestions(
+                                      //           pid: paperId,
+                                      //           ccode: widget.ccode,
+                                      //           cid: widget.cid,
+                                      //           coursename: widget.coursename,
+                                      //           qdifficulty: qDifficulty,
+                                      //           qid: qid,
+                                      //           list: closMappedWitQuestion,
+                                      //         ),
+                                      //       ),
+                                      //     );
+                                      //     setState(() {
+                                      //       loadQuestionsWithUploadedAndApprovedStatus(
+                                      //           widget.pid);
+                                      //     });
+                                      //   },
+                                      //   icon: const Icon(
+                                      //       Icons.find_replace_sharp),
+                                      // ),
+                                  //  ],
+                                 // )
+                               // : const SizedBox(),
                           ],
                         ),
                       ),
@@ -1055,7 +1308,8 @@ class _PaperApprovalState extends State<PaperApproval> {
               const SizedBox(
                 width: 170,
               ),
-              if (acceptAllChecked)
+              if(paperId!=null)
+            if(questionCountAcceptedOrRejected==noOfQuestions!)
                 customElevatedButton(
                     onPressed: () async {
                       if (missingcloss.isNotEmpty) {
@@ -1082,7 +1336,11 @@ class _PaperApprovalState extends State<PaperApproval> {
                           );
                         }
                       } else {
-                        updatePaperStatus(widget.pid);
+                        checksFunction();
+                        
+                        
+
+                        updatePaperStatusToApprovedd(widget.pid);
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
@@ -1093,12 +1351,68 @@ class _PaperApprovalState extends State<PaperApproval> {
                         });
                       }
                     }
-                    // else{
-                    //   showErrorDialog(context, 'Number of approved questions should be $noOfQuestions');
-                    // }
-                    //  },
                     ,
                     buttonText: 'Approve'),
+//                     if(paperId!=null)
+         
+//                 customElevatedButton(
+//                     onPressed: () async {
+// for(int i=0;i<list.length;i++){
+//   await addFeedbackData(list[i]['comment'], list[i]['pid'], list[i]['qid'], list[i]['fid']);
+// }
+
+
+//  //await addFeedbackData('Paper Rejected', widget.pid,0,0);
+//      await APIHandler().updatePaperStatusToForwardrdBack(widget.pid);
+//     List<dynamic> ulist=await APIHandler().loadUploadedPapers();
+//                                 await Navigator.pushReplacement(
+//                                         context,
+//                                         MaterialPageRoute(
+//                                           builder: (context) =>
+//                                                DRTUploadedPapers(
+//                                            list: ulist
+//                                           ),
+//                                         ),
+                                        
+//                                       );
+                                      
+//                       // if (missingcloss.isNotEmpty) {
+//                       //   showErrorDialog(context, 'Missing Clos! $missingcloss');
+//                       // } else if (cloWeightageCheck.isNotEmpty) {
+//                       //   if (mounted) {
+//                       //     showDialog(
+//                       //       context: context,
+//                       //       builder: (context) {
+//                       //         return AlertDialog(
+//                       //           title: const Text('Clo Weightage Error'),
+//                       //           content: Text(
+//                       //               'CLO-$cloWeightageCheck has no weightage in $term'),
+//                       //           actions: [
+//                       //             TextButton(
+//                       //               onPressed: () {
+//                       //                 Navigator.pop(context);
+//                       //               },
+//                       //               child: const Text('OK'),
+//                       //             ),
+//                       //           ],
+//                       //         );
+//                       //       },
+//                       //     );
+//                       //   }
+//                       // } else {
+//                       //   updatePaperStatusToApprovedd(widget.pid);
+//                       //   Navigator.pushReplacement(
+//                       //       context,
+//                       //       MaterialPageRoute(
+//                       //           builder: (context) =>
+//                       //               const DRTApprovedPapers()));
+//                       //   setState(() {
+//                       //     loadApprovedPapersData();
+//                       //   });
+//                       // }
+//                     }
+//                     ,
+//                     buttonText: 'Return '),
             ],
           )
           // : const SizedBox(),

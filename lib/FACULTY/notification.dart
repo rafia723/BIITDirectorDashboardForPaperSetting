@@ -1,4 +1,5 @@
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/FACULTY/forwardrdBack.dart';
 import 'package:biit_directors_dashbooard/FACULTY/headerfeedback.dart';
 import 'package:biit_directors_dashbooard/FACULTY/questionEdit.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
@@ -17,6 +18,7 @@ class Notifications extends StatefulWidget {
 class _NotificationsState extends State<Notifications> {
   bool isHeaderPressed = false;
   bool isCommentPressed = true;
+ bool isPaperPressed=false;
   List<dynamic> list = [];
 
   @override
@@ -103,11 +105,13 @@ class _NotificationsState extends State<Notifications> {
                          Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => QuestionEdit(fid: widget.fid,cid: item['c_id'],ccode: item['c_code'],coursename: item['c_title'],qid: item['q_id'],fromCommentScreen: true,),
+                                  builder: (context) => QuestionEdit(fid: widget.fid,cid: item['c_id'],ccode: item['c_code'],
+                                  coursename: item['c_title'],qid: item['q_id'],fromCommentScreen: true,fromPaperSettingScreen: false),
                                 ),
                               );
                       },
-                      child: Card(
+                      child:  SingleChildScrollView(scrollDirection:Axis.horizontal ,
+                      child:Card(
                            margin: const EdgeInsets.symmetric(vertical: 5.0),
                        
                         child:  Padding(
@@ -135,18 +139,21 @@ class _NotificationsState extends State<Notifications> {
                                           )
                                         ],
                                       ),
+                                      
                                       Row(
                                         children: [
                                           // Display feedback_details from the database
-                                          Text('${item['feedback_details']}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                                         
+                                           Text('${item['feedback_details']}\n', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500))
                                         ],
-                                      ),
+                                      )
                                     ],
                                   ),
                                 ),
                               ],
                             ),
                         ),
+                      ),
                       ),
                     );
                   }
@@ -158,6 +165,19 @@ class _NotificationsState extends State<Notifications> {
             ),
           ),
         ],
+      ),
+        floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
+        backgroundColor: customButtonColor,
+        onPressed: (){
+           Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ForwardedBack(fid: widget.fid,facultyname: widget.facultyname,),
+                                ),
+                              );
+        },
+        child: const Icon(Icons.remove_red_eye,color: Colors.white,),
       ),
     );
   }

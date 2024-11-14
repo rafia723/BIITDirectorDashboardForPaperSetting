@@ -1,3 +1,4 @@
+
 import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/Director/paperApproval.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
@@ -8,8 +9,9 @@ class AdditionlQuestions extends StatefulWidget {
   final String coursename;
   final String ccode;
   final int pid;
-  final String qdifficulty;
+  final String? qdifficulty;
   final int qid;
+  final List<String> list;
   const AdditionlQuestions({
     Key? key,
     required this.cid,
@@ -18,6 +20,7 @@ class AdditionlQuestions extends StatefulWidget {
     required this.pid,
     required this.qdifficulty,
     required this.qid,
+     required this.list,
   }) : super(key: key);
   @override
   State<AdditionlQuestions> createState() => _AdditionlQuestionsState();
@@ -26,6 +29,7 @@ class AdditionlQuestions extends StatefulWidget {
 class _AdditionlQuestionsState extends State<AdditionlQuestions> {
   List<dynamic> qlist = [];
   dynamic paperId;
+  dynamic uploadedlist;
   Map<int, List<dynamic>> cloListsForQuestions = {};
   Map<int, List<dynamic>> subQuestions = {};
   List<dynamic> subqlist = [];
@@ -37,7 +41,8 @@ class _AdditionlQuestionsState extends State<AdditionlQuestions> {
   }
 
   Future<void> initializeData() async {
-    loadQuestionsWithPendingStatus(widget.pid);
+   // loadQuestionsWithPendingStatus(widget.pid);
+   loadQuestionsWithSameCloAndDifficulty();
     if (qlist.isNotEmpty) {
       loadCloListsForQuestions();
     }
@@ -70,6 +75,37 @@ class _AdditionlQuestionsState extends State<AdditionlQuestions> {
     }
   }
 
+
+Future<void> loadQuestionsWithSameCloAndDifficulty() async {
+    try {
+      qlist = await APIHandler().loadAdditionalQuestions(widget.pid,widget.list,difficulty: widget.qdifficulty);
+
+      setState(() {});
+      if (qlist.isNotEmpty) {
+        await loadCloListsForQuestions();
+        for (var question in qlist) {
+          await loadSubQuestionData(question['q_id']);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text(e.toString()),
+            );
+          },
+        );
+      }
+    }
+  }
+
+
+ 
+  
+
   Future<void> loadSubQuestionData(int qid) async {
     try {
       subqlist = await APIHandler().loadSubQuestionOfSpecificQid(qid);
@@ -85,11 +121,11 @@ class _AdditionlQuestionsState extends State<AdditionlQuestions> {
 
   Future<void> loadQuestionsWithUploadedStatus(int pid) async {
     try {
-      qlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
+      uploadedlist = await APIHandler().loadQuestionsWithUploadedStatus(pid);
       setState(() {});
-      if (qlist.isNotEmpty) {
+      if (uploadedlist.isNotEmpty) {
         loadCloListsForQuestions();
-        for (var question in qlist) {
+        for (var question in uploadedlist) {
           await loadSubQuestionData(question['q_id']);
         }
       }
@@ -304,7 +340,7 @@ class _AdditionlQuestionsState extends State<AdditionlQuestions> {
                                   if (question['q_difficulty'] ==
                                       widget.qdifficulty) {
                                     await updateQuestionStatustoRejected(
-                                        widget.qid, 'rejected');
+                                        widget.qid, 'pending');
                                     await updateQuestionStatustoUploaded(
                                         question['q_id']);
                                     await loadQuestionsWithUploadedStatus(
@@ -317,7 +353,7 @@ class _AdditionlQuestionsState extends State<AdditionlQuestions> {
                                                   cid: widget.cid,
                                                   ccode: widget.ccode,
                                                   coursename: widget.coursename,
-                                                  status: 'rejected',
+                                                  status: 'pending',
                                                 )));
                                     await loadQuestionsWithUploadedStatus(
                                         widget.pid);

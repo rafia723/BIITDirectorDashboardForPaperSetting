@@ -31,7 +31,7 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
   }
 
   Color customColor = const Color.fromARGB(255, 78, 223, 180);
-  bool _isPressed = false;
+  final bool _isPressed = false;
 
   List<dynamic> plist = [];
   List<dynamic> qlist = [];
@@ -57,7 +57,10 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
 
   Future<void> initializeData() async {
     await loadSession();
-    setState(() {});
+    if(mounted){
+setState(() {});
+    }
+    
     loadTeachers();
 
     if (sid != null) {
@@ -439,25 +442,26 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
                       const SizedBox(
                         width: 20,
                       ),
-                      ElevatedButton(
-                        style: ButtonStyle(
-                          backgroundColor: _isPressed?  MaterialStateProperty.all(customColor):
-                              MaterialStateProperty.all(Colors.grey.withOpacity(0.8)),
-                          foregroundColor:
-                              MaterialStateProperty.all(Colors.white),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isPressed = !_isPressed;
-                          });
-                        },
-                        child:  Text(_isPressed? 'Approved':'Approve'),
-                      ),
+                      // ElevatedButton(
+                      //   style: ButtonStyle(
+                      //     backgroundColor: _isPressed?  MaterialStateProperty.all(customColor):
+                      //         MaterialStateProperty.all(Colors.grey.withOpacity(0.8)),
+                      //     foregroundColor:
+                      //         MaterialStateProperty.all(Colors.white),
+                      //   ),
+                      //   onPressed: () {
+                      //     setState(() {
+                      //       _isPressed = !_isPressed;
+                      //     });
+                      //   },
+                      //   child:  Text(_isPressed? 'Approved':'Approve'),
+                      // ),
                       const SizedBox(
                         width: 120,
                       ),
-                      _isPressed
-                          ? customElevatedButton(
+                    //  _isPressed
+                       //   ?
+                           customElevatedButton(
                               onPressed: () {
                                 Navigator.pushReplacement(
                                     context,
@@ -466,10 +470,11 @@ class _PaperHeaderScreenState extends State<PaperHeaderScreen> {
                                             pid: paperId,
                                             cid: widget.cid,
                                             ccode: widget.ccode,
-                                            coursename: widget.coursename)));
+                                            coursename: widget.coursename,
+                                          )));
                               },
                               buttonText: 'View Paper')
-                          : const SizedBox(),
+                        //  : const SizedBox(),
                     ],
                   )
                 ],

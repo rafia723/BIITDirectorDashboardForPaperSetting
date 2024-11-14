@@ -1,3 +1,4 @@
+import 'package:biit_directors_dashbooard/API/api.dart';
 import 'package:biit_directors_dashbooard/Director/ApprovedPapersList.dart';
 import 'package:biit_directors_dashbooard/Director/UnUploadedPapers.dart';
 import 'package:biit_directors_dashbooard/Director/UploadedPapersList.dart';
@@ -12,6 +13,34 @@ class Director extends StatefulWidget {
 }
 
 class _DirectorState extends State<Director> {
+
+   List<dynamic> ulist=[];
+  @override
+  void initState() {
+    super.initState();
+    loadUploadedPapersData();
+  }
+Future<void> loadUploadedPapersData() async {
+   try {
+       ulist =await APIHandler().loadUploadedPapers();
+      setState(() {});
+   } catch (e) {
+    if(mounted){
+     showDialog(
+        context: context,
+        builder: (context) {
+          return  AlertDialog(
+            title: const Text('Error'),
+            content: Text(e.toString()),
+          );
+        },
+      );
+    }
+   }
+    
+    
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -67,7 +96,10 @@ class _DirectorState extends State<Director> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const DRTUploadedPapers(),
+                                builder: (context) =>  DRTUploadedPapers(
+                                  list: ulist,
+                                ),
+
                               ),
                             );
                           },

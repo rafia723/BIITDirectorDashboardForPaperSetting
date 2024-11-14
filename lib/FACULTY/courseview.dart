@@ -246,7 +246,7 @@ setState(() {
                         customButton(
                             text: 'Manage Paper',
                             onPressed: () {
-                              if(status=='pending'||status=='uploaded'){
+                              if(status=='pending'||status=='Rejected'){
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -258,7 +258,7 @@ setState(() {
                               );
                                }
                                else if(list.isNotEmpty){ 
-                                if(status==null && term==null){
+                                if(status=='pending' && term==null){
                                showErrorDialog(context, 'Its time for final term, First create final term header');
                                 }
                                

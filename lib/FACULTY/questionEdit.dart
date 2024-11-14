@@ -13,6 +13,7 @@ class QuestionEdit extends StatefulWidget {
   final int fid;
   final int qid;
   bool? fromCommentScreen;
+    bool? fromPaperSettingScreen;
 
    QuestionEdit({
     super.key,
@@ -21,7 +22,8 @@ class QuestionEdit extends StatefulWidget {
     required this.coursename,
     required this.fid,
     required this.qid,
-      this.fromCommentScreen
+      this.fromCommentScreen,
+       this.fromPaperSettingScreen
   });
 
   @override
@@ -799,7 +801,9 @@ class _QuestionEditState extends State<QuestionEdit> {
                     }).toList(),
                   ),
                   const SizedBox(width: 50),
-                  const Text('Topic:  '),
+                   const Text('Topic:  '),
+              //     widget.fromPaperSettingScreen!?
+              if(widget.fromPaperSettingScreen==true)
                   ElevatedButton(
                     onPressed: () {
                       showDialog(
@@ -855,7 +859,8 @@ class _QuestionEditState extends State<QuestionEdit> {
                     },
                     child: const Text('Select',
                         style: TextStyle(color: Colors.black)),
-                  ),
+                  )
+                  //:SizedBox(),
                 ],
               ),
               Row(

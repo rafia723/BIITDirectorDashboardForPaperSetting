@@ -5,14 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:biit_directors_dashbooard/API/api.dart';
 
 class DRTUploadedPapers extends StatefulWidget {
-   const DRTUploadedPapers({Key? key}) : super(key: key);
-
+   
+  List<dynamic>? list;
+   DRTUploadedPapers({
+    Key? key,
+    required this.list,
+  }) : super(key: key);
   @override
   State<DRTUploadedPapers> createState() => _DRTUploadedPapersState();
 }
 
 class _DRTUploadedPapersState extends State<DRTUploadedPapers> {
-  List<dynamic> uploadedPlist = [];
+
 TextEditingController search = TextEditingController();
 
   @override
@@ -29,7 +33,7 @@ TextEditingController search = TextEditingController();
 
  Future<void> loadUploadedPapersData() async {
    try {
-       uploadedPlist =await APIHandler().loadUploadedPapers();
+       widget.list =await APIHandler().loadUploadedPapers();
       setState(() {});
    } catch (e) {
     if(mounted){
@@ -54,7 +58,7 @@ TextEditingController search = TextEditingController();
         loadUploadedPapersData();
          return;
        }
-        uploadedPlist = await APIHandler().searchUploadedPapers(courseTitle);
+        widget.list = await APIHandler().searchUploadedPapers(courseTitle);
         setState(() {});
     }catch (e) {
          if(mounted){
@@ -114,7 +118,7 @@ TextEditingController search = TextEditingController();
                 Expanded(
                   child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: uploadedPlist.length,
+                    itemCount: widget.list!.length,
                     itemBuilder: (context, index) {
                       return Card(
                         elevation: 5,
@@ -127,13 +131,13 @@ TextEditingController search = TextEditingController();
                               Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => PaperHeaderScreen(cid: uploadedPlist[index]['c_id'], 
-                                ccode: uploadedPlist[index]['c_code'], 
-                                coursename: uploadedPlist[index]['c_title'])))
+                                builder: (context) => PaperHeaderScreen(cid: widget.list![index]['c_id'], 
+                                ccode: widget.list![index]['c_code'], 
+                                coursename: widget.list![index]['c_title'])))
                           },
                           child: ListTile(
                              title: Text(
-                                uploadedPlist[index]['c_title'],
+                                widget.list![index]['c_title'],
                                 style:
                                     const TextStyle(fontWeight: FontWeight.bold),
                               ),
@@ -141,7 +145,7 @@ TextEditingController search = TextEditingController();
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    uploadedPlist[index]['c_code'],
+                                    widget.list![index]['c_code'],
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold),
                                   ),
@@ -150,9 +154,9 @@ TextEditingController search = TextEditingController();
                                        Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => PaperHeaderScreen(cid: uploadedPlist[index]['c_id'], 
-                                ccode: uploadedPlist[index]['c_code'], 
-                                coursename: uploadedPlist[index]['c_title'])));
+                                builder: (context) => PaperHeaderScreen(cid: widget.list![index]['c_id'], 
+                                ccode: widget.list![index]['c_code'], 
+                                coursename: widget.list![index]['c_title'])));
                                     },
                                     icon: const Icon(Icons.remove_red_eye),
                                   ),

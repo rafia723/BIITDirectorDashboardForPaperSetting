@@ -1089,12 +1089,14 @@ Widget _buildCustomUpdateDialog(int sqId) {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => QuestionEdit(
+                                        fromPaperSettingScreen: true,
                                         fid: widget.fid,
                                         cid: widget.cid,
                                         ccode: widget.ccode,
                                         coursename: widget.coursename,
                                         qid: question['q_id'],
                                         fromCommentScreen: false,
+                                        
                                       ),
                                     ),
                                   ).then((_) {

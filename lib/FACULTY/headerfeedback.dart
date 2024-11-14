@@ -1,6 +1,7 @@
 
 
 import 'package:biit_directors_dashbooard/API/api.dart';
+import 'package:biit_directors_dashbooard/FACULTY/forwardrdBack.dart';
 import 'package:biit_directors_dashbooard/FACULTY/headerEdit.dart';
 import 'package:biit_directors_dashbooard/FACULTY/notification.dart';
 import 'package:biit_directors_dashbooard/customWidgets.dart';
@@ -141,7 +142,8 @@ class _HeaderFeedbackState extends State<HeaderFeedback> {
                                   ],
                                 ),
                                 const SizedBox(height: 5),
-                                Text(feedback['feedback_details'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                                   SingleChildScrollView(scrollDirection:Axis.horizontal ,
+                               child: Text(feedback['feedback_details'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500))),
                               ],
                             ),
                           ),
@@ -154,6 +156,19 @@ class _HeaderFeedbackState extends State<HeaderFeedback> {
             ),
           ),
         ],
+      ),
+       floatingActionButton: FloatingActionButton(
+        shape: const CircleBorder(),
+        backgroundColor: customButtonColor,
+        onPressed: (){
+            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ForwardedBack(fid: widget.fid,facultyname: widget.facultyname,),
+                                ),
+                              );
+        },
+        child: const Icon(Icons.remove_red_eye,color: Colors.white,),
       ),
     );
   }

@@ -37,7 +37,8 @@ class MyApp extends StatelessWidget {
       //       }
       //       return Colors.grey; // Color when the switch is OFF
       //     }),
-      //     trackColor: MaterialStateProperty.resolveWith((states) {
+      //     trackColor: Mat
+      //erialStateProperty.resolveWith((states) {
       //       if (states.contains(MaterialState.selected)) {
       //         return Colors.green; // Color when the switch is ON
       //       }
