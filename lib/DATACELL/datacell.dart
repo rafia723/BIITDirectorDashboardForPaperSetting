@@ -57,7 +57,7 @@ class _DatacellState extends State<Datacell> {
             child: Padding(
               padding: const EdgeInsets.all(30.0),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
+               mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Text(
@@ -65,8 +65,9 @@ class _DatacellState extends State<Datacell> {
                     style:
                         TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 40),
                   SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
                     child: Column(
                       children: [
                         ElevatedButton(
@@ -89,7 +90,7 @@ class _DatacellState extends State<Datacell> {
                           child: const Text('Manage \nFaculty',
                               style: TextStyle(color: Colors.black)),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 10),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
@@ -110,7 +111,7 @@ class _DatacellState extends State<Datacell> {
                           child: const Text('Manage \nCourses',
                               style: TextStyle(color: Colors.black)),
                         ),
-                        const SizedBox(height: 30),
+                         const SizedBox(height: 10),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
@@ -131,7 +132,7 @@ class _DatacellState extends State<Datacell> {
                           child: const Text('Approved Papers',
                               style: TextStyle(color: Colors.black)),
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 10),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
@@ -152,7 +153,7 @@ class _DatacellState extends State<Datacell> {
                           child: const Text('Printed Papers',
                               style: TextStyle(color: Colors.black)),
                         ),
-                         const SizedBox(height: 30),
+                         const SizedBox(height: 10),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
